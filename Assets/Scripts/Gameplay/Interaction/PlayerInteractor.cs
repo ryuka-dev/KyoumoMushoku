@@ -24,12 +24,27 @@ namespace KyoumoMushoku.Gameplay.Interaction
         PlayerContext _context;
         IPlayerInput _input;
 
+        IChanneledInteractable _channeling;
+        float _channelSeconds;
+        float _channelElapsed;
+
         /// <summary>現在の対象。無ければ null。UI のプロンプトはここを観測する。</summary>
         public IInteractable Current { get; private set; }
         public PlayerContext Context => _context;
 
+        /// <summary>いま時間のかかる調べもの（漁りなど）の最中か。</summary>
+        public bool IsChanneling => _channeling != null;
+
+        /// <summary>チャネルの進捗（0〜1）。チャネル中でなければ 0。</summary>
+        public float ChannelProgress => _channeling != null && _channelSeconds > 0f
+            ? Mathf.Clamp01(_channelElapsed / _channelSeconds)
+            : 0f;
+
         /// <summary>現在の対象が変わったときに発火する。</summary>
         public event Action<IInteractable> CurrentChanged;
+
+        /// <summary>調べものの結果を世界の言葉で伝える（「パンが出た」「空っぽだった」）。UI のトーストが観測する。</summary>
+        public event Action<string> ActionReported;
 
         void Awake()
         {
@@ -43,15 +58,77 @@ namespace KyoumoMushoku.Gameplay.Interaction
 
         void Update()
         {
+            if (_channeling != null)
+            {
+                TickChannel();
+                return;
+            }
+
             UpdateCurrent();
 
-            if (Current != null && _input != null && _input.InteractPressed && Current.CanInteract(_context))
+            if (Current == null || _input == null || !_input.InteractPressed || !Current.CanInteract(_context))
             {
-                Current.Interact(_context);
-
-                // 相手が消えたり満杯が解消したりするため、同フレームで対象を取り直す。
-                UpdateCurrent();
+                return;
             }
+
+            if (Current is IChanneledInteractable channeled && channeled.ChannelSeconds(_context) > 0f)
+            {
+                BeginChannel(channeled);
+                return;
+            }
+
+            Current.Interact(_context);
+
+            // 相手が消えたり満杯が解消したりするため、同フレームで対象を取り直す。
+            UpdateCurrent();
+        }
+
+        void BeginChannel(IChanneledInteractable target)
+        {
+            _channeling = target;
+            _channelSeconds = Mathf.Max(0.01f, target.ChannelSeconds(_context));
+            _channelElapsed = 0f;
+        }
+
+        void TickChannel()
+        {
+            // 中断：歩き出す意思を示す、対象から離れる、続行不能になる。いずれも資源を消費しない。
+            var walkedOff = _input != null && Mathf.Abs(_input.Horizontal) > 0.01f;
+            var target = _channeling as IInteractable;
+
+            if (walkedOff || target == null || !IsWithinReach(_channeling) || !target.CanInteract(_context))
+            {
+                _channeling.CancelChannel(_context);
+                _channeling = null;
+                UpdateCurrent();
+                return;
+            }
+
+            _channelElapsed += Time.deltaTime;
+            if (_channelElapsed < _channelSeconds)
+            {
+                return;
+            }
+
+            var message = _channeling.CompleteChannel(_context);
+            _channeling = null;
+            UpdateCurrent();
+
+            if (!string.IsNullOrEmpty(message))
+            {
+                ActionReported?.Invoke(message);
+            }
+        }
+
+        bool IsWithinReach(IChanneledInteractable target)
+        {
+            if (target is Component component && component != null)
+            {
+                var sqr = ((Vector2)component.transform.position - (Vector2)transform.position).sqrMagnitude;
+                return sqr <= _radius * _radius;
+            }
+
+            return true;
         }
 
         void UpdateCurrent()

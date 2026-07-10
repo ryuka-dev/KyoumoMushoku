@@ -27,6 +27,13 @@ namespace KyoumoMushoku.Gameplay.UI
                 return;
             }
 
+            // 漁りなど時間のかかる調べものの最中は、進捗と中断の仕方を示す（第十節：探索時間の手応え）。
+            if (_interactor.IsChanneling)
+            {
+                _text.text = $"漁っている… {ProgressBar(_interactor.ChannelProgress)}　［動くと手を止める］";
+                return;
+            }
+
             var current = _interactor.Current;
             if (current == null)
             {
@@ -38,6 +45,13 @@ namespace KyoumoMushoku.Gameplay.UI
             _text.text = current.CanInteract(_interactor.Context)
                 ? $"{description}　［E］"
                 : description;
+        }
+
+        static string ProgressBar(float progress)
+        {
+            const int cells = 10;
+            var filled = Mathf.Clamp(Mathf.RoundToInt(progress * cells), 0, cells);
+            return new string('▓', filled) + new string('░', cells - filled);
         }
     }
 }

@@ -1,10 +1,11 @@
 using System.IO;
 using System.Linq;
-using KyoumoMushoku.Core.Items;
+using KyoumoMushoku.Core.Foraging;
 using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Diagnostics;
 using KyoumoMushoku.Gameplay.Economy;
+using KyoumoMushoku.Gameplay.Foraging;
 using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.Items;
 using KyoumoMushoku.Gameplay.Player;
@@ -35,6 +36,7 @@ namespace KyoumoMushoku.Editor.Greybox
         const string ScenePath = "Assets/Scenes/FirstDistrict.unity";
         const string SchedulePath = "Assets/Config/DaySchedule.asset";
         const string ItemDatabasePath = "Assets/Config/ItemDatabase.asset";
+        const string TrashCanLootPath = "Assets/Config/TrashCanLoot.asset";
         const string VitalsTuningPath = "Assets/Config/VitalsTuning.asset";
         const string SpritePath = "Assets/Art/Greybox/White.png";
         const string AreaPrefabFolder = "Assets/Prefabs/Areas";
@@ -55,6 +57,7 @@ namespace KyoumoMushoku.Editor.Greybox
             EnsureWhiteSpriteAsset();
             EnsureDayScheduleAsset();
             EnsureItemDatabaseAsset();
+            EnsureTrashCanLootAsset();
             EnsureVitalsTuningAsset();
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -64,10 +67,11 @@ namespace KyoumoMushoku.Editor.Greybox
             var white = AssetDatabase.LoadAssetAtPath<Sprite>(SpritePath);
             var schedule = AssetDatabase.LoadAssetAtPath<DayScheduleAsset>(SchedulePath);
             var catalog = AssetDatabase.LoadAssetAtPath<ItemDatabaseAsset>(ItemDatabasePath);
+            var loot = AssetDatabase.LoadAssetAtPath<TrashCanLootAsset>(TrashCanLootPath);
             var tuning = AssetDatabase.LoadAssetAtPath<VitalsTuningAsset>(VitalsTuningPath);
             var spriteMaterial = AssetDatabase.GetBuiltinExtraResource<Material>("Sprites-Default.mat");
 
-            if (white == null || schedule == null || catalog == null || tuning == null || spriteMaterial == null)
+            if (white == null || schedule == null || catalog == null || loot == null || tuning == null || spriteMaterial == null)
             {
                 Debug.LogError("Greybox build aborted: required assets could not be loaded after scene switch.");
                 return;
@@ -86,9 +90,10 @@ namespace KyoumoMushoku.Editor.Greybox
             var player = BuildPlayer(white, spriteMaterial, catalog, tuning);
             BuildCamera(player.transform);
             BuildStairwells();
-            BuildInteractables(white, spriteMaterial, catalog);
 
+            // ゴミ箱は時計（昼夜・日替りのリポップ）に配線するため、システムを先に建てる。
             var clock = BuildSystems(schedule);
+            BuildInteractables(white, spriteMaterial, catalog, loot, clock);
             BuildSessionAndGrade(clock, player);
             BuildCanvas(player, clock);
 
@@ -100,7 +105,8 @@ namespace KyoumoMushoku.Editor.Greybox
             RegisterSceneInBuildSettings();
 
             AssetDatabase.SaveAssets();
-            Debug.Log($"Phase 1 greybox built at {ScenePath}. A/D で歩く、Shift で走る、E で調べる、数字で飲食。");
+            Debug.Log($"Phase 2 greybox built at {ScenePath}. A/D で歩く、Shift で走る、E で調べる／漁る、数字で飲食。");
+            Debug.Log("ゴミ箱は E で漁る（探索時間あり・歩くと中断）。夜のコンビニ前は弁当が出る。使い切ると翌日まで空。");
             Debug.Log($"1日目は約 {schedule.ToSchedule().ForDay(1).SecondsUntilNight / 60f:F1} 分で夜に入る。");
         }
 
@@ -258,10 +264,12 @@ namespace KyoumoMushoku.Editor.Greybox
         }
 
         /// <summary>
-        /// 水源・就寝場所・病院・足場の物資を置く。すべて第十三節の勾配（安全で貧しい端 → 危険で豊かな端）に沿う。
-        /// Phase 1 では物資を足場（ItemPickup）で供給する。ゴミ箱と店は Phase 2/4 で置き換える。
+        /// 水源・就寝場所・病院・ゴミ箱を置く。すべて第十三節の勾配（安全で貧しい端 → 危険で豊かな端）に沿う。
+        /// Phase 2 で、食料・廃品を供給していた足場（ItemPickup）を、漁って引くゴミ箱3種に置き換える。
+        /// 店（購入・買い取り）は Phase 4 で入る。
         /// </summary>
-        static void BuildInteractables(Sprite white, Material material, ItemDatabaseAsset catalog)
+        static void BuildInteractables(Sprite white, Material material, ItemDatabaseAsset catalog,
+            TrashCanLootAsset loot, GameClockDriver clock)
         {
             var root = new GameObject("Interactables").transform;
 
@@ -298,12 +306,35 @@ namespace KyoumoMushoku.Editor.Greybox
             inn.AddComponent<SleepSpot>().Configure("inn_commercial", "安宿に泊まる", AlertZoneId.Commercial,
                 costYen: 1500, fullRestore: true, hpRecovery: 0f, thirstRecovery: 0f, hungerRecovery: 0f, sanityRecovery: 0f);
 
-            // 足場の物資：命題①を検証できるよう、水と食料を数種置く。状態の抽選は Phase 2 で入る。
-            SpawnPickup(root, white, material, catalog, "water_bottle", FoodState.Fresh, new Vector3(18f, 0.5f, 0f));
-            SpawnPickup(root, white, material, catalog, "onigiri", FoodState.Fresh, new Vector3(26f, 0.5f, 0f));
-            SpawnPickup(root, white, material, catalog, "bento", FoodState.Rotten, new Vector3(82f, 0.5f, 0f));
-            SpawnPickup(root, white, material, catalog, "bread", FoodState.Stale, new Vector3(88f, 0.5f, 0f));
-            SpawnPickup(root, white, material, catalog, "can_coffee", FoodState.Fresh, new Vector3(34f, 0.5f, 0f));
+            // ゴミ箱3種（第十三節）。勾配に沿って、安全で貧しい公園から、危険で豊かな路地裏・コンビニへ。
+            // A：公園。缶・瓶が中心、食品は少ない。静穏ゾーン。
+            BuildTrashCan(root, white, material, loot, clock, "TrashCan_A_Park",
+                TrashCanKind.Park, new Vector3(16f, FirstDistrictLayout.SurfaceY + 1f, 0f),
+                yieldsPerDay: 3, rummageSeconds: 1.8f);
+
+            // C：路地裏の大型ゴミ箱。廃品が中心、食品は状態が悪い。大型ゆえ漁りに時間がかかる。生活ゾーン。
+            BuildTrashCan(root, white, material, loot, clock, "TrashCan_C_BackAlley",
+                TrashCanKind.BackAlley, new Vector3(86f, FirstDistrictLayout.SurfaceY + 1f, 0f),
+                yieldsPerDay: 3, rummageSeconds: 2.6f);
+
+            // B：コンビニ前。昼は乏しいが、夜に弁当・パンが出る。状態は良いが商業ゾーンで危険。
+            BuildTrashCan(root, white, material, loot, clock, "TrashCan_B_ConvenienceStore",
+                TrashCanKind.ConvenienceStore, new Vector3(128f, FirstDistrictLayout.SurfaceY + 1f, 0f),
+                yieldsPerDay: 4, rummageSeconds: 2.2f);
+        }
+
+        static void BuildTrashCan(Transform parent, Sprite white, Material material, TrashCanLootAsset loot,
+            GameClockDriver clock, string name, TrashCanKind kind, Vector3 position, int yieldsPerDay, float rummageSeconds)
+        {
+            var can = MakeQuad(name, white, material, new Color(0.55f, 0.5f, 0.35f), sortingOrder: 5);
+            can.transform.SetParent(parent, false);
+            can.transform.position = position;
+            can.transform.localScale = new Vector3(1.4f, 1.8f, 1f);
+
+            var collider = can.AddComponent<BoxCollider2D>();
+            collider.isTrigger = true;
+
+            can.AddComponent<TrashCan>().Configure(kind, loot, clock, yieldsPerDay, rummageSeconds);
         }
 
         static GameObject MakeInteractableMarker(string name, Transform parent, Sprite white, Material material,
@@ -318,27 +349,6 @@ namespace KyoumoMushoku.Editor.Greybox
             collider.isTrigger = true;
 
             return marker;
-        }
-
-        static void SpawnPickup(Transform parent, Sprite white, Material material, ItemDatabaseAsset catalog,
-            string itemId, FoodState freshness, Vector3 position)
-        {
-            var id = new ItemId(itemId);
-            if (!catalog.TryGet(id, out _))
-            {
-                Debug.LogWarning($"Greybox: 未知のアイテム '{itemId}' の足場を飛ばした。");
-                return;
-            }
-
-            var pickup = MakeQuad($"Pickup_{itemId}", white, material, new Color(0.9f, 0.9f, 0.5f), sortingOrder: 6);
-            pickup.transform.SetParent(parent, false);
-            pickup.transform.position = position;
-            pickup.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
-
-            var collider = pickup.AddComponent<BoxCollider2D>();
-            collider.isTrigger = true;
-
-            pickup.AddComponent<ItemPickup>().Configure(id, freshness);
         }
 
         static void BuildStairwells()
@@ -434,10 +444,16 @@ namespace KyoumoMushoku.Editor.Greybox
                 clock, player.GetComponent<ZoneTracker>());
             hud.BindFills(hp, thirst, hunger, sanity, status);
 
+            var interactor = player.GetComponent<PlayerInteractor>();
+
             var promptText = MakeText(canvasT, font, "InteractionPrompt", new Vector2(0.5f, 0f),
                 new Vector2(0f, 90f), new Vector2(1000f, 60f), 34f, TextAlignmentOptions.Center);
-            canvasGo.AddComponent<InteractionPrompt>()
-                .Configure(player.GetComponent<PlayerInteractor>(), promptText);
+            canvasGo.AddComponent<InteractionPrompt>().Configure(interactor, promptText);
+
+            // 漁りの結果を世界の言葉で短く伝えるトースト（第十四節）。プロンプトの少し上に出す。
+            var toastText = MakeText(canvasT, font, "ActionToast", new Vector2(0.5f, 0f),
+                new Vector2(0f, 170f), new Vector2(1000f, 50f), 30f, TextAlignmentOptions.Center);
+            canvasGo.AddComponent<ActionToast>().Configure(interactor, toastText);
 
             var inventoryText = MakeText(canvasT, font, "Inventory", new Vector2(1f, 1f),
                 new Vector2(-24f, -24f), new Vector2(470f, 780f), 26f, TextAlignmentOptions.TopLeft);
@@ -558,6 +574,20 @@ namespace KyoumoMushoku.Editor.Greybox
             var asset = ScriptableObject.CreateInstance<ItemDatabaseAsset>();
             asset.PopulateDefaults();
             AssetDatabase.CreateAsset(asset, ItemDatabasePath);
+            AssetDatabase.SaveAssets();
+        }
+
+        static void EnsureTrashCanLootAsset()
+        {
+            if (AssetDatabase.LoadAssetAtPath<TrashCanLootAsset>(TrashCanLootPath) != null)
+            {
+                return;
+            }
+
+            EnsureAssetFolder(Path.GetDirectoryName(TrashCanLootPath)!.Replace('\\', '/'));
+            var asset = ScriptableObject.CreateInstance<TrashCanLootAsset>();
+            asset.PopulateDefaults();
+            AssetDatabase.CreateAsset(asset, TrashCanLootPath);
             AssetDatabase.SaveAssets();
         }
 
