@@ -9,5 +9,8 @@ namespace KyoumoMushoku.Gameplay.Player
         float Horizontal { get; }
 
         bool RunHeld { get; }
+
+        /// <summary>このフレームでインタラクト（拾う・飲む・調べる・就寝）が押されたか。</summary>
+        bool InteractPressed { get; }
     }
 }
