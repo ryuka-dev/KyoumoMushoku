@@ -4,7 +4,9 @@
     "references": [
         "KyoumoMushoku.Core",
         "KyoumoMushoku.Gameplay",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "UnityEngine.UI",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [
         "Editor"

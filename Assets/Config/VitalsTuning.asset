@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc7ad7d307e9f204eb8d09878224949d, type: 3}
+  m_Name: VitalsTuning
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Survival.VitalsTuningAsset
+  _maxHp: 100
+  _maxThirst: 100
+  _maxHunger: 100
+  _thirstDrainPerSecond: 0.15
+  _hungerDrainPerSecond: 0.09
+  _sanityDrainPerSecond: 0.025
+  _runDrainMultiplier: 1.6
+  _lowHungerThreshold: 30
+  _lowHungerRunDrainMultiplier: 1.5
+  _dehydrationDamagePerSecond: 1
+  _starvationDamagePerSecond: 0.8
+  _dehydratedSpeedMultiplier: 0.6

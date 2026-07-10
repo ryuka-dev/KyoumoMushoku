@@ -1,0 +1,125 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b472094b6397db94fb5948512b04e4d5, type: 3}
+  m_Name: ItemDatabase
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Items.ItemDatabaseAsset
+  _entries:
+  - id: water_bottle
+    displayName: "\u30DA\u30C3\u30C8\u30DC\u30C8\u30EB\u306E\u6C34"
+    category: 0
+    slots: 2
+    hp: 0
+    thirst: 45
+    hunger: 0
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+  - id: half_bottle
+    displayName: "\u98F2\u307F\u304B\u3051\u306E\u30DA\u30C3\u30C8\u30DC\u30C8\u30EB"
+    category: 0
+    slots: 2
+    hp: 0
+    thirst: 18
+    hunger: 0
+    sanity: -4
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+  - id: onigiri
+    displayName: "\u304A\u306B\u304E\u308A"
+    category: 1
+    slots: 1
+    hp: 0
+    thirst: 0
+    hunger: 25
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+  - id: bento
+    displayName: "\u30B3\u30F3\u30D3\u30CB\u5F01\u5F53"
+    category: 1
+    slots: 2
+    hp: 0
+    thirst: 0
+    hunger: 40
+    sanity: 0
+    rottenHp: -14
+    rottenSanity: -8
+    sellPriceYen: 0
+  - id: bread
+    displayName: "\u30D1\u30F3"
+    category: 1
+    slots: 2
+    hp: 0
+    thirst: 0
+    hunger: 22
+    sanity: 0
+    rottenHp: -10
+    rottenSanity: -6
+    sellPriceYen: 0
+  - id: can_aluminum
+    displayName: "\u30A2\u30EB\u30DF\u7F36"
+    category: 2
+    slots: 1
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 20
+  - id: bottle_empty
+    displayName: "\u7A7A\u304D\u74F6"
+    category: 2
+    slots: 2
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 50
+  - id: umbrella_broken
+    displayName: "\u58CA\u308C\u305F\u5098"
+    category: 2
+    slots: 3
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 120
+  - id: can_coffee
+    displayName: "\u7F36\u30B3\u30FC\u30D2\u30FC"
+    category: 4
+    slots: 1
+    hp: 0
+    thirst: 10
+    hunger: 0
+    sanity: 12
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+  - id: cigarette
+    displayName: "\u62FE\u3063\u305F\u30BF\u30D0\u30B3"
+    category: 4
+    slots: 1
+    hp: -3
+    thirst: 0
+    hunger: 0
+    sanity: 10
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
