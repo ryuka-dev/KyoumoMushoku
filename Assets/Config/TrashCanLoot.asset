@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73c59a5970376d343b172f2c84c7a5c5, type: 3}
+  m_Name: TrashCanLoot
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Foraging.TrashCanLootAsset
+  _kinds:
+  - kind: 0
+    day:
+      emptyWeight: 20
+      items:
+      - id: can_aluminum
+        weight: 35
+      - id: bottle_empty
+        weight: 20
+      - id: half_bottle
+        weight: 12
+      - id: bread
+        weight: 8
+      - id: cigarette
+        weight: 5
+      freshWeight: 25
+      staleWeight: 45
+      rottenWeight: 30
+    night:
+      emptyWeight: 25
+      items:
+      - id: can_aluminum
+        weight: 33
+      - id: bottle_empty
+        weight: 20
+      - id: half_bottle
+        weight: 12
+      - id: bread
+        weight: 5
+      - id: cigarette
+        weight: 5
+      freshWeight: 20
+      staleWeight: 45
+      rottenWeight: 35
+  - kind: 1
+    day:
+      emptyWeight: 45
+      items:
+      - id: bread
+        weight: 20
+      - id: can_aluminum
+        weight: 25
+      - id: bottle_empty
+        weight: 10
+      freshWeight: 45
+      staleWeight: 40
+      rottenWeight: 15
+    night:
+      emptyWeight: 8
+      items:
+      - id: bento
+        weight: 35
+      - id: bread
+        weight: 25
+      - id: can_coffee
+        weight: 12
+      - id: can_aluminum
+        weight: 12
+      - id: bottle_empty
+        weight: 8
+      freshWeight: 65
+      staleWeight: 28
+      rottenWeight: 7
+  - kind: 2
+    day:
+      emptyWeight: 18
+      items:
+      - id: umbrella_broken
+        weight: 15
+      - id: bottle_empty
+        weight: 25
+      - id: can_aluminum
+        weight: 25
+      - id: bread
+        weight: 12
+      - id: cigarette
+        weight: 5
+      freshWeight: 8
+      staleWeight: 32
+      rottenWeight: 60
+    night:
+      emptyWeight: 18
+      items:
+      - id: umbrella_broken
+        weight: 15
+      - id: bottle_empty
+        weight: 22
+      - id: can_aluminum
+        weight: 25
+      - id: bread
+        weight: 12
+      - id: cigarette
+        weight: 8
+      freshWeight: 8
+      staleWeight: 32
+      rottenWeight: 60

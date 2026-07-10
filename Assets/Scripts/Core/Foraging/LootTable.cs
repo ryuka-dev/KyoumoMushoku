@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using KyoumoMushoku.Core.Items;
 
-// ゴミ箱の産出テーブル（第十三節）。空振り込みの重み付き抽選と、食品状態の抽選を担う。
 namespace KyoumoMushoku.Core.Foraging
 {
     /// <summary>

@@ -47,11 +47,15 @@ namespace KyoumoMushoku.Gameplay.UI
                 : description;
         }
 
+        /// <summary>
+        /// 進捗の升目。ブロック要素（U+2591 など）は日本語フォントに無いことがあるため、
+        /// JIS の範囲にある ■／□ を使う。豆腐を出さないこと自体が可読性の要請である（第三節）。
+        /// </summary>
         static string ProgressBar(float progress)
         {
             const int cells = 10;
             var filled = Mathf.Clamp(Mathf.RoundToInt(progress * cells), 0, cells);
-            return new string('▓', filled) + new string('░', cells - filled);
+            return new string('■', filled) + new string('□', cells - filled);
         }
     }
 }
