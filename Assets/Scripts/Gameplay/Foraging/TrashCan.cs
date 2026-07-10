@@ -1,6 +1,7 @@
 using KyoumoMushoku.Core.DayCycle;
 using KyoumoMushoku.Core.Foraging;
 using KyoumoMushoku.Core.Items;
+using KyoumoMushoku.Core.Randomness;
 using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Interaction;
 using UnityEngine;

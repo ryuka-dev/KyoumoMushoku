@@ -1,4 +1,5 @@
 using KyoumoMushoku.Core.Items;
+using KyoumoMushoku.Core.Randomness;
 
 namespace KyoumoMushoku.Core.Foraging
 {

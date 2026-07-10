@@ -1,6 +1,6 @@
 using System;
 
-namespace KyoumoMushoku.Core.Foraging
+namespace KyoumoMushoku.Core.Randomness
 {
     /// <summary>
     /// <see cref="IRng"/> の既定の実装。<see cref="System.Random"/> を包むだけの薄い層であり、

@@ -1,8 +1,8 @@
-namespace KyoumoMushoku.Core.Foraging
+namespace KyoumoMushoku.Core.Randomness
 {
     /// <summary>
     /// 抽選に使う乱数の供給口。乱数源をこの境界の内側に留めることで、
-    /// 産出テーブルと食品状態の抽選（第十一節）を決定的に検証できるようにする。
+    /// 産出テーブルと食品状態の抽選（第十一節）、警察の抽選（第五節）を決定的に検証できるようにする。
     /// </summary>
     public interface IRng
     {

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using KyoumoMushoku.Core.Foraging;
 using KyoumoMushoku.Core.Items;
+using KyoumoMushoku.Core.Randomness;
 using KyoumoMushoku.Core.Survival;
 using NUnit.Framework;
 
