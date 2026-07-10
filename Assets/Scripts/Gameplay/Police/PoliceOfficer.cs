@@ -97,7 +97,8 @@ namespace KyoumoMushoku.Gameplay.Police
 
         void Awake()
         {
-            _renderer = GetComponent<SpriteRenderer>();
+            // 姿はスケールされた子（Body）が持つ。根は等倍のまま保ち、頭上の台詞が歪まないようにする。
+            _renderer = GetComponentInChildren<SpriteRenderer>();
             _rng = new SystemRng();
             _alerts = FindFirstObjectByType<ZoneAlertDirector>();
 

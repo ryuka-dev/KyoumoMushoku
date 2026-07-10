@@ -1,4 +1,5 @@
 using KyoumoMushoku.Core.DayCycle;
+using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Survival;
 using KyoumoMushoku.Core.Zones;
 
@@ -20,6 +21,18 @@ namespace KyoumoMushoku.Gameplay.UI
             AlertZoneId.Quiet => "静穏",
             AlertZoneId.Residential => "生活",
             AlertZoneId.Commercial => "商業",
+            _ => "―",
+        };
+
+        /// <summary>
+        /// 警察の段階（第五節）。プレイヤーにこの語を直接見せる場所はまだ無い。
+        /// 段階は警官の振る舞いと台詞から読み取られるべきものであり、ここは診断と将来の用途のために置く。
+        /// </summary>
+        public static string PoliceStage(PoliceStage stage) => stage switch
+        {
+            Core.Police.PoliceStage.Noticing => "注意",
+            Core.Police.PoliceStage.Warning => "警告",
+            Core.Police.PoliceStage.Pursuing => "追い出し",
             _ => "―",
         };
 

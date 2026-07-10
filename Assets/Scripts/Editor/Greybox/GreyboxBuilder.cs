@@ -9,6 +9,7 @@ using KyoumoMushoku.Gameplay.Foraging;
 using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.Items;
 using KyoumoMushoku.Gameplay.Player;
+using KyoumoMushoku.Gameplay.Police;
 using KyoumoMushoku.Gameplay.Rendering;
 using KyoumoMushoku.Gameplay.Session;
 using KyoumoMushoku.Gameplay.Survival;
@@ -28,8 +29,9 @@ namespace KyoumoMushoku.Editor.Greybox
     /// 8つの区域はすべて同一シーンに置く。移動時間そのものがソフトクロックを進めるため、
     /// 区域の切り替えにロードや瞬間移動を挟むと、設計上の圧力が失われる。
     ///
-    /// Phase 1 では、水源・就寝場所・病院・足場の物資、状態の HUD、SAN の退色を配線し、
-    /// 命題①（4状態・水源・飲食・死亡→病院・就寝セーブ・SAN の退色と情報機構）を実機で確かめる。
+    /// Phase 1 で水源・就寝場所・病院・状態の HUD・SAN の退色を、Phase 2 でゴミ箱3種を配線した。
+    /// Phase 3 は商業ゾーンを巡回する警官1名と警戒度の所有者を加え、
+    /// 命題③（警察の追い出しがプレッシャーを生み出せるか）を実機で確かめる。
     /// </summary>
     public static class GreyboxBuilder
     {
@@ -94,19 +96,24 @@ namespace KyoumoMushoku.Editor.Greybox
             // ゴミ箱は時計（昼夜・日替りのリポップ）に配線するため、システムを先に建てる。
             var clock = BuildSystems(schedule);
             BuildInteractables(white, spriteMaterial, catalog, loot, clock);
+            var officer = BuildPolice(white, spriteMaterial);
             BuildSessionAndGrade(clock, player);
             BuildCanvas(player, clock);
 
             var hud = clock.gameObject.AddComponent<PhaseZeroHud>();
             hud.Configure(clock, player.GetComponent<ZoneTracker>(), player.GetComponent<PlayerMotor>(), player.transform);
+            hud.ConfigurePolice(clock.GetComponent<ZoneAlertDirector>(), officer);
 
             EnsureAssetFolder("Assets/Scenes");
             EditorSceneManager.SaveScene(scene, ScenePath);
             RegisterSceneInBuildSettings();
 
             AssetDatabase.SaveAssets();
-            Debug.Log($"Phase 2 greybox built at {ScenePath}. A/D で歩く、Shift で走る、E で調べる／漁る、数字で飲食。");
+            Debug.Log($"Phase 3 greybox built at {ScenePath}. A/D で歩く、Shift で走る、E で調べる／漁る、数字で飲食。");
             Debug.Log("ゴミ箱は E で漁る（探索時間あり・歩くと中断）。夜のコンビニ前は弁当が出る。使い切ると翌日まで空。");
+            Debug.Log("コンビニ前を警官が巡回する。見られたまま漁り続けると 注意→警告→追い出し と進む。" +
+                      "走れば振り切れる（警官 6.5 < 走り 7.5）。地下通路は地上の警官から見えない。");
+            Debug.Log("公園のベンチで寝続けると顔を覚えられ、叩き起こされて回復が半減する。安宿では起こされない。");
             Debug.Log($"1日目は約 {schedule.ToSchedule().ForDay(1).SecondsUntilNight / 60f:F1} 分で夜に入る。");
         }
 
@@ -252,7 +259,66 @@ namespace KyoumoMushoku.Editor.Greybox
         {
             var clock = new GameObject("Systems").AddComponent<GameClockDriver>();
             clock.Configure(schedule);
+
+            // 警戒度の所有者。警官・就寝場所・GameSession がここを探して読む（第五節）。
+            clock.gameObject.AddComponent<ZoneAlertDirector>();
             return clock;
+        }
+
+        /// <summary>
+        /// 警官1名を商業ゾーンに置く。巡回の起点はコンビニ前（第十三節）であり、
+        /// ちょうど夜に弁当が出るゴミ箱 B（x=128）を見張る位置になる。
+        /// 追跡は自分のエリアの中に留まるため、エリアから離れれば逃げ切れる（第五節・第2段階）。
+        /// </summary>
+        static PoliceOfficer BuildPolice(Sprite white, Material material)
+        {
+            var root = new GameObject("Police").transform;
+
+            // 根は等倍のまま置く。姿は子が持ち、頭上の台詞が縦に引き伸ばされないようにする。
+            var officer = new GameObject("PoliceOfficer");
+            officer.transform.SetParent(root, false);
+            officer.transform.position = new Vector3(140f, FirstDistrictLayout.SurfaceY + 1.5f, 0f);
+
+            var body = MakeQuad("Body", white, material, new Color(0.25f, 0.3f, 0.55f), sortingOrder: 6);
+            body.transform.SetParent(officer.transform, false);
+            body.transform.localScale = new Vector3(1.2f, 3f, 1f);
+
+            var speech = MakeSpeech(officer.transform, new Vector3(0f, 2.4f, 0f));
+
+            var component = officer.AddComponent<PoliceOfficer>();
+            component.Configure(AlertZoneId.Commercial, patrolMinX: 116f, patrolMaxX: 146f, speech);
+            return component;
+        }
+
+        /// <summary>
+        /// 話者の頭上に出す世界空間の文字（第十四節）。画面上のトーストと違い、誰が言ったのかが分かる。
+        /// </summary>
+        static NpcSpeech MakeSpeech(Transform parent, Vector3 localPosition)
+        {
+            var go = new GameObject("Speech");
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = localPosition;
+
+            var text = go.AddComponent<TextMeshPro>();
+            var font = TMP_Settings.defaultFontAsset;
+            if (font != null)
+            {
+                text.font = font;
+            }
+
+            text.fontSize = 3f;
+            text.alignment = TextAlignmentOptions.Center;
+            text.color = Color.white;
+            text.rectTransform.sizeDelta = new Vector2(14f, 2.5f);
+
+            if (go.TryGetComponent(out MeshRenderer renderer))
+            {
+                renderer.sortingOrder = 40;
+            }
+
+            var speech = go.AddComponent<NpcSpeech>();
+            speech.Configure(text);
+            return speech;
         }
 
         static void BuildSessionAndGrade(GameClockDriver clock, GameObject player)
@@ -288,11 +354,15 @@ namespace KyoumoMushoku.Editor.Greybox
                 new Vector3(57f, FirstDistrictLayout.SurfaceY + 1f, 0f), new Color(0.45f, 0.55f, 0.55f));
             toilet.AddComponent<WaterSource>().Configure("トイレの水を飲む", thirstRestored: 35f, sanityCost: -6f);
 
-            // 公園のベンチ：静穏ゾーン。無料・回復控えめ。
+            // 公園のベンチ：静穏ゾーン。無料・回復控えめ。通い詰めると警官に顔を覚えられ、叩き起こされる。
             var bench = MakeInteractableMarker("SleepSpot_Bench", root, white, material,
                 new Vector3(10f, FirstDistrictLayout.SurfaceY + 1f, 0f), new Color(0.55f, 0.45f, 0.35f));
-            bench.AddComponent<SleepSpot>().Configure("bench_park", "ベンチで寝る", AlertZoneId.Quiet,
+            var benchSpot = bench.AddComponent<SleepSpot>();
+            benchSpot.Configure("bench_park", "ベンチで寝る", AlertZoneId.Quiet,
                 costYen: 0, fullRestore: false, hpRecovery: 20f, thirstRecovery: 0f, hungerRecovery: 0f, sanityRecovery: 10f);
+
+            // 台詞はベンチ本体の子にしない。本体は縦に引き伸ばされており、文字まで歪むためである。
+            benchSpot.BindSpeech(MakeSpeech(root, new Vector3(10f, FirstDistrictLayout.SurfaceY + 3.4f, 0f)));
 
             // 地下通路：生活ゾーン。無料だが SAN の回復が悪い。
             var underpass = MakeInteractableMarker("SleepSpot_Underpass", root, white, material,
