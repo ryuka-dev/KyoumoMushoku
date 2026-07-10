@@ -1,6 +1,7 @@
 using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.Session;
+using KyoumoMushoku.Gameplay.UI;
 using UnityEngine;
 
 namespace KyoumoMushoku.Gameplay.World
@@ -9,8 +10,9 @@ namespace KyoumoMushoku.Gameplay.World
     /// 就寝場所。ベンチ・地下通路・安宿の3種を1つの型で表す（第二節・第十三節）。
     /// 就寝すると日付が進み、就寝場所を問わずオートセーブされる。
     ///
-    /// 差別化は回復量だけでなく、属する警戒ゾーンにもある（第十三節）。ゾーンごとの帰結
-    /// （起こされる確率・保管庫イベント・段階進行）は Phase 3 以降がこの値を読む。
+    /// 差別化は回復量だけでなく、属する警戒ゾーンにもある（第十三節）。無料の就寝場所は
+    /// そのゾーンに顔を覚えさせ、静穏ゾーンではそれが叩き起こされる確率になる。
+    /// 生活ゾーンでの帰結（保管庫イベント）は Phase 5。
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
     public sealed class SleepSpot : MonoBehaviour, IInteractable, IRespawnPoint
@@ -32,6 +34,9 @@ namespace KyoumoMushoku.Gameplay.World
         [Tooltip("SAN の基準回復量。精神崩壊時は下がるが下限がある（第三節）。")]
         [SerializeField] float _sanityRecovery = 12f;
 
+        [Tooltip("叩き起こされたときに警官が言う台詞を出す口。無くても成立する。")]
+        [SerializeField] NpcSpeech _speech;
+
         GameSession _session;
 
         public string RespawnId => _respawnId;
@@ -45,7 +50,24 @@ namespace KyoumoMushoku.Gameplay.World
         public float HungerRecovery => _hungerRecovery;
         public float SanityRecovery => _sanityRecovery;
 
+        /// <summary>無料の寝床だけが顔を覚えられる。金を払う客は誰にも気に留められない（第五節）。</summary>
+        public bool IsFree => _costYen <= 0;
+
         public void BindSession(GameSession session) => _session = session;
+
+        public void BindSpeech(NpcSpeech speech) => _speech = speech;
+
+        /// <summary>
+        /// 叩き起こされた。見えない状態（静穏ゾーンの警戒度）が上がっていたことを、
+        /// 事後に世界の側が教える（第十四節の事後説明の表）。
+        /// </summary>
+        public void SayWokenByOfficer()
+        {
+            if (_speech != null)
+            {
+                _speech.Say("またお前か。");
+            }
+        }
 
         public void Configure(string respawnId, string label, AlertZoneId zone, int costYen, bool fullRestore,
             float hpRecovery, float thirstRecovery, float hungerRecovery, float sanityRecovery)

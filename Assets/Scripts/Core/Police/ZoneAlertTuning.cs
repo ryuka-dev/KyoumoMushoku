@@ -17,10 +17,13 @@ namespace KyoumoMushoku.Core.Police
         public const float CaptureRaise = 25f;
 
         /// <summary>
-        /// 静穏ゾーンの無料の就寝場所で寝ると、警官に顔を覚えられる。
-        /// 無料のベッドが自分自身を腐食していく（第五節）。
+        /// 無料の就寝場所で寝ると、そのゾーンに顔を覚えられる。無料のベッドが自分自身を腐食していく（第五節）。
+        /// 金を払って泊まる安宿では誰も気に留めない。
+        ///
+        /// これが3つの就寝場所を実質的に差別化する（第十三節）。ベンチに通い詰めれば起こされやすくなり、
+        /// 地下通路に通い詰めれば保管庫が危うくなる（後者の帰結は Phase 5）。
         /// </summary>
-        public const float QuietSleepRaise = 12f;
+        public const float FreeSleepRaise = 20f;
 
         /// <summary>
         /// 商業ゾーンで追われて生活ゾーンへ逃げ帰る行為は、生活ゾーンの警戒度への最大の入力である（第十三節）。
@@ -30,21 +33,26 @@ namespace KyoumoMushoku.Core.Police
 
         public static ZoneAlertTuning Default { get; } = new ZoneAlertTuning();
 
-        /// <summary>時間経過による毎秒の減衰。静穏は速く、商業は遅い（第五節）。</summary>
+        /// <summary>
+        /// 時間経過による毎秒の減衰。静穏は速く、商業は遅い（第五節）。
+        ///
+        /// 1日の昼と夕方は 240〜480 秒（<c>DayScheduleAsset</c>）。この尺度で選んである。
+        /// 速くしすぎると、一晩で覚えられた顔がその日のうちに忘れられ、警戒度が何も蓄積しない。
+        /// </summary>
         public float DecayPerSecond(AlertZoneId zone) => zone switch
         {
-            AlertZoneId.Quiet => 0.35f,
-            AlertZoneId.Residential => 0.15f,
-            AlertZoneId.Commercial => 0.05f,
+            AlertZoneId.Quiet => 0.015f,
+            AlertZoneId.Residential => 0.01f,
+            AlertZoneId.Commercial => 0.005f,
             _ => 0f,
         };
 
         /// <summary>就寝（日付の切り替わり）による減衰（第五節）。</summary>
         public float SleepDecay(AlertZoneId zone) => zone switch
         {
-            AlertZoneId.Quiet => 30f,
-            AlertZoneId.Residential => 15f,
-            AlertZoneId.Commercial => 8f,
+            AlertZoneId.Quiet => 4f,
+            AlertZoneId.Residential => 3f,
+            AlertZoneId.Commercial => 2f,
             _ => 0f,
         };
 

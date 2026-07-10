@@ -3,6 +3,7 @@ using KyoumoMushoku.Core.Persistence;
 using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Randomness;
 using KyoumoMushoku.Core.Survival;
+using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Economy;
 using KyoumoMushoku.Gameplay.Items;
@@ -118,17 +119,46 @@ namespace KyoumoMushoku.Gameplay.Session
                 return;
             }
 
-            ApplySleepRecovery(spot);
+            // 起こされるかどうかは、寝る前に既に覚えられていた顔で決まる。今夜の分はまだ数えない。
+            var woken = TryDisturbSleep(spot);
+
+            ApplySleepRecovery(spot, woken);
 
             // 日付の切り替わりは就寝の瞬間だけに起こる（第二節）。警戒度の減衰もここで行う。
             // 日付をポーリングしないのは、ロード時にも日付が変わって見え、二重に減衰するためである。
             _clock?.Clock?.BeginNextDay();
             _alerts?.BeginNextDay();
 
+            // 今夜ここで寝た、という事実は朝まで残る。だから減衰のあとに数える。
+            if (spot.IsFree)
+            {
+                _alerts?.Raise(spot.Zone, ZoneAlertTuning.FreeSleepRaise);
+            }
+
             Save(spot.RespawnId);
         }
 
-        void ApplySleepRecovery(SleepSpot spot)
+        /// <summary>
+        /// 静穏ゾーンの警戒度が駆動する唯一の事項：叩き起こされる確率（第五節）。
+        /// 地下通路（生活ゾーン）でプレイヤー自身が起こされることはない。危ういのは彼の財産のほうである。
+        /// </summary>
+        bool TryDisturbSleep(SleepSpot spot)
+        {
+            if (_alerts == null || !spot.IsFree || spot.Zone != AlertZoneId.Quiet)
+            {
+                return false;
+            }
+
+            if (!SleepDisturbance.Roll(_alerts.Level(AlertZoneId.Quiet), _rng))
+            {
+                return false;
+            }
+
+            spot.SayWokenByOfficer();
+            return true;
+        }
+
+        void ApplySleepRecovery(SleepSpot spot, bool woken)
         {
             var vitals = _vitals.Vitals;
 
@@ -145,13 +175,16 @@ namespace KyoumoMushoku.Gameplay.Session
                 return;
             }
 
+            // 叩き起こされた夜は休めていない。日付は進むが、身体は半分しか戻らない。
+            var scale = woken ? SleepDisturbance.WokenRecoveryScale : 1f;
+
             // SAN の回復だけは崩壊時に下がるが、下限を割らない（第三節）。
             vitals.Apply(new VitalsDelta
             {
-                Hp = spot.HpRecovery,
-                Thirst = spot.ThirstRecovery,
-                Hunger = spot.HungerRecovery,
-                Sanity = SanityScale.SleepRecovery(spot.SanityRecovery, vitals.Sanity),
+                Hp = spot.HpRecovery * scale,
+                Thirst = spot.ThirstRecovery * scale,
+                Hunger = spot.HungerRecovery * scale,
+                Sanity = SanityScale.SleepRecovery(spot.SanityRecovery, vitals.Sanity) * scale,
             });
         }
 
