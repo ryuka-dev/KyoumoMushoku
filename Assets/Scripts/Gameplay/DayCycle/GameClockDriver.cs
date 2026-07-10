@@ -13,6 +13,8 @@ namespace KyoumoMushoku.Gameplay.DayCycle
 
         public GameClock Clock { get; private set; }
 
+        public void Configure(DayScheduleAsset schedule) => _schedule = schedule;
+
         void Awake()
         {
             if (_schedule == null)

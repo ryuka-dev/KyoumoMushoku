@@ -35,11 +35,22 @@ namespace KyoumoMushoku.Editor.Greybox
                 return;
             }
 
-            var white = EnsureWhiteSprite();
-            var spriteMaterial = AssetDatabase.GetBuiltinExtraResource<Material>("Sprites-Default.mat");
-            var schedule = EnsureDaySchedule();
+            EnsureWhiteSpriteAsset();
+            EnsureDayScheduleAsset();
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            // シーンを切り替えると参照のないアセットは破棄される。
+            // したがってアセットの読み込みは必ず NewScene のあとに行う。
+            var white = AssetDatabase.LoadAssetAtPath<Sprite>(SpritePath);
+            var schedule = AssetDatabase.LoadAssetAtPath<DayScheduleAsset>(SchedulePath);
+            var spriteMaterial = AssetDatabase.GetBuiltinExtraResource<Material>("Sprites-Default.mat");
+
+            if (white == null || schedule == null || spriteMaterial == null)
+            {
+                Debug.LogError("Greybox build aborted: required assets could not be loaded after scene switch.");
+                return;
+            }
 
             var areasRoot = new GameObject("Areas").transform;
             EnsureAssetFolder(AreaPrefabFolder);
@@ -67,6 +78,7 @@ namespace KyoumoMushoku.Editor.Greybox
 
             AssetDatabase.SaveAssets();
             Debug.Log($"Phase 0 greybox built at {ScenePath}. Play, then A/D to walk, Shift to run, N to sleep.");
+            Debug.Log($"Day 1 reaches night after {schedule.ToSchedule().ForDay(1).SecondsUntilNight / 60f:F1} min.");
         }
 
         static void BuildArea(FirstDistrictLayout.Area area, Sprite white, Material material, Transform parent)
@@ -153,11 +165,7 @@ namespace KyoumoMushoku.Editor.Greybox
         static GameClockDriver BuildSystems(DayScheduleAsset schedule)
         {
             var clock = new GameObject("Systems").AddComponent<GameClockDriver>();
-
-            var so = new SerializedObject(clock);
-            so.FindProperty("_schedule").objectReferenceValue = schedule;
-            so.ApplyModifiedPropertiesWithoutUndo();
-
+            clock.Configure(schedule);
             return clock;
         }
 
@@ -221,12 +229,11 @@ namespace KyoumoMushoku.Editor.Greybox
             return go;
         }
 
-        static Sprite EnsureWhiteSprite()
+        static void EnsureWhiteSpriteAsset()
         {
-            var existing = AssetDatabase.LoadAssetAtPath<Sprite>(SpritePath);
-            if (existing != null)
+            if (AssetDatabase.LoadAssetAtPath<Sprite>(SpritePath) != null)
             {
-                return existing;
+                return;
             }
 
             EnsureAssetFolder(Path.GetDirectoryName(SpritePath)!.Replace('\\', '/'));
@@ -249,22 +256,18 @@ namespace KyoumoMushoku.Editor.Greybox
             importer.mipmapEnabled = false;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.SaveAndReimport();
-
-            return AssetDatabase.LoadAssetAtPath<Sprite>(SpritePath);
         }
 
-        static DayScheduleAsset EnsureDaySchedule()
+        static void EnsureDayScheduleAsset()
         {
-            var existing = AssetDatabase.LoadAssetAtPath<DayScheduleAsset>(SchedulePath);
-            if (existing != null)
+            if (AssetDatabase.LoadAssetAtPath<DayScheduleAsset>(SchedulePath) != null)
             {
-                return existing;
+                return;
             }
 
             EnsureAssetFolder(Path.GetDirectoryName(SchedulePath)!.Replace('\\', '/'));
-            var asset = ScriptableObject.CreateInstance<DayScheduleAsset>();
-            AssetDatabase.CreateAsset(asset, SchedulePath);
-            return asset;
+            AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<DayScheduleAsset>(), SchedulePath);
+            AssetDatabase.SaveAssets();
         }
 
         /// <summary>AssetDatabase が認識するフォルダを、途中の階層も含めて作る。</summary>
