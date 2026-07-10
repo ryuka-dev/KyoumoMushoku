@@ -1,6 +1,7 @@
 using System;
 using KyoumoMushoku.Core.DayCycle;
 using KyoumoMushoku.Core.Items;
+using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Survival;
 
 namespace KyoumoMushoku.Core.Persistence
@@ -15,13 +16,25 @@ namespace KyoumoMushoku.Core.Persistence
     [Serializable]
     public sealed class SaveGame
     {
-        public const int CurrentVersion = 1;
+        /// <summary>
+        /// 版 1：Phase 1〜2。時計・状態・カバン・所持金・就寝場所。
+        /// 版 2：Phase 3。警戒ゾーンごとの警戒度を加えた。版 1 は <see cref="SaveGameMigration"/> が引き上げる。
+        /// </summary>
+        public const int CurrentVersion = 2;
+
+        public const int OldestSupportedVersion = 1;
 
         public int Version = CurrentVersion;
 
         public GameClockState Clock = new GameClockState();
         public VitalsState Vitals = new VitalsState();
         public InventoryState Inventory = new InventoryState();
+
+        /// <summary>
+        /// 警戒度は日をまたいで残る（第五節）。同じベンチで寝続けると顔を覚えられる、という
+        /// 仕様はここが永続しなければ成立しない。
+        /// </summary>
+        public ZoneAlertState ZoneAlerts = new ZoneAlertState();
 
         public int WalletYen;
 

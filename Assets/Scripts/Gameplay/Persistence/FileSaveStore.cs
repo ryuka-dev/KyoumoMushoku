@@ -60,6 +60,12 @@ namespace KyoumoMushoku.Gameplay.Persistence
                 return false;
             }
 
+            // 古い版は検証の前に引き上げる。検証が見るのは常に現在の版である。
+            if (!SaveGameMigration.TryUpgrade(parsed, out error))
+            {
+                return false;
+            }
+
             if (!SaveGameValidation.TryValidate(parsed, out error))
             {
                 return false;
