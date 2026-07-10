@@ -3,7 +3,6 @@ using System.Linq;
 using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Diagnostics;
 using KyoumoMushoku.Gameplay.Player;
-using KyoumoMushoku.Gameplay.Scaffolding;
 using KyoumoMushoku.Gameplay.World;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -71,8 +70,6 @@ namespace KyoumoMushoku.Editor.Greybox
 
             var hud = clock.gameObject.AddComponent<PhaseZeroHud>();
             hud.Configure(clock, player.GetComponent<ZoneTracker>(), player.GetComponent<PlayerMotor>(), player.transform);
-
-            clock.gameObject.AddComponent<PhaseZeroSleepKey>().Configure(clock);
 
             EnsureAssetFolder("Assets/Scenes");
             EditorSceneManager.SaveScene(scene, ScenePath);

@@ -32,10 +32,15 @@ namespace KyoumoMushoku.Gameplay.DayCycle
             Clock?.Advance(Time.deltaTime);
         }
 
-        /// <summary>就寝して日付を進める。就寝場所を問わず、ここでオートセーブする（Phase 1）。</summary>
-        public void Sleep()
+        /// <summary>セーブデータから時計を復元する。ロードの単一の所有者（<c>GameSession</c>）だけが呼ぶ。</summary>
+        public void RestoreState(GameClockState state)
         {
-            Clock?.BeginNextDay();
+            if (_schedule == null)
+            {
+                return;
+            }
+
+            Clock = new GameClock(_schedule.ToSchedule(), state);
         }
     }
 }
