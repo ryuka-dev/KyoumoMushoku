@@ -113,7 +113,7 @@ namespace KyoumoMushoku.Editor.Greybox
             Debug.Log("ゴミ箱は E で漁る（探索時間あり・歩くと中断）。夜のコンビニ前は弁当が出る。使い切ると翌日まで空。");
             Debug.Log("コンビニ前を警官が巡回する。見られたまま漁り続けると 注意→警告→追い出し と進む。" +
                       "走れば振り切れる（警官 6.5 < 走り 7.5）。地下通路は地上の警官から見えない。");
-            Debug.Log("公園のベンチで寝続けると顔を覚えられ、叩き起こされて回復が半減する。安宿では起こされない。");
+            Debug.Log("公園のベンチで寝続けると近隣の苦情でベンチが撤去される。まず苦情の貼り紙が予告として出る。数日で戻る。安宿は影響を受けない。");
             Debug.Log($"1日目は約 {schedule.ToSchedule().ForDay(1).SecondsUntilNight / 60f:F1} 分で夜に入る。");
         }
 
@@ -321,6 +321,36 @@ namespace KyoumoMushoku.Editor.Greybox
             return speech;
         }
 
+        /// <summary>
+        /// 世界の中に貼り出される常設のラベル（貼り紙・撤去の告知）。NpcSpeech と違い自動で消えず、
+        /// <see cref="SleepSpot"/> が状態に応じて文言を出し入れする（第五節・第十四節）。
+        /// </summary>
+        static TMP_Text MakeNotice(Transform parent, Vector3 localPosition)
+        {
+            var go = new GameObject("Notice");
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = localPosition;
+
+            var text = go.AddComponent<TextMeshPro>();
+            var font = TMP_Settings.defaultFontAsset;
+            if (font != null)
+            {
+                text.font = font;
+            }
+
+            text.fontSize = 2.4f;
+            text.alignment = TextAlignmentOptions.Center;
+            text.color = new Color(0.95f, 0.85f, 0.4f);
+            text.rectTransform.sizeDelta = new Vector2(16f, 2f);
+
+            if (go.TryGetComponent(out MeshRenderer renderer))
+            {
+                renderer.sortingOrder = 40;
+            }
+
+            return text;
+        }
+
         static void BuildSessionAndGrade(GameClockDriver clock, GameObject player)
         {
             var session = clock.gameObject.AddComponent<GameSession>();
@@ -354,15 +384,15 @@ namespace KyoumoMushoku.Editor.Greybox
                 new Vector3(57f, FirstDistrictLayout.SurfaceY + 1f, 0f), new Color(0.45f, 0.55f, 0.55f));
             toilet.AddComponent<WaterSource>().Configure("トイレの水を飲む", thirstRestored: 35f, sanityCost: -6f);
 
-            // 公園のベンチ：静穏ゾーン。無料・回復控えめ。通い詰めると警官に顔を覚えられ、叩き起こされる。
+            // 公園のベンチ：静穏ゾーン。無料・回復控えめ。通い詰めると近隣の苦情でベンチが撤去される（第五節）。
             var bench = MakeInteractableMarker("SleepSpot_Bench", root, white, material,
                 new Vector3(10f, FirstDistrictLayout.SurfaceY + 1f, 0f), new Color(0.55f, 0.45f, 0.35f));
             var benchSpot = bench.AddComponent<SleepSpot>();
             benchSpot.Configure("bench_park", "ベンチで寝る", AlertZoneId.Quiet,
                 costYen: 0, fullRestore: false, hpRecovery: 20f, thirstRecovery: 0f, hungerRecovery: 0f, sanityRecovery: 10f);
 
-            // 台詞はベンチ本体の子にしない。本体は縦に引き伸ばされており、文字まで歪むためである。
-            benchSpot.BindSpeech(MakeSpeech(root, new Vector3(10f, FirstDistrictLayout.SurfaceY + 3.4f, 0f)));
+            // 苦情の貼り紙・撤去を示すラベル。ベンチ本体の子にしない。本体は縦に引き伸ばされており、文字まで歪むためである。
+            benchSpot.BindNotice(MakeNotice(root, new Vector3(10f, FirstDistrictLayout.SurfaceY + 3.4f, 0f)));
 
             // 地下通路：生活ゾーン。無料だが SAN の回復が悪い。
             var underpass = MakeInteractableMarker("SleepSpot_Underpass", root, white, material,

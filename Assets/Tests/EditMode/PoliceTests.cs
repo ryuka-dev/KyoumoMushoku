@@ -310,35 +310,42 @@ namespace KyoumoMushoku.Core.Tests
         }
     }
 
-    public sealed class SleepDisturbanceTests
+    public sealed class SleepSpotClosureTests
     {
         [Test]
-        public void Probability_RisesWithQuietAlert()
+        public void For_CrossesOpenWarnedRemoved()
         {
-            Assert.AreEqual(0f, SleepDisturbance.Probability(0f), 1e-4f);
-            Assert.AreEqual(SleepDisturbance.MaxProbability * 0.5f, SleepDisturbance.Probability(50f), 1e-4f);
-            Assert.AreEqual(SleepDisturbance.MaxProbability, SleepDisturbance.Probability(100f), 1e-4f);
+            Assert.AreEqual(SleepSpotState.Open, SleepSpotClosure.For(0f));
+            Assert.AreEqual(SleepSpotState.Open, SleepSpotClosure.For(SleepSpotClosure.WarnThreshold - 0.1f));
+            Assert.AreEqual(SleepSpotState.Warned, SleepSpotClosure.For(SleepSpotClosure.WarnThreshold));
+            Assert.AreEqual(SleepSpotState.Warned, SleepSpotClosure.For(SleepSpotClosure.RemoveThreshold - 0.1f));
+            Assert.AreEqual(SleepSpotState.Removed, SleepSpotClosure.For(SleepSpotClosure.RemoveThreshold));
         }
 
         [Test]
-        public void Probability_IsClampedAtBothEnds()
+        public void For_TheWarningComesBeforeTheRemoval()
         {
-            Assert.AreEqual(0f, SleepDisturbance.Probability(-10f), 1e-4f);
-            Assert.AreEqual(SleepDisturbance.MaxProbability, SleepDisturbance.Probability(999f), 1e-4f);
+            // 撤去は突然ではない。まず貼り紙（Warned）が予告として出る（第十四節）。
+            Assert.Less(SleepSpotClosure.WarnThreshold, SleepSpotClosure.RemoveThreshold);
         }
 
         [Test]
-        public void Roll_NeverWakesWhenNobodyKnowsYourFace()
+        public void For_IsMonotonicInAlert()
         {
-            Assert.IsFalse(SleepDisturbance.Roll(0f, new ScriptedRng(0d)));
+            // 警戒度が上がって閉鎖が緩むことはない。
+            var previous = SleepSpotState.Open;
+            for (var alert = 0f; alert <= 100f; alert += 5f)
+            {
+                var state = SleepSpotClosure.For(alert);
+                Assert.GreaterOrEqual((int)state, (int)previous);
+                previous = state;
+            }
         }
 
         [Test]
-        public void Roll_MaxAlert_StillLeavesRoomToSleep()
+        public void For_NobodyComplaining_LeavesTheBenchOpen()
         {
-            // 警戒度が満杯でも必ず起こされるわけではない。
-            Assert.IsTrue(SleepDisturbance.Roll(100f, new ScriptedRng(0.5d)));
-            Assert.IsFalse(SleepDisturbance.Roll(100f, new ScriptedRng(0.95d)));
+            Assert.AreEqual(SleepSpotState.Open, SleepSpotClosure.For(0f));
         }
     }
 }

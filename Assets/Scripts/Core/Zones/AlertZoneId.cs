@@ -10,7 +10,7 @@ namespace KyoumoMushoku.Core.Zones
         /// <summary>どのゾーンにも属さない。</summary>
         None = 0,
 
-        /// <summary>静穏：公園・公衆トイレ・病院。就寝時に叩き起こされる確率を駆動する。</summary>
+        /// <summary>静穏：公園・公衆トイレ・病院。無料の就寝場所の撤去（敵対的建築）を駆動する。</summary>
         Quiet = 1,
 
         /// <summary>生活：路地裏・地下通路。保管庫イベントの発生確率を駆動する。</summary>
