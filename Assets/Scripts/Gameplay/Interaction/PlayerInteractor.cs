@@ -35,6 +35,12 @@ namespace KyoumoMushoku.Gameplay.Interaction
         /// <summary>いま時間のかかる調べもの（漁りなど）の最中か。</summary>
         public bool IsChanneling => _channeling != null;
 
+        /// <summary>
+        /// いま最中の調べもの。何もしていなければ null。
+        /// 「プレイヤーがいま何をしているか」の canonical な出所であり、警官はここを観測する。
+        /// </summary>
+        public IChanneledInteractable Channeling => _channeling;
+
         /// <summary>チャネルの進捗（0〜1）。チャネル中でなければ 0。</summary>
         public float ChannelProgress => _channeling != null && _channelSeconds > 0f
             ? Mathf.Clamp01(_channelElapsed / _channelSeconds)

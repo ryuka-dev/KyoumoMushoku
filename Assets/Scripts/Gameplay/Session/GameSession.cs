@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using KyoumoMushoku.Core.Persistence;
+using KyoumoMushoku.Core.Police;
+using KyoumoMushoku.Core.Randomness;
 using KyoumoMushoku.Core.Survival;
 using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Economy;
 using KyoumoMushoku.Gameplay.Items;
 using KyoumoMushoku.Gameplay.Persistence;
+using KyoumoMushoku.Gameplay.Police;
 using KyoumoMushoku.Gameplay.Survival;
 using KyoumoMushoku.Gameplay.World;
 using UnityEngine;
@@ -30,12 +33,16 @@ namespace KyoumoMushoku.Gameplay.Session
         PlayerWallet _wallet;
         PlayerInventory _inventory;
         Hospital _hospital;
+        ZoneAlertDirector _alerts;
+        IRng _rng;
 
         public void Configure(GameClockDriver clock, Transform player) => (_clock, _player) = (clock, player);
 
         void Awake()
         {
             _store ??= new FileSaveStore();
+            _rng ??= new SystemRng();
+            _alerts = FindFirstObjectByType<ZoneAlertDirector>();
 
             if (_player == null && _vitals == null)
             {
@@ -112,7 +119,12 @@ namespace KyoumoMushoku.Gameplay.Session
             }
 
             ApplySleepRecovery(spot);
+
+            // 日付の切り替わりは就寝の瞬間だけに起こる（第二節）。警戒度の減衰もここで行う。
+            // 日付をポーリングしないのは、ロード時にも日付が変わって見え、二重に減衰するためである。
             _clock?.Clock?.BeginNextDay();
+            _alerts?.BeginNextDay();
+
             Save(spot.RespawnId);
         }
 
@@ -157,8 +169,9 @@ namespace KyoumoMushoku.Gameplay.Session
             vitals.Apply(new VitalsDelta { Sanity = -sanityLoss });
             vitals.Revive();
 
-            // 腐敗品・違法品の没収は警察の没収ルールを流用する（第三節）。そのルールは Phase 3 で入るため、
-            // ここでは新規の没収ロジックを作らず、Phase 3 で合流させる。
+            // 腐敗品の没収は警察の没収ルールを流用する（第三節）。取り上げられるという同じ出来事に、
+            // 2つの規則を持たせない。
+            Confiscate();
 
             if (_hospital != null)
             {
@@ -166,6 +179,24 @@ namespace KyoumoMushoku.Gameplay.Session
             }
 
             // 死亡はセーブ地点ではない。ここではセーブしない。
+        }
+
+        /// <summary>腐敗した食品の一部を取り上げられる。規則は警察と共通（<see cref="Confiscation"/>）。</summary>
+        void Confiscate()
+        {
+            if (_inventory == null || _inventory.Inventory == null || _inventory.Catalog == null)
+            {
+                return;
+            }
+
+            var inventory = _inventory.Inventory;
+            var seized = Confiscation.SelectSeized(inventory.Items, _inventory.Catalog, _rng);
+
+            // 索引は降順なので、この順に抜けばずれない。
+            foreach (var index in seized)
+            {
+                inventory.TryRemoveAt(index, out _);
+            }
         }
 
         void LoadOrBeginAnew()
@@ -190,6 +221,7 @@ namespace KyoumoMushoku.Gameplay.Session
             _wallet?.RestoreState(save.WalletYen);
             _inventory?.RestoreState(save.Inventory);
             _clock?.RestoreState(save.Clock);
+            _alerts?.RestoreState(save.ZoneAlerts);
 
             if (!string.IsNullOrEmpty(save.SleepSpotId) &&
                 _respawnPoints.TryGetValue(save.SleepSpotId, out var point))
@@ -211,6 +243,7 @@ namespace KyoumoMushoku.Gameplay.Session
                 Clock = _clock != null && _clock.Clock != null ? _clock.Clock.CaptureState() : new Core.DayCycle.GameClockState(),
                 Vitals = _vitals != null ? _vitals.Vitals.CaptureState() : new VitalsState(),
                 Inventory = _inventory != null ? _inventory.Inventory.CaptureState() : new Core.Items.InventoryState(),
+                ZoneAlerts = _alerts != null ? _alerts.CaptureState() : new ZoneAlertState(),
                 WalletYen = _wallet != null ? _wallet.Wallet.Yen : 0,
                 SleepSpotId = sleepSpotId ?? string.Empty,
             };

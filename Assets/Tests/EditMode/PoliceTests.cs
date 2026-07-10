@@ -194,6 +194,23 @@ namespace KyoumoMushoku.Core.Tests
                 PoliceEscalation.Relax(100f, 1f), 1e-4f);
             Assert.AreEqual(0f, PoliceEscalation.Relax(10f, 100f), 1e-4f);
         }
+
+        [Test]
+        public void NextStage_OnceStarted_ThePursuitEndsOnlyWhenFullyCooled()
+        {
+            // 閾値の上を往復させない。追われている状態は、逃げ切って初めて終わる。
+            Assert.AreEqual(PoliceStage.Pursuing, PoliceEscalation.NextStage(PoliceStage.Pursuing, 99f));
+            Assert.AreEqual(PoliceStage.Pursuing, PoliceEscalation.NextStage(PoliceStage.Pursuing, 1f));
+            Assert.AreEqual(PoliceStage.Unaware, PoliceEscalation.NextStage(PoliceStage.Pursuing, 0f));
+        }
+
+        [Test]
+        public void NextStage_BelowPursuit_FollowsThePlainThresholds()
+        {
+            Assert.AreEqual(PoliceStage.Warning, PoliceEscalation.NextStage(PoliceStage.Noticing, 70f));
+            Assert.AreEqual(PoliceStage.Noticing, PoliceEscalation.NextStage(PoliceStage.Warning, 30f));
+            Assert.AreEqual(PoliceStage.Pursuing, PoliceEscalation.NextStage(PoliceStage.Warning, 100f));
+        }
     }
 
     public sealed class ConfiscationTests

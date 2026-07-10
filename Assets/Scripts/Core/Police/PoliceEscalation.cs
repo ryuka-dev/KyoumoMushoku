@@ -42,6 +42,22 @@ namespace KyoumoMushoku.Core.Police
         }
 
         /// <summary>
+        /// 一度始まった追跡は、注目度が完全に冷めるまで終わらない。
+        ///
+        /// これがないと、注目度が閾値をわずかに下回った瞬間に警官が追跡をやめ、境界の上で
+        /// 追跡と警告を往復してしまう。「追われている」という状態は、逃げ切って初めて終わる。
+        /// </summary>
+        public static PoliceStage NextStage(PoliceStage current, float suspicion)
+        {
+            if (current != PoliceStage.Pursuing)
+            {
+                return StageFor(suspicion);
+            }
+
+            return suspicion <= MinSuspicion ? PoliceStage.Unaware : PoliceStage.Pursuing;
+        }
+
+        /// <summary>
         /// 段階進行の速さに掛かる倍率。商業ゾーンの警戒度だけがこれを駆動する（第五節・第十三節）。
         /// 警戒度 100 で 2 倍速。他のゾーンの警戒度は段階進行に影響しない。
         /// </summary>

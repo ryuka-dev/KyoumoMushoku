@@ -4,6 +4,7 @@ using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Randomness;
 using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Interaction;
+using KyoumoMushoku.Gameplay.Police;
 using UnityEngine;
 
 namespace KyoumoMushoku.Gameplay.Foraging
@@ -18,10 +19,11 @@ namespace KyoumoMushoku.Gameplay.Foraging
     /// 依存しない。ロード直後は新しい1日の始まりなので、満タンで目覚めるのが正しい。
     ///
     /// 漁りは <see cref="IChanneledInteractable"/> であり、完了までに探索時間を要する。途中で歩き出せば
-    /// 中断し、そのときは何も消費しない。この「完了までの間」に、後の段階（警官の警告・Phase 3）が載る。
+    /// 中断し、そのときは何も消費しない。この「完了までの間」に警官の警告が載る（第五節）。
+    /// 漁る姿は目立つため、<see cref="ISuspiciousAct"/> として注目度を供給する。
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
-    public sealed class TrashCan : MonoBehaviour, IChanneledInteractable
+    public sealed class TrashCan : MonoBehaviour, IChanneledInteractable, ISuspiciousAct
     {
         [SerializeField] TrashCanKind _kind = TrashCanKind.Park;
         [SerializeField] TrashCanLootAsset _loot;
@@ -32,6 +34,9 @@ namespace KyoumoMushoku.Gameplay.Foraging
 
         [Tooltip("1回の漁りにかかる秒数。大型のゴミ箱ほど長い。叩き台。")]
         [SerializeField, Min(0.1f)] float _rummageSeconds = 2f;
+
+        [Tooltip("漁っている姿を見られている間、毎秒どれだけ注目度が上がるか。叩き台。")]
+        [SerializeField, Min(0f)] float _suspicionPerSecond = 18f;
 
         [SerializeField] Color _fullTint = new Color(0.55f, 0.5f, 0.35f);
         [SerializeField] Color _depletedTint = new Color(0.32f, 0.32f, 0.32f);
@@ -75,6 +80,9 @@ namespace KyoumoMushoku.Gameplay.Foraging
                 ApplyTint();
             }
         }
+
+        /// <summary>ゴミ箱を漁る姿は目立つ（第五節・第1段階）。</summary>
+        public float SuspicionPerSecond => _suspicionPerSecond;
 
         bool IsNight => _clock != null && _clock.Clock != null && _clock.Clock.Phase == DayPhase.Night;
 

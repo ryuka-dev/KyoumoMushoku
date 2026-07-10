@@ -7,7 +7,7 @@ namespace KyoumoMushoku.Gameplay.World
 {
     /// <summary>
     /// プレイヤーが今どの警戒ゾーンにいるかを報告する。
-    /// 警戒度そのものは保持しない（Phase 3 で導入する）。
+    /// 警戒度そのものは保持しない。所有者は <c>ZoneAlertDirector</c> である。
     /// </summary>
     public sealed class ZoneTracker : MonoBehaviour
     {
