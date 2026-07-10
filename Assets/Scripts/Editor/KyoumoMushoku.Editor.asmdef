@@ -1,0 +1,19 @@
+{
+    "name": "KyoumoMushoku.Editor",
+    "rootNamespace": "KyoumoMushoku.Editor",
+    "references": [
+        "KyoumoMushoku.Core",
+        "KyoumoMushoku.Gameplay"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

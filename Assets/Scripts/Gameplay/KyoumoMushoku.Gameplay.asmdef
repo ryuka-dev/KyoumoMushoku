@@ -1,0 +1,17 @@
+{
+    "name": "KyoumoMushoku.Gameplay",
+    "rootNamespace": "KyoumoMushoku.Gameplay",
+    "references": [
+        "KyoumoMushoku.Core",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
