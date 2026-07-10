@@ -23,7 +23,8 @@ namespace KyoumoMushoku.Editor.Greybox
         const string SpritePath = "Assets/Art/Greybox/White.png";
         const string AreaPrefabFolder = "Assets/Prefabs/Areas";
 
-        const float BackdropHeight = 14f;
+        // 背景板は地面際の低い壁に留める。高くすると奥行きの層を覆い隠してしまう。
+        const float BackdropHeight = 3.5f;
         const float GroundThickness = 2f;
         const float ZoneVolumeHeight = 12f;
 
@@ -59,6 +60,7 @@ namespace KyoumoMushoku.Editor.Greybox
                 BuildArea(area, white, spriteMaterial, areasRoot);
             }
 
+            BuildParallaxLayers(white, spriteMaterial);
             BuildWorldEdges(white, spriteMaterial);
 
             var player = BuildPlayer(white, spriteMaterial);
@@ -154,12 +156,59 @@ namespace KyoumoMushoku.Editor.Greybox
         {
             var go = new GameObject("Main Camera") { tag = "MainCamera" };
             var camera = go.AddComponent<Camera>();
-            camera.orthographic = true;
-            camera.orthographicSize = 6f;
+
+            // 透視投影にすることで、奥行きの層の視差がカメラの移動だけで自動的に生じる。
+            // 距離は、プレイ面（Z=0）が従来の正投影と同じ高さで映るように決める。
+            camera.orthographic = false;
+            camera.fieldOfView = FirstDistrictLayout.CameraFieldOfView;
+            camera.nearClipPlane = 0.3f;
+            camera.farClipPlane = 200f;
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = new Color(0.10f, 0.11f, 0.13f);
-            go.transform.position = new Vector3(target.position.x, target.position.y + 2f, -10f);
+
+            var distance = FirstDistrictLayout.CameraVerticalHalfExtent /
+                           Mathf.Tan(FirstDistrictLayout.CameraFieldOfView * 0.5f * Mathf.Deg2Rad);
+
+            go.transform.position = new Vector3(target.position.x, target.position.y + 2f, -distance);
             go.AddComponent<CameraFollow>().Configure(target);
+        }
+
+        /// <summary>
+        /// 奥行きの層を色板で組む。視差が本当に成立するかを、美術を一枚も描かずに確かめるための探り。
+        /// </summary>
+        static void BuildParallaxLayers(Sprite white, Material material)
+        {
+            var root = new GameObject("Parallax").transform;
+
+            foreach (var layer in FirstDistrictLayout.Layers)
+            {
+                var layerRoot = new GameObject(layer.Name).transform;
+                layerRoot.SetParent(root, false);
+
+                var span = FirstDistrictLayout.WorldWidth * layer.SpanScale;
+                var start = FirstDistrictLayout.WorldCenterX - span * 0.5f;
+                var count = Mathf.CeilToInt(span / layer.Spacing);
+
+                for (var i = 0; i < count; i++)
+                {
+                    var height = Mathf.Lerp(layer.MinHeight, layer.MaxHeight, DeterministicNoise(i, layer.Name));
+                    var block = MakeQuad($"{layer.Name}_{i}", white, material, layer.Tint, layer.SortingOrder);
+                    block.transform.SetParent(layerRoot, false);
+                    block.transform.position = new Vector3(
+                        start + i * layer.Spacing,
+                        FirstDistrictLayout.SurfaceY + height * 0.5f,
+                        layer.Z);
+                    block.transform.localScale = new Vector3(layer.Width, height, 1f);
+                }
+            }
+        }
+
+        /// <summary>ビルの高さを毎回同じにするための、乱数を使わない擬似ノイズ。</summary>
+        static float DeterministicNoise(int index, string salt)
+        {
+            var seed = index * 12.9898f + salt.Length * 78.233f;
+            var value = Mathf.Sin(seed) * 43758.5453f;
+            return Mathf.Abs(value - Mathf.Floor(value));
         }
 
         static GameClockDriver BuildSystems(DayScheduleAsset schedule)

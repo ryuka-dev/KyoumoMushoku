@@ -58,5 +58,55 @@ namespace KyoumoMushoku.Editor.Greybox
 
         public const float WorldLeftEdge = -35f;
         public const float WorldRightEdge = 230f;
+        public static float WorldCenterX => (WorldLeftEdge + WorldRightEdge) * 0.5f;
+        public static float WorldWidth => WorldRightEdge - WorldLeftEdge;
+
+        /// <summary>
+        /// 透視カメラの垂直半画角が捉えるプレイ面（Z=0）の高さ。従来の正投影サイズと同じ値。
+        /// </summary>
+        public const float CameraVerticalHalfExtent = 6f;
+
+        public const float CameraFieldOfView = 30f;
+
+        /// <summary>
+        /// 奥行きの層。プレイ面より奥（Z が正）ほど視差が遅く、小さく見える。
+        /// いずれも像面に平行な平面スプライトであり、傾いて見えることはない。
+        /// 得られるのは視差と縮尺であって、ジオラマの体積ではない。
+        /// </summary>
+        public readonly struct ParallaxLayer
+        {
+            public readonly string Name;
+            public readonly float Z;
+            public readonly int SortingOrder;
+            public readonly float SpanScale;
+            public readonly float Spacing;
+            public readonly float Width;
+            public readonly float MinHeight;
+            public readonly float MaxHeight;
+            public readonly Color Tint;
+
+            public ParallaxLayer(string name, float z, int sortingOrder, float spanScale,
+                float spacing, float width, float minHeight, float maxHeight, Color tint)
+            {
+                Name = name;
+                Z = z;
+                SortingOrder = sortingOrder;
+                SpanScale = spanScale;
+                Spacing = spacing;
+                Width = width;
+                MinHeight = minHeight;
+                MaxHeight = maxHeight;
+                Tint = tint;
+            }
+        }
+
+        public static readonly ParallaxLayer[] Layers =
+        {
+            new("Far", 30f, -30, 1.9f, 19f, 13f, 12f, 28f, new Color(0.17f, 0.19f, 0.26f)),
+            new("Mid", 12f, -20, 1.5f, 13f, 9f, 7f, 17f, new Color(0.24f, 0.26f, 0.34f)),
+
+            // 前景はプレイヤーより手前に描かれ、視界を横切る。
+            new("Fore", -8f, 20, 1.05f, 37f, 1.4f, 7f, 7f, new Color(0.07f, 0.07f, 0.09f)),
+        };
     }
 }
