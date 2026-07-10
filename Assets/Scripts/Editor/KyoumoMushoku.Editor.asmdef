@@ -3,7 +3,8 @@
     "rootNamespace": "KyoumoMushoku.Editor",
     "references": [
         "KyoumoMushoku.Core",
-        "KyoumoMushoku.Gameplay"
+        "KyoumoMushoku.Gameplay",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [
         "Editor"
