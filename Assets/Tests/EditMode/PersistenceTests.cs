@@ -1,4 +1,5 @@
 using KyoumoMushoku.Core.Economy;
+using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Persistence;
 using KyoumoMushoku.Core.Police;
@@ -122,6 +123,49 @@ namespace KyoumoMushoku.Core.Tests
         }
 
         [Test]
+        public void Stashes_AreTreatedAsUntrustedInput()
+        {
+            var unknownKind = new SaveGame();
+            unknownKind.Stashes.Add(new StashState { SpotId = "s", Kind = (StashKind)999, Capacity = 12 });
+            Assert.IsFalse(SaveGameValidation.TryValidate(unknownKind, out var kindError));
+            StringAssert.Contains("未知の種別", kindError);
+
+            var badCapacity = new SaveGame();
+            badCapacity.Stashes.Add(new StashState { SpotId = "s", Capacity = 0 });
+            Assert.IsFalse(SaveGameValidation.TryValidate(badCapacity, out var capacityError));
+            StringAssert.Contains("容量", capacityError);
+
+            var noId = new SaveGame();
+            noId.Stashes.Add(new StashState { SpotId = string.Empty, Capacity = 12 });
+            Assert.IsFalse(SaveGameValidation.TryValidate(noId, out var idError));
+            StringAssert.Contains("識別子", idError);
+
+            var duplicated = new SaveGame();
+            duplicated.Stashes.Add(new StashState { SpotId = "s", Capacity = 12 });
+            duplicated.Stashes.Add(new StashState { SpotId = "s", Capacity = 12 });
+            Assert.IsFalse(SaveGameValidation.TryValidate(duplicated, out var dupError));
+            StringAssert.Contains("二度", dupError);
+
+            var brokenEntry = new SaveGame();
+            brokenEntry.Stashes.Add(new StashState { SpotId = "s", Capacity = 12, Items = null });
+            Assert.IsFalse(SaveGameValidation.TryValidate(brokenEntry, out _));
+
+            var missingStructure = new SaveGame { Stashes = null };
+            Assert.IsFalse(SaveGameValidation.TryValidate(missingStructure, out _));
+        }
+
+        [Test]
+        public void AValidStash_IsAccepted()
+        {
+            var save = new SaveGame();
+            var stash = new StashState { SpotId = "stash_backalley", Kind = StashKind.CardboardBox, Capacity = 12 };
+            stash.Items.Add(new ItemInstance(new ItemId("onigiri")));
+            save.Stashes.Add(stash);
+
+            Assert.IsTrue(SaveGameValidation.TryValidate(save, out var error), error);
+        }
+
+        [Test]
         public void AValidPartialKnackState_IsAccepted()
         {
             var save = new SaveGame();
@@ -199,6 +243,23 @@ namespace KyoumoMushoku.Core.Tests
             Assert.AreEqual(SaveGame.CurrentVersion, save.Version);
             Assert.IsNotNull(save.CarrySlot);
             Assert.IsFalse(save.CarrySlot.Occupied, "版 3 の世界では誰も段ボールを担いでいなかった。");
+            Assert.AreEqual(1, save.Knacks.Acquired.Count, "コツは引き上げで失われない。");
+            Assert.IsTrue(SaveGameValidation.TryValidate(save, out var validationError), validationError);
+        }
+
+        [Test]
+        public void Version4_IsUpgradedWithNoStashYet()
+        {
+            var save = new SaveGame { Version = 4, Stashes = null };
+            save.Knacks.Acquired.Add(KnackId.IronStomach);
+            save.CarrySlot.Occupied = true;
+            save.CarrySlot.Item = new ItemInstance(new ItemId("cardboard"));
+
+            Assert.IsTrue(SaveGameMigration.TryUpgrade(save, out var error), error);
+            Assert.AreEqual(SaveGame.CurrentVersion, save.Version);
+            Assert.IsNotNull(save.Stashes);
+            Assert.AreEqual(0, save.Stashes.Count, "版 4 の世界には保管庫がまだ存在しなかった。");
+            Assert.IsTrue(save.CarrySlot.Occupied, "背負い物は引き上げで失われない。");
             Assert.AreEqual(1, save.Knacks.Acquired.Count, "コツは引き上げで失われない。");
             Assert.IsTrue(SaveGameValidation.TryValidate(save, out var validationError), validationError);
         }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Police;
@@ -51,6 +52,11 @@ namespace KyoumoMushoku.Core.Persistence
                 UpgradeFrom3To4(save);
             }
 
+            if (save.Version == 4)
+            {
+                UpgradeFrom4To5(save);
+            }
+
             error = null;
             return true;
         }
@@ -80,6 +86,16 @@ namespace KyoumoMushoku.Core.Persistence
         {
             save.CarrySlot = new CarrySlotState();
             save.Version = 4;
+        }
+
+        /// <summary>
+        /// 版 4 は保管庫という概念を持たない。まだどこにも財産を置いていない状態、すなわち保管庫なしとして引き上げる。
+        /// これは実際に版 4 が表していた世界と一致する（拠点に置く器はまだ存在しなかった）。
+        /// </summary>
+        static void UpgradeFrom4To5(SaveGame save)
+        {
+            save.Stashes = new List<StashState>();
+            save.Version = 5;
         }
     }
 }

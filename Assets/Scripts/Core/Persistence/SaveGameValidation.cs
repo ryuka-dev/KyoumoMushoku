@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Zones;
@@ -33,7 +34,8 @@ namespace KyoumoMushoku.Core.Persistence
             }
 
             if (save.Clock is null || save.Vitals is null || save.Inventory is null ||
-                save.ZoneAlerts is null || save.Knacks is null || save.CarrySlot is null)
+                save.ZoneAlerts is null || save.Knacks is null || save.CarrySlot is null ||
+                save.Stashes is null)
             {
                 error = "セーブデータの構造が壊れている。";
                 return false;
@@ -69,7 +71,59 @@ namespace KyoumoMushoku.Core.Persistence
                 return false;
             }
 
-            return TryValidateKnacks(save.Knacks, out error);
+            if (!TryValidateKnacks(save.Knacks, out error))
+            {
+                return false;
+            }
+
+            return TryValidateStashes(save.Stashes, out error);
+        }
+
+        /// <summary>
+        /// 保管庫も外部入力である。未知の種別・不正な容量・壊れた中身・同じ拠点の二重占有は、
+        /// 黙って直さず拒む。中身の個々のアイテムの妥当性は復元時に <c>Inventory</c> が自ら守る（範囲外は捨てる）。
+        /// 設置場所の識別子が世界に無い保管庫は破損ではなく、ロード時に置き場が見つからず捨てられるだけなので、
+        /// ここでは識別子の存在（空でないこと）だけを求める。
+        /// </summary>
+        static bool TryValidateStashes(List<StashState> stashes, out string error)
+        {
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var stash in stashes)
+            {
+                if (stash is null || stash.Items is null)
+                {
+                    error = "保管庫の構造が壊れている。";
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(stash.SpotId))
+                {
+                    error = "保管庫に設置場所の識別子がない。";
+                    return false;
+                }
+
+                if (!Enum.IsDefined(typeof(StashKind), stash.Kind))
+                {
+                    error = $"保管庫に未知の種別が含まれる（{stash.Kind}）。";
+                    return false;
+                }
+
+                if (stash.Capacity < 1)
+                {
+                    error = $"保管庫の容量が不正である（{stash.SpotId}：{stash.Capacity}）。";
+                    return false;
+                }
+
+                if (!seen.Add(stash.SpotId))
+                {
+                    error = $"同じ設置場所の保管庫が二度現れる（{stash.SpotId}）。";
+                    return false;
+                }
+            }
+
+            error = null;
+            return true;
         }
 
         /// <summary>

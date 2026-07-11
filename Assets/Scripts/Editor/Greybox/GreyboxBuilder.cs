@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using KyoumoMushoku.Core.Foraging;
+using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Diagnostics;
@@ -100,9 +101,10 @@ namespace KyoumoMushoku.Editor.Greybox
             var clock = BuildSystems(schedule);
             BuildInteractables(white, spriteMaterial, catalog, loot, clock);
             var store = BuildStore(white, spriteMaterial);
+            var stashSpot = BuildStash(white, spriteMaterial);
             var officer = BuildPolice(white, spriteMaterial);
             BuildSessionAndGrade(clock, player);
-            BuildCanvas(player, clock, store);
+            BuildCanvas(player, clock, store, stashSpot);
 
             var hud = clock.gameObject.AddComponent<PhaseZeroHud>();
             hud.Configure(clock, player.GetComponent<ZoneTracker>(), player.GetComponent<PlayerMotor>(), player.transform);
@@ -120,6 +122,8 @@ namespace KyoumoMushoku.Editor.Greybox
             Debug.Log("コンビニ前を警官が巡回する。見られたまま漁り続けると 注意→警告→追い出し と進む。" +
                       "走れば振り切れる（警官 6.5 < 走り 7.5）。地下通路は地上の警官から見えない。");
             Debug.Log("公園のベンチで寝続けると近隣の苦情でベンチが撤去される。まず苦情の貼り紙が予告として出る。数日で戻る。安宿は影響を受けない。");
+            Debug.Log("路地裏のゴミ箱 C（x=86）で段ボールを漁ると背負う。左の設置場所（x=78）で E を押し続けると段ボール箱を置ける。" +
+                      "置いた箱で E → 出し入れパネル。Tab で 預ける／引き出す、数字で移動。就寝で箱の中身は永続する。");
             Debug.Log($"1日目は約 {schedule.ToSchedule().ForDay(1).SecondsUntilNight / 60f:F1} 分で夜に入る。");
         }
 
@@ -324,6 +328,29 @@ namespace KyoumoMushoku.Editor.Greybox
             // 店主の頭上の台詞。マーカーは縦に伸びているので、台詞は親にせず root 直下（等倍）に置く。
             store.BindClerk(MakeSpeech(root, position + new Vector3(0f, 3.4f, 0f)));
             return store;
+        }
+
+        /// <summary>
+        /// 路地裏（生活ゾーン）に段ボール箱の設置場所を1つ置く（第十二節）。空のうちは、段ボールを背負って
+        /// くれば置ける。置いたあとは開けてカバンと出し入れする拠点になる。取りに戻るには実移動が要り、
+        /// そのぶんソフトクロックが進む。ゴミ箱 C（x=86）と同じ生活ゾーンの左寄り x=78 に据える。
+        /// </summary>
+        static StashSpot BuildStash(Sprite white, Material material)
+        {
+            var root = new GameObject("Stash").transform;
+            var position = new Vector3(78f, FirstDistrictLayout.SurfaceY + 0.6f, 0f);
+
+            var marker = MakeQuad("StashSpot_BackAlley", white, material, new Color(0.32f, 0.32f, 0.35f, 0.55f), sortingOrder: 4);
+            marker.transform.SetParent(root, false);
+            marker.transform.position = position;
+            marker.transform.localScale = new Vector3(1.8f, 1.2f, 1f);
+
+            var collider = marker.AddComponent<BoxCollider2D>();
+            collider.isTrigger = true;
+
+            var spot = marker.AddComponent<StashSpot>();
+            spot.Configure("stash_backalley", AlertZoneId.Residential, StashKind.CardboardBox, placeSeconds: 1.5f);
+            return spot;
         }
 
         /// <summary>
@@ -551,7 +578,7 @@ namespace KyoumoMushoku.Editor.Greybox
         /// Screen Space - Overlay の HUD。ポスト処理の後段に描かれるため SAN の退色を受けず、
         /// 文字は常に読める（第三節）。4状態のゲージ、行動プロンプト、カバンの一覧を持つ。
         /// </summary>
-        static void BuildCanvas(GameObject player, GameClockDriver clock, Storefront store)
+        static void BuildCanvas(GameObject player, GameClockDriver clock, Storefront store, StashSpot stashSpot)
         {
             var white = AssetDatabase.LoadAssetAtPath<Sprite>(SpritePath);
             var font = TMP_Settings.defaultFontAsset;
@@ -612,11 +639,27 @@ namespace KyoumoMushoku.Editor.Greybox
             shopPanel.Configure(store, player.GetComponent<PlayerMotor>(),
                 player.GetComponent<PlayerInteractor>(), shopText);
 
-            // 店パネルが開いている間、数字キーは購入に使う。飲食の数字入力を黙らせる。
-            inventoryView.BindModal(shopPanel);
-
             // 下敷きはパネルが閉じている間は消しておく。パネルの開閉に追従させる。
             canvasGo.AddComponent<ModalBackdrop>().Configure(shopPanel, shopBackdrop);
+
+            // 段ボール箱の出し入れパネル（モーダル）。店パネルと同じ体裁で、開いている間は入力を占有する。
+            var stashBackdrop = MakeUIImage(canvasT, white, new Color(0.05f, 0.06f, 0.08f, 0.86f), "StashBackdrop",
+                new Vector2(0f, 0f), new Vector2(880f, 680f));
+            var stashRt = stashBackdrop.rectTransform;
+            stashRt.anchorMin = stashRt.anchorMax = stashRt.pivot = new Vector2(0.5f, 0.5f);
+            stashRt.anchoredPosition = Vector2.zero;
+
+            var stashText = MakeText(canvasT, font, "StashPanel", new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(820f, 620f), 30f, TextAlignmentOptions.Top);
+
+            var stashPanel = canvasGo.AddComponent<StashPanel>();
+            stashPanel.Configure(stashSpot, player.GetComponent<PlayerMotor>(),
+                player.GetComponent<PlayerInteractor>(), stashText);
+
+            canvasGo.AddComponent<ModalBackdrop>().Configure(stashPanel, stashBackdrop);
+
+            // どちらかのパネルが開いている間、数字キーはそのパネルが使う。飲食の数字入力を黙らせる。
+            inventoryView.BindModal(shopPanel, stashPanel);
         }
 
         static Image MakeGauge(Transform parent, Sprite white, TMP_FontAsset font, string label, Color color, int row)

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Persistence;
 using KyoumoMushoku.Core.Police;
+using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Randomness;
 using KyoumoMushoku.Core.Survival;
 using KyoumoMushoku.Core.Zones;
@@ -30,6 +31,7 @@ namespace KyoumoMushoku.Gameplay.Session
         [SerializeField] Transform _player;
 
         readonly Dictionary<string, IRespawnPoint> _respawnPoints = new();
+        readonly Dictionary<string, StashSpot> _stashSpots = new();
 
         ISaveStore _store;
         Rigidbody2D _playerBody;
@@ -95,6 +97,7 @@ namespace KyoumoMushoku.Gameplay.Session
         void CollectRespawnPoints()
         {
             _respawnPoints.Clear();
+            _stashSpots.Clear();
 
             foreach (var behaviour in FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))
             {
@@ -111,6 +114,11 @@ namespace KyoumoMushoku.Gameplay.Session
                 if (behaviour is SleepSpot spot)
                 {
                     spot.BindSession(this);
+                }
+
+                if (behaviour is StashSpot stashSpot)
+                {
+                    _stashSpots[stashSpot.StashSpotId] = stashSpot;
                 }
             }
         }
@@ -257,11 +265,56 @@ namespace KyoumoMushoku.Gameplay.Session
             _alerts?.RestoreState(save.ZoneAlerts);
             _knacks?.RestoreState(save.Knacks);
             _carry?.RestoreState(save.CarrySlot);
+            RestoreStashes(save.Stashes);
 
             if (!string.IsNullOrEmpty(save.SleepSpotId) &&
                 _respawnPoints.TryGetValue(save.SleepSpotId, out var point))
             {
                 TeleportTo(point.SpawnPosition);
+            }
+        }
+
+        /// <summary>置かれている保管庫をすべて集めてセーブへ束ねる。空の設置場所は載せない。</summary>
+        List<StashState> CaptureStashes()
+        {
+            var list = new List<StashState>();
+            foreach (var spot in _stashSpots.Values)
+            {
+                var state = spot.CaptureState();
+                if (state != null)
+                {
+                    list.Add(state);
+                }
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// セーブデータから保管庫を復元する。設置場所は識別子で対応づけ、世界に無い設置場所の保管庫は
+        /// 外部入力として捨てる（地形が変わった等）。カバンのカタログを器の容量計算に手渡す。
+        /// </summary>
+        void RestoreStashes(List<StashState> stashes)
+        {
+            var catalog = _inventory != null ? _inventory.Catalog : null;
+
+            // まずすべての設置場所を空に戻す。前の状態が残ったまま重ならないようにする。
+            foreach (var spot in _stashSpots.Values)
+            {
+                spot.Restore(null, catalog);
+            }
+
+            if (stashes == null)
+            {
+                return;
+            }
+
+            foreach (var state in stashes)
+            {
+                if (state != null && _stashSpots.TryGetValue(state.SpotId, out var spot))
+                {
+                    spot.Restore(state, catalog);
+                }
             }
         }
 
@@ -281,6 +334,7 @@ namespace KyoumoMushoku.Gameplay.Session
                 ZoneAlerts = _alerts != null ? _alerts.CaptureState() : new ZoneAlertState(),
                 Knacks = _knacks != null ? _knacks.CaptureState() : new KnackState(),
                 CarrySlot = _carry != null ? _carry.CaptureState() : new Core.Items.CarrySlotState(),
+                Stashes = CaptureStashes(),
                 WalletYen = _wallet != null ? _wallet.Wallet.Yen : 0,
                 SleepSpotId = sleepSpotId ?? string.Empty,
             };

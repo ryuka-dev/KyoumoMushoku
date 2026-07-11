@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using KyoumoMushoku.Core.DayCycle;
 using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Knacks;
@@ -21,9 +22,10 @@ namespace KyoumoMushoku.Core.Persistence
         /// 版 1：Phase 1〜2。時計・状態・カバン・所持金・就寝場所。
         /// 版 2：Phase 3。警戒ゾーンごとの警戒度を加えた。
         /// 版 3：Phase 5a。習得したコツと触発カウンタを加えた。
-        /// 版 4：Phase 5b。背負いスロット（段ボール）を加えた。古い版は <see cref="SaveGameMigration"/> が引き上げる。
+        /// 版 4：Phase 5b-1。背負いスロット（段ボール）を加えた。
+        /// 版 5：Phase 5b-2。拠点に置いた保管庫（段ボール箱）を加えた。古い版は <see cref="SaveGameMigration"/> が引き上げる。
         /// </summary>
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = 5;
 
         public const int OldestSupportedVersion = 1;
 
@@ -47,6 +49,12 @@ namespace KyoumoMushoku.Core.Persistence
 
         /// <summary>背負っている段ボール（第十一節）。担いだまま寝ることもあるため永続する。</summary>
         public CarrySlotState CarrySlot = new CarrySlotState();
+
+        /// <summary>
+        /// 拠点に置いた保管庫（第十二節）。貯め込んだ財産は日をまたいで残る。
+        /// 未設置なら空。版 4 以前は保管庫という概念がまだ無かった状態として引き上げる。
+        /// </summary>
+        public List<StashState> Stashes = new List<StashState>();
 
         public int WalletYen;
 
