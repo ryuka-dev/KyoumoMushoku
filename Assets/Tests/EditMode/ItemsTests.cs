@@ -120,6 +120,41 @@ namespace KyoumoMushoku.Core.Tests
         }
 
         [Test]
+        public void IronStomach_HalvesTheRottenPenalty_ButNeverTheHungerFilled()
+        {
+            var plain = new Inventory(TestItems.Catalog());
+            plain.TryAdd(new ItemInstance(TestItems.Bento, FoodState.Rotten));
+            var plainVitals = new Vitals(new VitalsTuning(), new VitalsState { Hunger = 0f, Hp = 100f, Sanity = 100f });
+            Consumption.TryConsume(plain, 0, plainVitals, out _);
+
+            var tough = new Inventory(TestItems.Catalog());
+            tough.TryAdd(new ItemInstance(TestItems.Bento, FoodState.Rotten));
+            var toughVitals = new Vitals(new VitalsTuning(), new VitalsState { Hunger = 0f, Hp = 100f, Sanity = 100f });
+            var book = new Knacks.KnackBook();
+            book.RecordSurvivedRotten();
+            Consumption.TryConsume(tough, 0, toughVitals, out _, book);
+
+            Assert.AreEqual(plainVitals.Hunger, toughVitals.Hunger, 1e-5f, "腹の膨れ方はコツに依存しない。");
+            Assert.AreEqual(100f - (100f - plainVitals.Hp) * 0.5f, toughVitals.Hp, 1e-3f, "腐敗の HP ダメージは半減する。");
+            Assert.AreEqual(100f - (100f - plainVitals.Sanity) * 0.5f, toughVitals.Sanity, 1e-3f, "腐敗の SAN ダメージも半減する。");
+        }
+
+        [Test]
+        public void IronStomach_DoesNothingToFreshFood()
+        {
+            var tough = new Inventory(TestItems.Catalog());
+            tough.TryAdd(new ItemInstance(TestItems.Bento, FoodState.Fresh));
+            var vitals = new Vitals(new VitalsTuning(), new VitalsState { Hunger = 0f, Hp = 100f, Sanity = 100f });
+            var book = new Knacks.KnackBook();
+            book.RecordSurvivedRotten();
+
+            Consumption.TryConsume(tough, 0, vitals, out _, book);
+
+            Assert.AreEqual(100f, vitals.Hp, 1e-5f, "新鮮な食品には何の代償もない。");
+            Assert.AreEqual(100f, vitals.Sanity, 1e-5f);
+        }
+
+        [Test]
         public void Salvage_CannotBeEaten()
         {
             var catalog = TestItems.Catalog()

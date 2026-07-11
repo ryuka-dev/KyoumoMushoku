@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Zones;
 
@@ -30,7 +32,8 @@ namespace KyoumoMushoku.Core.Persistence
                 return false;
             }
 
-            if (save.Clock is null || save.Vitals is null || save.Inventory is null || save.ZoneAlerts is null)
+            if (save.Clock is null || save.Vitals is null || save.Inventory is null ||
+                save.ZoneAlerts is null || save.Knacks is null)
             {
                 error = "セーブデータの構造が壊れている。";
                 return false;
@@ -61,7 +64,49 @@ namespace KyoumoMushoku.Core.Persistence
                 return false;
             }
 
-            return TryValidateZoneAlerts(save.ZoneAlerts, out error);
+            if (!TryValidateZoneAlerts(save.ZoneAlerts, out error))
+            {
+                return false;
+            }
+
+            return TryValidateKnacks(save.Knacks, out error);
+        }
+
+        /// <summary>
+        /// コツも外部入力である。未知のコツ・重複・負のカウンタは、黙って直さず拒む。
+        /// </summary>
+        static bool TryValidateKnacks(KnackState knacks, out string error)
+        {
+            if (knacks.Acquired is null)
+            {
+                error = "コツの構造が壊れている。";
+                return false;
+            }
+
+            var seen = new HashSet<KnackId>();
+            foreach (var id in knacks.Acquired)
+            {
+                if (!Enum.IsDefined(typeof(KnackId), id))
+                {
+                    error = $"習得済みのコツに未知のものが含まれる（{id}）。";
+                    return false;
+                }
+
+                if (!seen.Add(id))
+                {
+                    error = $"習得済みのコツに同じものが二度現れる（{id}）。";
+                    return false;
+                }
+            }
+
+            if (knacks.RummageCount < 0 || knacks.ForageWarnedCount < 0 || knacks.OutdoorSleepCount < 0)
+            {
+                error = "コツの触発カウンタが負である。";
+                return false;
+            }
+
+            error = null;
+            return true;
         }
 
         /// <summary>

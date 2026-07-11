@@ -1,4 +1,5 @@
 using KyoumoMushoku.Core.Economy;
+using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Persistence;
 using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Zones;
@@ -93,6 +94,39 @@ namespace KyoumoMushoku.Core.Tests
 
             Assert.IsTrue(SaveGameValidation.TryValidate(save, out var error), error);
         }
+
+        [Test]
+        public void Knacks_AreTreatedAsUntrustedInput()
+        {
+            var unknownKnack = new SaveGame();
+            unknownKnack.Knacks.Acquired.Add((KnackId)999);
+            Assert.IsFalse(SaveGameValidation.TryValidate(unknownKnack, out var unknownError));
+            StringAssert.Contains("未知", unknownError);
+
+            var duplicated = new SaveGame();
+            duplicated.Knacks.Acquired.Add(KnackId.SpotDuds);
+            duplicated.Knacks.Acquired.Add(KnackId.SpotDuds);
+            Assert.IsFalse(SaveGameValidation.TryValidate(duplicated, out var dupError));
+            StringAssert.Contains("二度", dupError);
+
+            var negativeCounter = new SaveGame();
+            negativeCounter.Knacks.RummageCount = -1;
+            Assert.IsFalse(SaveGameValidation.TryValidate(negativeCounter, out var counterError));
+            StringAssert.Contains("負", counterError);
+
+            var missingStructure = new SaveGame { Knacks = null };
+            Assert.IsFalse(SaveGameValidation.TryValidate(missingStructure, out _));
+        }
+
+        [Test]
+        public void AValidPartialKnackState_IsAccepted()
+        {
+            var save = new SaveGame();
+            save.Knacks.Acquired.Add(KnackId.IronStomach);
+            save.Knacks.RummageCount = 4;
+
+            Assert.IsTrue(SaveGameValidation.TryValidate(save, out var error), error);
+        }
     }
 
     public sealed class SaveGameMigrationTests
@@ -136,6 +170,41 @@ namespace KyoumoMushoku.Core.Tests
             {
                 Assert.AreEqual(0f, levels.Level(zone), 1e-4f);
             }
+        }
+
+        [Test]
+        public void Version2_IsUpgradedWithNoKnacksYetLearned()
+        {
+            var save = new SaveGame { Version = 2, Knacks = null };
+            save.ZoneAlerts.Zones.Add(new ZoneAlertEntry(AlertZoneId.Commercial, 30f));
+
+            Assert.IsTrue(SaveGameMigration.TryUpgrade(save, out var error), error);
+            Assert.AreEqual(SaveGame.CurrentVersion, save.Version);
+            Assert.IsNotNull(save.Knacks);
+            Assert.AreEqual(0, save.Knacks.Acquired.Count, "版 2 の世界にはコツがまだ存在しなかった。");
+            Assert.AreEqual(30f, save.ZoneAlerts.Zones[0].Level, 1e-4f, "警戒度は引き上げで失われない。");
+            Assert.IsTrue(SaveGameValidation.TryValidate(save, out var validationError), validationError);
+        }
+
+        [Test]
+        public void AVersion1Json_IsCarriedAllTheWayToTheCurrentVersion()
+        {
+            // 版 1 の JSON がコツの版まで一気に引き上がることを確かめる。
+            const string json =
+                "{\"Version\":1," +
+                "\"Clock\":{\"Day\":2,\"ElapsedInDay\":60.0}," +
+                "\"Vitals\":{\"Hp\":80.0,\"Thirst\":50.0,\"Hunger\":40.0,\"Sanity\":65.0}," +
+                "\"Inventory\":{\"Capacity\":6,\"Items\":[]}," +
+                "\"WalletYen\":100," +
+                "\"SleepSpotId\":\"bench_park\"}";
+
+            var save = UnityEngine.JsonUtility.FromJson<SaveGame>(json);
+
+            Assert.IsTrue(SaveGameMigration.TryUpgrade(save, out var upgradeError), upgradeError);
+            Assert.AreEqual(SaveGame.CurrentVersion, save.Version);
+            Assert.IsNotNull(save.Knacks);
+            Assert.AreEqual(0, save.Knacks.Acquired.Count);
+            Assert.IsTrue(SaveGameValidation.TryValidate(save, out var validationError), validationError);
         }
 
         [Test]

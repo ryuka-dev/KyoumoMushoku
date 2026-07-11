@@ -1,3 +1,4 @@
+using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Police;
 
 namespace KyoumoMushoku.Core.Persistence
@@ -39,6 +40,11 @@ namespace KyoumoMushoku.Core.Persistence
                 UpgradeFrom1To2(save);
             }
 
+            if (save.Version == 2)
+            {
+                UpgradeFrom2To3(save);
+            }
+
             error = null;
             return true;
         }
@@ -51,6 +57,16 @@ namespace KyoumoMushoku.Core.Persistence
         {
             save.ZoneAlerts = new ZoneAlertState();
             save.Version = 2;
+        }
+
+        /// <summary>
+        /// 版 2 は誰もコツを知らない。まだ何も習得しておらず、触発カウンタもすべて 0 の状態として引き上げる。
+        /// これは実際に版 2 が表していた世界と一致する（コツはまだ存在しなかった）。
+        /// </summary>
+        static void UpgradeFrom2To3(SaveGame save)
+        {
+            save.Knacks = new KnackState();
+            save.Version = 3;
         }
     }
 }

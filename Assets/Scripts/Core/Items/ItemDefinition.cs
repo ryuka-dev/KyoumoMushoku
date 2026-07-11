@@ -83,14 +83,20 @@ namespace KyoumoMushoku.Core.Items
         /// 実際に口に入れたときの効果。腐敗のみが追加の代償を持つ。
         /// 傷みは新鮮と同じ結果しかもたらさない。読めないことだけが危険である。
         /// </summary>
-        public VitalsDelta EffectFor(FoodState state)
+        public VitalsDelta EffectFor(FoodState state) => EffectFor(state, 1f);
+
+        /// <summary>
+        /// 腐敗の代償に倍率をかけた効果。コツ `鉄の胃袋`（第六節）が腐敗のダメージを半減させるときに用いる。
+        /// 倍率は腐敗の代償（HP・SAN）にのみかかり、空腹の回復量には決してかからない。
+        /// </summary>
+        public VitalsDelta EffectFor(FoodState state, float rottenPenaltyScale)
         {
             if (!IsFood || state != FoodState.Rotten)
             {
                 return Effect;
             }
 
-            return Effect + RottenPenalty;
+            return Effect + RottenPenalty * rottenPenaltyScale;
         }
     }
 }

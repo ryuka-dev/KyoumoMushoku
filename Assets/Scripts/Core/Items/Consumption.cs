@@ -1,3 +1,4 @@
+using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Survival;
 
 namespace KyoumoMushoku.Core.Items
@@ -23,7 +24,8 @@ namespace KyoumoMushoku.Core.Items
     /// </summary>
     public static class Consumption
     {
-        public static ConsumeResult TryConsume(Inventory inventory, int index, Vitals vitals, out ItemDefinition consumed)
+        public static ConsumeResult TryConsume(Inventory inventory, int index, Vitals vitals,
+            out ItemDefinition consumed, KnackBook knacks = null)
         {
             consumed = null;
 
@@ -42,8 +44,12 @@ namespace KyoumoMushoku.Core.Items
                 return ConsumeResult.NotConsumable;
             }
 
+            // 鉄の胃袋（第六節）を持つなら腐敗の代償が半減する。空腹の回復量には決してかからない。
+            var rottenScale = knacks != null && knacks.Has(KnackId.IronStomach)
+                ? KnackTuning.IronStomachRottenScale
+                : 1f;
             var freshness = inventory[index].Freshness;
-            var effect = definition.IsFood ? definition.EffectFor(freshness) : definition.Effect;
+            var effect = definition.IsFood ? definition.EffectFor(freshness, rottenScale) : definition.Effect;
 
             vitals.Apply(effect);
             inventory.TryRemoveAt(index, out _);

@@ -1,6 +1,7 @@
 using System;
 using KyoumoMushoku.Core.DayCycle;
 using KyoumoMushoku.Core.Items;
+using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Survival;
 
@@ -18,9 +19,10 @@ namespace KyoumoMushoku.Core.Persistence
     {
         /// <summary>
         /// 版 1：Phase 1〜2。時計・状態・カバン・所持金・就寝場所。
-        /// 版 2：Phase 3。警戒ゾーンごとの警戒度を加えた。版 1 は <see cref="SaveGameMigration"/> が引き上げる。
+        /// 版 2：Phase 3。警戒ゾーンごとの警戒度を加えた。
+        /// 版 3：Phase 5a。習得したコツと触発カウンタを加えた。古い版は <see cref="SaveGameMigration"/> が引き上げる。
         /// </summary>
-        public const int CurrentVersion = 2;
+        public const int CurrentVersion = 3;
 
         public const int OldestSupportedVersion = 1;
 
@@ -35,6 +37,12 @@ namespace KyoumoMushoku.Core.Persistence
         /// 仕様はここが永続しなければ成立しない。
         /// </summary>
         public ZoneAlertState ZoneAlerts = new ZoneAlertState();
+
+        /// <summary>
+        /// 習得したコツと触発カウンタ（第六節）。コツは失われないので日をまたいで残る。
+        /// 版 2 以前は誰もコツを知らなかった状態として引き上げる。
+        /// </summary>
+        public KnackState Knacks = new KnackState();
 
         public int WalletYen;
 

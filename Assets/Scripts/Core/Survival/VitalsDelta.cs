@@ -22,6 +22,14 @@ namespace KyoumoMushoku.Core.Survival
             Sanity = a.Sanity + b.Sanity,
         };
 
+        public static VitalsDelta operator *(VitalsDelta a, float scale) => new VitalsDelta
+        {
+            Hp = a.Hp * scale,
+            Thirst = a.Thirst * scale,
+            Hunger = a.Hunger * scale,
+            Sanity = a.Sanity * scale,
+        };
+
         public bool IsZero => Hp == 0f && Thirst == 0f && Hunger == 0f && Sanity == 0f;
     }
 }
