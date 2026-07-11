@@ -2,6 +2,7 @@ using System.IO;
 using System.Linq;
 using KyoumoMushoku.Core.Foraging;
 using KyoumoMushoku.Core.Items;
+using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Diagnostics;
@@ -277,6 +278,9 @@ namespace KyoumoMushoku.Editor.Greybox
 
             // 保管庫イベントの所有者。日境界で GameSession が BeginNextDay を呼ぶ（第十二節）。
             clock.gameObject.AddComponent<StashDirector>();
+
+            // 生活ゾーン警戒度への常時入力（背負い歩き・貯め込みすぎ）を毎フレーム申告する（第十二節）。
+            clock.gameObject.AddComponent<StashAlertPressure>();
             return clock;
         }
 
@@ -482,9 +486,11 @@ namespace KyoumoMushoku.Editor.Greybox
                 yieldsPerDay: 3, rummageSeconds: 1.8f);
 
             // C：路地裏の大型ゴミ箱。廃品が中心、食品は状態が悪い。大型ゆえ漁りに時間がかかる。生活ゾーン。
+            // ここを漁ると生活ゾーンの警戒度が少し上がる＝住処の近くで目立つ（第十二節・小）。
             BuildTrashCan(root, white, material, loot, clock, "TrashCan_C_BackAlley",
                 TrashCanKind.BackAlley, new Vector3(86f, FirstDistrictLayout.SurfaceY + 1f, 0f),
-                yieldsPerDay: 3, rummageSeconds: 2.6f);
+                yieldsPerDay: 3, rummageSeconds: 2.6f,
+                alertZone: AlertZoneId.Residential, alertRaise: ZoneAlertTuning.ForageResidentialRaise);
 
             // B：コンビニ前。昼は乏しいが、夜に弁当・パンが出る。状態は良いが商業ゾーンで危険。
             BuildTrashCan(root, white, material, loot, clock, "TrashCan_B_ConvenienceStore",
@@ -493,7 +499,8 @@ namespace KyoumoMushoku.Editor.Greybox
         }
 
         static void BuildTrashCan(Transform parent, Sprite white, Material material, TrashCanLootAsset loot,
-            GameClockDriver clock, string name, TrashCanKind kind, Vector3 position, int yieldsPerDay, float rummageSeconds)
+            GameClockDriver clock, string name, TrashCanKind kind, Vector3 position, int yieldsPerDay, float rummageSeconds,
+            AlertZoneId alertZone = AlertZoneId.None, float alertRaise = 0f)
         {
             var can = MakeQuad(name, white, material, new Color(0.55f, 0.5f, 0.35f), sortingOrder: 5);
             can.transform.SetParent(parent, false);
@@ -503,7 +510,9 @@ namespace KyoumoMushoku.Editor.Greybox
             var collider = can.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
 
-            can.AddComponent<TrashCan>().Configure(kind, loot, clock, yieldsPerDay, rummageSeconds);
+            var trash = can.AddComponent<TrashCan>();
+            trash.Configure(kind, loot, clock, yieldsPerDay, rummageSeconds);
+            trash.BindZoneAlert(alertZone, alertRaise);
         }
 
         static GameObject MakeInteractableMarker(string name, Transform parent, Sprite white, Material material,

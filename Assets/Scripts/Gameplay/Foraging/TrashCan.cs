@@ -3,6 +3,7 @@ using KyoumoMushoku.Core.Foraging;
 using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Randomness;
+using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.Police;
@@ -39,10 +40,16 @@ namespace KyoumoMushoku.Gameplay.Foraging
         [Tooltip("漁っている姿を見られている間、毎秒どれだけ注目度が上がるか。叩き台。")]
         [SerializeField, Min(0f)] float _suspicionPerSecond = 18f;
 
+        [Tooltip("漁り1回ごとに上がる、このゴミ箱が属するゾーンの警戒度。路地裏のゴミ箱だけが持つ（第十二節・小）。")]
+        [SerializeField] AlertZoneId _alertZone = AlertZoneId.None;
+
+        [SerializeField, Min(0f)] float _zoneAlertRaise;
+
         [SerializeField] Color _fullTint = new Color(0.55f, 0.5f, 0.35f);
         [SerializeField] Color _depletedTint = new Color(0.32f, 0.32f, 0.32f);
 
         SpriteRenderer _renderer;
+        ZoneAlertDirector _alerts;
         IRng _rng;
         int _remainingToday;
         int _lastSeenDay = int.MinValue;
@@ -71,9 +78,17 @@ namespace KyoumoMushoku.Gameplay.Foraging
         void Awake()
         {
             _renderer = GetComponent<SpriteRenderer>();
+            _alerts = FindFirstObjectByType<ZoneAlertDirector>();
             _rng = new SystemRng();
             _remainingToday = _yieldsPerDay;
             ApplyTint();
+        }
+
+        /// <summary>このゴミ箱の漁りが上げるゾーンの警戒度を設定する（第十二節・小）。路地裏のゴミ箱だけが使う。</summary>
+        public void BindZoneAlert(AlertZoneId zone, float raise)
+        {
+            _alertZone = zone;
+            _zoneAlertRaise = Mathf.Max(0f, raise);
         }
 
         void Update()
@@ -252,6 +267,13 @@ namespace KyoumoMushoku.Gameplay.Foraging
         {
             _remainingToday--;
             ApplyTint();
+
+            // 漁る姿は一過性の注目（警官が読む）だけでなく、住処の一帯の警戒度にも残る（第十二節・小）。
+            // 路地裏のゴミ箱だけが上昇量を持ち、公園・商業のゴミ箱は 0 なので何もしない。
+            if (_zoneAlertRaise > 0f && _alertZone != AlertZoneId.None)
+            {
+                _alerts?.Raise(_alertZone, _zoneAlertRaise);
+            }
         }
 
         void ApplyTint()

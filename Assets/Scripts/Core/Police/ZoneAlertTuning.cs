@@ -37,6 +37,27 @@ namespace KyoumoMushoku.Core.Police
         /// </summary>
         public const float FleeIntoResidentialRaise = 20f;
 
+        /// <summary>
+        /// 段ボールを背負って歩くこと自体が、生活ゾーンの警戒度への常時入力になる（第十二節・中）。
+        /// 自分の家を担いで街を歩けば、住処の一帯に顔を覚えられる。毎秒この分だけ上がる。叩き台。
+        /// </summary>
+        public const float CarryResidentialRatePerSecond = 1f;
+
+        /// <summary>
+        /// 膨らんだ段ボール箱は、それだけで目立つ（第十二節・中・常時）。閾値を超えたマス1つにつき、
+        /// 毎秒この分だけ生活ゾーンの警戒度が上がる。「貯め込みすぎると危険」がそのまま読み取れる数値になる。叩き台。
+        /// </summary>
+        public const float HoardResidentialRatePerSecondPerSlot = 0.01f;
+
+        /// <summary>これ以下のマス数は目立たない。貯め込みの入力は超過分にだけかかる。叩き台。</summary>
+        public const int HoardThresholdSlots = 4;
+
+        /// <summary>
+        /// 路地裏のゴミ箱を漁ると、生活ゾーンの警戒度が少し上がる（第十二節・小）。漁り1回ごと。
+        /// 公園・商業のゴミ箱では 0（各ゴミ箱が自分の分を設定する）。叩き台。
+        /// </summary>
+        public const float ForageResidentialRaise = 3f;
+
         public static ZoneAlertTuning Default { get; } = new ZoneAlertTuning();
 
         /// <summary>
