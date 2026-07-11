@@ -102,6 +102,7 @@ namespace KyoumoMushoku.Editor.Greybox
             }
 
             BuildParallaxLayers(white, spriteMaterial);
+            BuildGroundColliders();
             BuildWorldEdges(white, spriteMaterial);
             BuildUnderpassWalls(white, spriteMaterial);
 
@@ -152,11 +153,13 @@ namespace KyoumoMushoku.Editor.Greybox
 
             var groundTint = area.Tint * 0.45f;
             groundTint.a = 1f;
+            // 地面は「見た目」だけ区域ごとに持つ。当たり判定は区域をまたいで連続した1枚にする
+            // （BuildGroundColliders）。区域ごとに当たり判定の箱を並べると、その継ぎ目でプレイヤーが
+            // 引っかかる（ghost collision）ためである。
             var ground = MakeQuad("Ground", white, material, groundTint, sortingOrder: 0);
             ground.transform.SetParent(root.transform, false);
             ground.transform.localPosition = new Vector3(0f, -GroundThickness * 0.5f, 0f);
             ground.transform.localScale = new Vector3(area.Width, GroundThickness, 1f);
-            ground.AddComponent<BoxCollider2D>();
 
             var zone = new GameObject("AlertZone");
             zone.transform.SetParent(root.transform, false);
@@ -168,6 +171,35 @@ namespace KyoumoMushoku.Editor.Greybox
 
             PrefabUtility.SaveAsPrefabAssetAndConnect(
                 root, $"{AreaPrefabFolder}/{area.Name}.prefab", InteractionMode.AutomatedAction);
+        }
+
+        /// <summary>
+        /// 地面の当たり判定を、区域ごとの箱ではなく連続した1枚にする。区域プレハブの Ground は見た目だけを
+        /// 持ち、当たり判定はここが担う。区域の継ぎ目（x=45, 70 …）に当たり判定の内部の縦辺が残ると、
+        /// プレイヤーがそこに引っかかる（ghost collision）。詰まるかどうかは継ぎ目を跨ぐ物理サブステップの
+        /// 位相に左右されるため速度に依存し、「歩きだと詰まるが減速すると抜ける」といった挙動になる。
+        /// 継ぎ目そのものを無くせば原理的に起きない。上面は各面の GroundY に合わせる。
+        /// </summary>
+        static void BuildGroundColliders()
+        {
+            var root = new GameObject("GroundColliders").transform;
+
+            // 地上：世界の左端から右端まで1枚（全ての地上区域は GroundY=SurfaceY で連続している）。
+            MakeGroundCollider(root, "SurfaceGround",
+                FirstDistrictLayout.WorldLeftEdge, FirstDistrictLayout.WorldRightEdge, FirstDistrictLayout.SurfaceY);
+
+            // 地下通路：通路の X 範囲だけ、上面は UnderpassY。
+            var underpass = FirstDistrictLayout.Areas.First(a => a.Name == "Underpass");
+            MakeGroundCollider(root, "UnderpassGround",
+                underpass.XStart, underpass.XStart + underpass.Width, FirstDistrictLayout.UnderpassY);
+        }
+
+        static void MakeGroundCollider(Transform parent, string name, float xLeft, float xRight, float topY)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.position = new Vector3((xLeft + xRight) * 0.5f, topY - GroundThickness * 0.5f, 0f);
+            go.AddComponent<BoxCollider2D>().size = new Vector2(xRight - xLeft, GroundThickness);
         }
 
         static void BuildWorldEdges(Sprite white, Material material)
