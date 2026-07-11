@@ -342,11 +342,21 @@ namespace KyoumoMushoku.Gameplay.World
                 return ReclaimOutcome.CarryUnavailable;
             }
 
+            // 今日の場所代を払った箱をそのまま持ち出すなら、払ったぶんは無駄になる。清算する前にその代償を
+            // 覚えておき、回収後に先輩が世界の言葉で告げる（見えない代償の可視化）。rent の扱いは変えない。
+            var forfeitedRent = RentActive;
+
             _stash = null;
             _rentDaysRemaining = 0;
             FindFirstObjectByType<StashDirector>()?.ClearPendingFor(_stashSpotId);
             ClearNotice();
             ApplyVisual();
+
+            if (forfeitedRent)
+            {
+                _elder?.SayRentForfeited();
+            }
+
             return ReclaimOutcome.Reclaimed;
         }
 
