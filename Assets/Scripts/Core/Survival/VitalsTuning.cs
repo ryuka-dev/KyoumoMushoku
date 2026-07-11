@@ -44,6 +44,15 @@ namespace KyoumoMushoku.Core.Survival
         /// <summary>渇きがゼロのあいだの移動速度倍率。漁りの速度低下は第二層（Phase 2）で扱う。</summary>
         public float DehydratedSpeedMultiplier = 0.6f;
 
+        /// <summary>
+        /// 一晩ぶんの渇きの消費。無料の寝床（ベンチ・地下通路）で寝ると起床時にこれだけ渇く。
+        /// 就寝は時間の経過であり、一晩が過ぎたぶんの代償を負う。安宿（完全回復）は満タンに戻るので免除。
+        /// </summary>
+        public float OvernightThirstDrain = 30f;
+
+        /// <summary>一晩ぶんの空腹の消費。無料の寝床でのみ効く（安宿は免除）。</summary>
+        public float OvernightHungerDrain = 20f;
+
         public VitalsTuning Clone() => (VitalsTuning)MemberwiseClone();
     }
 }

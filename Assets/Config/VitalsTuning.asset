@@ -24,3 +24,5 @@ MonoBehaviour:
   _dehydrationDamagePerSecond: 1
   _starvationDamagePerSecond: 0.8
   _dehydratedSpeedMultiplier: 0.6
+  _overnightThirstDrain: 30
+  _overnightHungerDrain: 20

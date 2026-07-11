@@ -194,12 +194,17 @@ namespace KyoumoMushoku.Gameplay.Session
                 ? KnackTuning.StreetSleeperRecoveryBonus
                 : 0f;
 
+            // 一晩が過ぎたぶん、渇き・空腹を消費する。就寝は時間の経過でもあり、無料の寝床（ベンチ・地下通路）は
+            // その代償を負う。安宿は上の完全回復経路で満タンに戻るのでここには来ない（＝免除）。
+            // Vitals.Apply が 0 でクランプし、遡及ダメージは Advance でのみ起きるので、0 で目覚めても即罰しない（第三節）。
+            var tuning = vitals.Tuning;
+
             // SAN の回復だけは崩壊時に下がるが、下限を割らない（第三節）。
             vitals.Apply(new VitalsDelta
             {
                 Hp = spot.HpRecovery + outdoorBonus,
-                Thirst = spot.ThirstRecovery,
-                Hunger = spot.HungerRecovery,
+                Thirst = spot.ThirstRecovery - tuning.OvernightThirstDrain,
+                Hunger = spot.HungerRecovery - tuning.OvernightHungerDrain,
                 Sanity = SanityScale.SleepRecovery(spot.SanityRecovery + outdoorBonus, vitals.Sanity),
             });
         }

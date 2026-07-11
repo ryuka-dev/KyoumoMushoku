@@ -30,6 +30,10 @@ namespace KyoumoMushoku.Gameplay.Survival
         [SerializeField] float _starvationDamagePerSecond = 0.8f;
         [SerializeField] [Range(0.1f, 1f)] float _dehydratedSpeedMultiplier = 0.6f;
 
+        [Header("就寝（一晩ぶんの消費・無料の寝床のみ）")]
+        [SerializeField] float _overnightThirstDrain = 30f;
+        [SerializeField] float _overnightHungerDrain = 20f;
+
         public VitalsTuning ToTuning() => new VitalsTuning
         {
             MaxHp = _maxHp,
@@ -45,6 +49,8 @@ namespace KyoumoMushoku.Gameplay.Survival
             DehydrationDamagePerSecond = _dehydrationDamagePerSecond,
             StarvationDamagePerSecond = _starvationDamagePerSecond,
             DehydratedSpeedMultiplier = _dehydratedSpeedMultiplier,
+            OvernightThirstDrain = _overnightThirstDrain,
+            OvernightHungerDrain = _overnightHungerDrain,
         };
     }
 }
