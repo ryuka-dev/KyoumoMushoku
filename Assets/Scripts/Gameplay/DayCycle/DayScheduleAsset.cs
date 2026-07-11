@@ -22,9 +22,9 @@ namespace KyoumoMushoku.Gameplay.DayCycle
         [Tooltip("1日目から順に。表にない日は最終行の値を使う。")]
         Entry[] _days =
         {
+            new Entry { dayMinutes = 2.5f, duskMinutes = 1f },
             new Entry { dayMinutes = 3f, duskMinutes = 1f },
             new Entry { dayMinutes = 4.5f, duskMinutes = 1.5f },
-            new Entry { dayMinutes = 6f, duskMinutes = 2f },
         };
 
         public DaySchedule ToSchedule() => new DaySchedule(
