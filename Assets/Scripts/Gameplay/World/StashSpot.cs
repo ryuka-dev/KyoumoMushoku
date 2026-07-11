@@ -26,6 +26,9 @@ namespace KyoumoMushoku.Gameplay.World
         [SerializeField] AlertZoneId _zone = AlertZoneId.Residential;
         [SerializeField] StashKind _kind = StashKind.CardboardBox;
 
+        [Tooltip("段ボール箱を回収したとき背負いスロットへ戻す物の識別子（第十二節・別の場所へ移す）。")]
+        [SerializeField] string _reclaimItemId = "cardboard";
+
         [Tooltip("段ボールを設置し終えるまでの秒数。叩き台。")]
         [SerializeField, Min(0.1f)] float _placeSeconds = 1.5f;
 
@@ -78,6 +81,17 @@ namespace KyoumoMushoku.Gameplay.World
 
         // コインロッカーは商業ゾーンの什器で、段ボールを担いで置くのではなく、その場で借りて開ける（初回に器を用意する）。
         bool IsCoinLocker => _kind == StashKind.CoinLocker;
+
+        /// <summary>回収して担ぎ直せる保管庫か（第十二節「別の場所へ移す」）。段ボール箱だけ。コインロッカーは什器で持ち出せない。</summary>
+        public bool IsReclaimable => _kind == StashKind.CardboardBox;
+
+        /// <summary>回収の結果。UI はこれを世界の言葉へ翻訳する。</summary>
+        public enum ReclaimOutcome { Reclaimed, NotReclaimable, NotEmpty, NoStash, CarryUnavailable }
+
+        /// <summary>いま回収できるか（UI 用）。空の段ボール箱で、背負いスロットが空いているとき。</summary>
+        public bool CanReclaim(PlayerContext player) =>
+            IsReclaimable && _stash != null && _stash.UsedSlots == 0 &&
+            player?.Carry != null && player.Carry.Slot != null && !player.Carry.Slot.IsOccupied;
 
         /// <summary>設置している姿は目立つ（第十二節）。警官がチャネル越しにこれを読む。</summary>
         public float SuspicionPerSecond => _suspicionPerSecond;
@@ -291,6 +305,49 @@ namespace KyoumoMushoku.Gameplay.World
             {
                 _rentDaysRemaining--;
             }
+        }
+
+        /// <summary>
+        /// 空の段ボール箱を回収して担ぎ直す（第十二節の対抗手段「隠し場所を別の場所へ移す」）。担いで別の場所へ運び、
+        /// 置き直せる。担ぐ間の代償（減速・走行不可・注目）は既存の背負いの仕組みが担う（新機構を足さない）。
+        /// 中身が残っているうちは回収させない（取りこぼしを避ける・先に引き出す）。箱が世界から消えるので、
+        /// この箱への予告済みイベントも取り下げる（新しい箱に降りかからせない・第十二節）。
+        /// </summary>
+        public ReclaimOutcome Reclaim(PlayerContext player)
+        {
+            if (_stash == null)
+            {
+                return ReclaimOutcome.NoStash;
+            }
+
+            if (!IsReclaimable)
+            {
+                return ReclaimOutcome.NotReclaimable;
+            }
+
+            if (_stash.UsedSlots > 0)
+            {
+                return ReclaimOutcome.NotEmpty;
+            }
+
+            var slot = player?.Carry?.Slot;
+            if (slot == null || slot.IsOccupied)
+            {
+                return ReclaimOutcome.CarryUnavailable;
+            }
+
+            // カバンではなく背負いスロットへ戻す（段ボールは担ぐ物・第十一節）。空きは上で確かめてある。
+            if (!slot.TryCarry(new ItemInstance(new ItemId(_reclaimItemId))))
+            {
+                return ReclaimOutcome.CarryUnavailable;
+            }
+
+            _stash = null;
+            _rentDaysRemaining = 0;
+            FindFirstObjectByType<StashDirector>()?.ClearPendingFor(_stashSpotId);
+            ClearNotice();
+            ApplyVisual();
+            return ReclaimOutcome.Reclaimed;
         }
 
         public void BindNotice(TMP_Text notice) => _notice = notice;

@@ -149,6 +149,11 @@ namespace KyoumoMushoku.Gameplay.UI
                 {
                     PayRent();
                 }
+                else if (keyboard.gKey.wasPressedThisFrame && _spot != null && _spot.CanReclaim(_ctx))
+                {
+                    Reclaim();
+                    return; // 回収すると箱が消え、パネルは閉じる。
+                }
                 else
                 {
                     for (var i = 0; i < 9; i++)
@@ -174,6 +179,15 @@ namespace KyoumoMushoku.Gameplay.UI
             else
             {
                 Withdraw(index);
+            }
+        }
+
+        // 空の箱を回収して担ぎ直す（第十二節の対抗手段「別の場所へ移す」）。回収すると箱は消えるのでパネルを閉じる。
+        void Reclaim()
+        {
+            if (_spot.Reclaim(_ctx) == StashSpot.ReclaimOutcome.Reclaimed)
+            {
+                Close();
             }
         }
 
@@ -263,6 +277,15 @@ namespace KyoumoMushoku.Gameplay.UI
                 _sb.AppendLine(_spot.RentActive
                     ? $"{_spot.RentLabel}：本日ぶん支払い済み（今日はここが少し安全だ）"
                     : $"{_spot.RentLabel}：未払い　［R：{_spot.RentCostYen}円 払う］");
+            }
+
+            // 回収（第十二節の対抗手段「別の場所へ移す」）：空の段ボール箱は担ぎ直して運べる。
+            if (_spot != null && _spot.IsReclaimable && _stash.UsedSlots == 0)
+            {
+                _sb.AppendLine();
+                _sb.AppendLine(_spot.CanReclaim(_ctx)
+                    ? "空の箱　［G：回収して担ぐ］"
+                    : "空の箱（回収するには背負いを空けて）");
             }
 
             if (!string.IsNullOrEmpty(_feedback))

@@ -31,6 +31,13 @@ namespace KyoumoMushoku.Gameplay.World
         public void ConfigureRng(IRng rng) => _rng = rng;
 
         /// <summary>
+        /// 指定した設置場所の予告を取り下げる（保管庫が回収・撤去されて世界から消えたとき・第十二節）。
+        /// 予告の対象がもう無いので、翌日その予告が別の（新しい）箱に降りかからないようにする。
+        /// </summary>
+        public void ClearPendingFor(string spotId) =>
+            _pending.RemoveAll(p => p != null && p.SpotId == spotId);
+
+        /// <summary>
         /// 就寝して日付が変わった。<c>GameSession</c> だけが、警戒度の日次減衰と無料就寝の上昇を済ませたあとに呼ぶ。
         /// まず今日ぶんの予告済みイベントを発生させ、次に翌日ぶんを抽選して予告する。
         /// </summary>
