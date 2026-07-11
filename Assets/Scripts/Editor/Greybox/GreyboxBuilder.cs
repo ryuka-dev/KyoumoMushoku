@@ -12,6 +12,7 @@ using KyoumoMushoku.Gameplay.Player;
 using KyoumoMushoku.Gameplay.Police;
 using KyoumoMushoku.Gameplay.Rendering;
 using KyoumoMushoku.Gameplay.Session;
+using KyoumoMushoku.Gameplay.Shop;
 using KyoumoMushoku.Gameplay.Survival;
 using KyoumoMushoku.Gameplay.UI;
 using KyoumoMushoku.Gameplay.World;
@@ -29,9 +30,10 @@ namespace KyoumoMushoku.Editor.Greybox
     /// 8つの区域はすべて同一シーンに置く。移動時間そのものがソフトクロックを進めるため、
     /// 区域の切り替えにロードや瞬間移動を挟むと、設計上の圧力が失われる。
     ///
-    /// Phase 1 で水源・就寝場所・病院・状態の HUD・SAN の退色を、Phase 2 でゴミ箱3種を配線した。
-    /// Phase 3 は商業ゾーンを巡回する警官1名と警戒度の所有者を加え、
-    /// 命題③（警察の追い出しがプレッシャーを生み出せるか）を実機で確かめる。
+    /// Phase 1 で水源・就寝場所・病院・状態の HUD・SAN の退色を、Phase 2 でゴミ箱3種を、
+    /// Phase 3 で商業ゾーンを巡回する警官1名と警戒度の所有者を配線した。
+    /// Phase 4 はコンビニ1軒（購入・バイト・廃品の買い取り）を加え、
+    /// 命題④（バイトと自由な漁りの間に本当の選択があるか）を実機で確かめる。
     /// </summary>
     public static class GreyboxBuilder
     {
@@ -96,9 +98,10 @@ namespace KyoumoMushoku.Editor.Greybox
             // ゴミ箱は時計（昼夜・日替りのリポップ）に配線するため、システムを先に建てる。
             var clock = BuildSystems(schedule);
             BuildInteractables(white, spriteMaterial, catalog, loot, clock);
+            var store = BuildStore(white, spriteMaterial);
             var officer = BuildPolice(white, spriteMaterial);
             BuildSessionAndGrade(clock, player);
-            BuildCanvas(player, clock);
+            BuildCanvas(player, clock, store);
 
             var hud = clock.gameObject.AddComponent<PhaseZeroHud>();
             hud.Configure(clock, player.GetComponent<ZoneTracker>(), player.GetComponent<PlayerMotor>(), player.transform);
@@ -109,7 +112,9 @@ namespace KyoumoMushoku.Editor.Greybox
             RegisterSceneInBuildSettings();
 
             AssetDatabase.SaveAssets();
-            Debug.Log($"Phase 3 greybox built at {ScenePath}. A/D で歩く、Shift で走る、E で調べる／漁る、数字で飲食。");
+            Debug.Log($"Phase 4 greybox built at {ScenePath}. A/D で歩く、Shift で走る、E で調べる／漁る、数字で飲食。");
+            Debug.Log("コンビニ前（x=114）で E → 店パネル。数字で買う、S で廃品を売る（1日上限300円）、W でレジ打ち。" +
+                      "レジ打ちは Space でタイミングを合わせる。SAN が下がると帯が狭まり報酬が暴落する。SAN20未満で価格が ??。");
             Debug.Log("ゴミ箱は E で漁る（探索時間あり・歩くと中断）。夜のコンビニ前は弁当が出る。使い切ると翌日まで空。");
             Debug.Log("コンビニ前を警官が巡回する。見られたまま漁り続けると 注意→警告→追い出し と進む。" +
                       "走れば振り切れる（警官 6.5 < 走り 7.5）。地下通路は地上の警官から見えない。");
@@ -291,6 +296,34 @@ namespace KyoumoMushoku.Editor.Greybox
         }
 
         /// <summary>
+        /// コンビニを1軒だけ置く。購入・バイト・廃品の買い取りを兼ねる（第九・十三節）。
+        /// コンビニ前（商業ゾーン）の左寄り x=114 に据える。夜に弁当が出るゴミ箱 B（x=128）とは離し、
+        /// 「昼は働き、夜はそのゴミを漁る」皮肉が同じ区域に同居する。取引の結果は店主が世界の言葉で語る。
+        /// </summary>
+        static Storefront BuildStore(Sprite white, Material material)
+        {
+            var root = new GameObject("Store").transform;
+            var position = new Vector3(114f, FirstDistrictLayout.SurfaceY + 1.5f, 0f);
+
+            var marker = MakeQuad("Storefront", white, material, new Color(0.45f, 0.7f, 0.85f), sortingOrder: 5);
+            marker.transform.SetParent(root, false);
+            marker.transform.position = position;
+            marker.transform.localScale = new Vector3(2.4f, 3f, 1f);
+
+            var collider = marker.AddComponent<BoxCollider2D>();
+            collider.isTrigger = true;
+
+            var store = marker.AddComponent<Storefront>();
+            store.Configure(
+                new[] { "water_bottle", "onigiri", "can_coffee", "backpack" },
+                buybackDailyCapYen: 300, jobRounds: 5, jobSanityCost: 25f, jobHungerCost: 15f);
+
+            // 店主の頭上の台詞。マーカーは縦に伸びているので、台詞は親にせず root 直下（等倍）に置く。
+            store.BindClerk(MakeSpeech(root, position + new Vector3(0f, 3.4f, 0f)));
+            return store;
+        }
+
+        /// <summary>
         /// 話者の頭上に出す世界空間の文字（第十四節）。画面上のトーストと違い、誰が言ったのかが分かる。
         /// </summary>
         static NpcSpeech MakeSpeech(Transform parent, Vector3 localPosition)
@@ -362,7 +395,7 @@ namespace KyoumoMushoku.Editor.Greybox
         /// <summary>
         /// 水源・就寝場所・病院・ゴミ箱を置く。すべて第十三節の勾配（安全で貧しい端 → 危険で豊かな端）に沿う。
         /// Phase 2 で、食料・廃品を供給していた足場（ItemPickup）を、漁って引くゴミ箱3種に置き換える。
-        /// 店（購入・買い取り）は Phase 4 で入る。
+        /// 店（購入・バイト・買い取り）は <see cref="BuildStore"/> が別に置く（Phase 4）。
         /// </summary>
         static void BuildInteractables(Sprite white, Material material, ItemDatabaseAsset catalog,
             TrashCanLootAsset loot, GameClockDriver clock)
@@ -515,7 +548,7 @@ namespace KyoumoMushoku.Editor.Greybox
         /// Screen Space - Overlay の HUD。ポスト処理の後段に描かれるため SAN の退色を受けず、
         /// 文字は常に読める（第三節）。4状態のゲージ、行動プロンプト、カバンの一覧を持つ。
         /// </summary>
-        static void BuildCanvas(GameObject player, GameClockDriver clock)
+        static void BuildCanvas(GameObject player, GameClockDriver clock, Storefront store)
         {
             var white = AssetDatabase.LoadAssetAtPath<Sprite>(SpritePath);
             var font = TMP_Settings.defaultFontAsset;
@@ -557,8 +590,30 @@ namespace KyoumoMushoku.Editor.Greybox
 
             var inventoryText = MakeText(canvasT, font, "Inventory", new Vector2(1f, 1f),
                 new Vector2(-24f, -24f), new Vector2(470f, 780f), 26f, TextAlignmentOptions.TopLeft);
-            canvasGo.AddComponent<InventoryView>().Configure(player.GetComponent<PlayerInventory>(),
+            var inventoryView = canvasGo.AddComponent<InventoryView>();
+            inventoryView.Configure(player.GetComponent<PlayerInventory>(),
                 player.GetComponent<PlayerVitals>(), player.GetComponent<PlayerConsumer>(), inventoryText);
+
+            // コンビニの店パネル（モーダル）。開いている間は移動と通常のインタラクトを止め、数字キーを占有する。
+            // 世界の上に重ねるため、暗い下敷きを敷いて文字を読ませる。
+            var shopBackdrop = MakeUIImage(canvasT, white, new Color(0.05f, 0.06f, 0.08f, 0.86f), "ShopBackdrop",
+                new Vector2(0f, 0f), new Vector2(880f, 680f));
+            var shopRt = shopBackdrop.rectTransform;
+            shopRt.anchorMin = shopRt.anchorMax = shopRt.pivot = new Vector2(0.5f, 0.5f);
+            shopRt.anchoredPosition = Vector2.zero;
+
+            var shopText = MakeText(canvasT, font, "ShopPanel", new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(820f, 620f), 30f, TextAlignmentOptions.Top);
+
+            var shopPanel = canvasGo.AddComponent<StorefrontPanel>();
+            shopPanel.Configure(store, player.GetComponent<PlayerMotor>(),
+                player.GetComponent<PlayerInteractor>(), shopText);
+
+            // 店パネルが開いている間、数字キーは購入に使う。飲食の数字入力を黙らせる。
+            inventoryView.BindModal(shopPanel);
+
+            // 下敷きはパネルが閉じている間は消しておく。パネルの開閉に追従させる。
+            canvasGo.AddComponent<ModalBackdrop>().Configure(shopPanel, shopBackdrop);
         }
 
         static Image MakeGauge(Transform parent, Sprite white, TMP_FontAsset font, string label, Color color, int row)

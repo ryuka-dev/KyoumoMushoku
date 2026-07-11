@@ -23,6 +23,9 @@ namespace KyoumoMushoku.Gameplay.UI
 
         readonly StringBuilder _builder = new StringBuilder();
 
+        // モーダル（店パネル）が数字キーを使う間は飲食を黙らせ、キーの取り合いを避ける。
+        IInputModal _modal;
+
         public void Configure(PlayerInventory inventory, PlayerVitals vitals, PlayerConsumer consumer, TMP_Text text)
         {
             _inventory = inventory;
@@ -30,6 +33,9 @@ namespace KyoumoMushoku.Gameplay.UI
             _consumer = consumer;
             _text = text;
         }
+
+        /// <summary>数字キーを占有するモーダルを結びつける。開いている間は飲食入力を読まない。</summary>
+        public void BindModal(IInputModal modal) => _modal = modal;
 
         void Update()
         {
@@ -49,7 +55,7 @@ namespace KyoumoMushoku.Gameplay.UI
         void HandleEatInput()
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null || _consumer == null)
+            if (keyboard == null || _consumer == null || (_modal != null && _modal.IsOpen))
             {
                 return;
             }

@@ -24,6 +24,8 @@ MonoBehaviour:
     rottenHp: 0
     rottenSanity: 0
     sellPriceYen: 0
+    buyPriceYen: 100
+    capacityBonus: 0
   - id: half_bottle
     displayName: "\u98F2\u307F\u304B\u3051\u306E\u30DA\u30C3\u30C8\u30DC\u30C8\u30EB"
     category: 0
@@ -35,6 +37,8 @@ MonoBehaviour:
     rottenHp: 0
     rottenSanity: 0
     sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
   - id: onigiri
     displayName: "\u304A\u306B\u304E\u308A"
     category: 1
@@ -46,6 +50,8 @@ MonoBehaviour:
     rottenHp: 0
     rottenSanity: 0
     sellPriceYen: 0
+    buyPriceYen: 130
+    capacityBonus: 0
   - id: bento
     displayName: "\u30B3\u30F3\u30D3\u30CB\u5F01\u5F53"
     category: 1
@@ -57,6 +63,8 @@ MonoBehaviour:
     rottenHp: -14
     rottenSanity: -8
     sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
   - id: bread
     displayName: "\u30D1\u30F3"
     category: 1
@@ -68,6 +76,8 @@ MonoBehaviour:
     rottenHp: -10
     rottenSanity: -6
     sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
   - id: can_aluminum
     displayName: "\u30A2\u30EB\u30DF\u7F36"
     category: 2
@@ -79,6 +89,8 @@ MonoBehaviour:
     rottenHp: 0
     rottenSanity: 0
     sellPriceYen: 20
+    buyPriceYen: 0
+    capacityBonus: 0
   - id: bottle_empty
     displayName: "\u7A7A\u304D\u74F6"
     category: 2
@@ -90,6 +102,8 @@ MonoBehaviour:
     rottenHp: 0
     rottenSanity: 0
     sellPriceYen: 50
+    buyPriceYen: 0
+    capacityBonus: 0
   - id: umbrella_broken
     displayName: "\u58CA\u308C\u305F\u5098"
     category: 2
@@ -101,6 +115,8 @@ MonoBehaviour:
     rottenHp: 0
     rottenSanity: 0
     sellPriceYen: 120
+    buyPriceYen: 0
+    capacityBonus: 0
   - id: can_coffee
     displayName: "\u7F36\u30B3\u30FC\u30D2\u30FC"
     category: 4
@@ -112,6 +128,8 @@ MonoBehaviour:
     rottenHp: 0
     rottenSanity: 0
     sellPriceYen: 0
+    buyPriceYen: 120
+    capacityBonus: 0
   - id: cigarette
     displayName: "\u62FE\u3063\u305F\u30BF\u30D0\u30B3"
     category: 4
@@ -123,3 +141,18 @@ MonoBehaviour:
     rottenHp: 0
     rottenSanity: 0
     sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
+  - id: backpack
+    displayName: "\u30D0\u30C3\u30AF\u30D1\u30C3\u30AF"
+    category: 3
+    slots: 1
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+    buyPriceYen: 2000
+    capacityBonus: 12

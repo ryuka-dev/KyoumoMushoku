@@ -9,6 +9,7 @@ using KyoumoMushoku.Gameplay.Economy;
 using KyoumoMushoku.Gameplay.Items;
 using KyoumoMushoku.Gameplay.Persistence;
 using KyoumoMushoku.Gameplay.Police;
+using KyoumoMushoku.Gameplay.Shop;
 using KyoumoMushoku.Gameplay.Survival;
 using KyoumoMushoku.Gameplay.World;
 using UnityEngine;
@@ -35,6 +36,7 @@ namespace KyoumoMushoku.Gameplay.Session
         PlayerInventory _inventory;
         Hospital _hospital;
         ZoneAlertDirector _alerts;
+        Storefront _storefront;
         IRng _rng;
 
         public void Configure(GameClockDriver clock, Transform player) => (_clock, _player) = (clock, player);
@@ -44,6 +46,7 @@ namespace KyoumoMushoku.Gameplay.Session
             _store ??= new FileSaveStore();
             _rng ??= new SystemRng();
             _alerts = FindFirstObjectByType<ZoneAlertDirector>();
+            _storefront = FindFirstObjectByType<Storefront>();
 
             if (_player == null && _vitals == null)
             {
@@ -125,6 +128,9 @@ namespace KyoumoMushoku.Gameplay.Session
             // 日付をポーリングしないのは、ロード時にも日付が変わって見え、二重に減衰するためである。
             _clock?.Clock?.BeginNextDay();
             _alerts?.BeginNextDay();
+
+            // コンビニの買い取り枠も日境界で戻る（第十三節）。就寝でセーブされるため、この値は永続しない。
+            _storefront?.BeginNextDay();
 
             // 今夜ここで無料の寝床を使った、という事実は朝まで残る。だから減衰のあとに数える。
             // 静穏ゾーンではこれが積み上がってベンチの撤去を招く（第五節・SleepSpotClosure）。
