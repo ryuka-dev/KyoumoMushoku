@@ -23,8 +23,10 @@ namespace KyoumoMushoku.Gameplay.UI
 
         readonly StringBuilder _builder = new StringBuilder();
 
-        // モーダル（店パネル・段ボール箱パネル）が数字キーを使う間は飲食を黙らせ、キーの取り合いを避ける。
-        IInputModal[] _modals = System.Array.Empty<IInputModal>();
+        // モーダル（店パネル・段ボール箱パネルなど）が数字キーを使う間は飲食を黙らせ、キーの取り合いを避ける。
+        // インタフェース配列は Unity が直列化できず、ビルダーの配線が保存/再生で消えるため（StashPanel._spots と同病）、
+        // MonoBehaviour として直列化して読むときに IInputModal へ戻す。
+        [SerializeField] MonoBehaviour[] _modals = System.Array.Empty<MonoBehaviour>();
 
         public void Configure(PlayerInventory inventory, PlayerVitals vitals, PlayerConsumer consumer, TMP_Text text)
         {
@@ -35,13 +37,31 @@ namespace KyoumoMushoku.Gameplay.UI
         }
 
         /// <summary>数字キーを占有するモーダルを結びつける。どれか1つでも開いている間は飲食入力を読まない。</summary>
-        public void BindModal(params IInputModal[] modals) => _modals = modals ?? System.Array.Empty<IInputModal>();
+        public void BindModal(params IInputModal[] modals)
+        {
+            if (modals == null)
+            {
+                _modals = System.Array.Empty<MonoBehaviour>();
+                return;
+            }
+
+            var list = new System.Collections.Generic.List<MonoBehaviour>(modals.Length);
+            foreach (var modal in modals)
+            {
+                if (modal is MonoBehaviour behaviour)
+                {
+                    list.Add(behaviour);
+                }
+            }
+
+            _modals = list.ToArray();
+        }
 
         bool AnyModalOpen()
         {
-            foreach (var modal in _modals)
+            foreach (var behaviour in _modals)
             {
-                if (modal != null && modal.IsOpen)
+                if (behaviour is IInputModal modal && modal.IsOpen)
                 {
                     return true;
                 }
