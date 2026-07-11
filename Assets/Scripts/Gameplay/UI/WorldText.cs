@@ -19,6 +19,11 @@ namespace KyoumoMushoku.Gameplay.UI
         public static string SleepNoticeRemoved => "撤去済み（苦情多数のため）";
         public static string SleepNoticeWarned => "苦情の貼り紙：はやく出ていけ";
 
+        // ── 病院の自費治療（怪我は金で治す・第三節） ─────────────
+        public static string TreatmentOffer(int feeYen) => $"手当てを受ける（{feeYen}円）";
+        public static string TreatmentCannotAfford(int feeYen) => $"手当てを受ける（所持金が足りない・{feeYen}円）";
+        public static string TreatmentNotNeeded => "傷はない";
+
         // ── 階段（交互門・第五節） ───────────────────────────────
         public static string StairsDown => "階段を降りる";
         public static string StairsUp => "階段を昇る";
