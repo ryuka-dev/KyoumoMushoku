@@ -31,6 +31,33 @@ namespace KyoumoMushoku.Core.Tests
         }
 
         [Test]
+        public void DrainTime_ConsumesThirstAndHunger_ButNotSanity()
+        {
+            var tuning = Tuning();
+            var vitals = new Vitals(tuning);
+
+            vitals.DrainTime(20f);
+
+            Assert.AreEqual(100f - tuning.ThirstDrainPerSecond * 20f, vitals.Thirst, 1e-3f);
+            Assert.AreEqual(100f - tuning.HungerDrainPerSecond * 20f, vitals.Hunger, 1e-3f);
+            Assert.AreEqual(100f, vitals.Sanity, 1e-3f, "行動で進んだ時間ぶんの消費は SAN を削らない。");
+            Assert.AreEqual(100f, vitals.Hp, 1e-3f, "満たされているうちは HP を削らない。");
+        }
+
+        [Test]
+        public void DrainTime_ClampsAtZero_WithoutRetroactiveDamage()
+        {
+            var tuning = Tuning();
+            var vitals = new Vitals(tuning, new VitalsState { Thirst = 1f, Hunger = 1f });
+
+            vitals.DrainTime(9999f);
+
+            Assert.AreEqual(0f, vitals.Thirst, 1e-3f);
+            Assert.AreEqual(0f, vitals.Hunger, 1e-3f);
+            Assert.AreEqual(100f, vitals.Hp, 1e-3f, "ゼロ割れの遡及ダメージは通常の Advance に委ねる。");
+        }
+
+        [Test]
         public void Running_DrainsThirstAndHungerFaster_ButNotSanity()
         {
             var walking = new Vitals(Tuning());

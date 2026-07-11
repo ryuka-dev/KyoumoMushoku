@@ -102,6 +102,25 @@ namespace KyoumoMushoku.Core.Survival
         }
 
         /// <summary>
+        /// ソフトクロックが実フレームの外でまとまって進んだぶん（漁りなどの行動）を、渇きと空腹に反映する。
+        /// 時間が経てば喉は渇き、腹は減る。<see cref="Advance"/> と違い、走行倍率もダメージも扱わない
+        /// （行動中は動いておらず、ゼロ割れの遡及ダメージは通常の <see cref="Advance"/> に委ねる）。
+        ///
+        /// SAN はここでは削らない。SAN は実時間の緩やかな摩耗と明示的な代償（バイト）で扱う――
+        /// 就寝の一晩ぶんの消費が渇き・空腹だけを削り SAN を削らないのと同じ規則である。
+        /// </summary>
+        public void DrainTime(float seconds)
+        {
+            if (seconds <= 0f)
+            {
+                return;
+            }
+
+            _thirst = Clamp(_thirst - _tuning.ThirstDrainPerSecond * seconds, 0f, _tuning.MaxThirst);
+            _hunger = Clamp(_hunger - _tuning.HungerDrainPerSecond * seconds, 0f, _tuning.MaxHunger);
+        }
+
+        /// <summary>
         /// 病院で目を覚ます。HP のみ全回復し、渇き・空腹は死亡直前の値を維持する。
         /// 命は助かるが、目覚めてすぐにまた生存の心配をする状態に戻る。
         /// SAN のペナルティと医療費は呼び出し側が <see cref="Apply"/> と所持金で適用する。

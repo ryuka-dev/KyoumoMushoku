@@ -215,7 +215,7 @@ namespace KyoumoMushoku.Gameplay.Foraging
 
             if (!draw.HasItem)
             {
-                Spend();
+                Spend(player);
                 _hasNextDraw = false;
                 player.Knacks?.RecordRummage();
                 return ForageText.FoundEmpty;
@@ -239,7 +239,7 @@ namespace KyoumoMushoku.Gameplay.Foraging
                 return onBack ? ForageText.CannotCarry(name) : ForageText.CannotFit(name);
             }
 
-            Spend();
+            Spend(player);
             _hasNextDraw = false;
             player.Knacks?.RecordRummage();
 
@@ -270,16 +270,18 @@ namespace KyoumoMushoku.Gameplay.Foraging
             _nextDrawNight = IsNight;
         }
 
-        void Spend()
+        void Spend(PlayerContext player)
         {
             _remainingToday--;
             ApplyTint();
 
-            // 漁り1回ぶん、ソフトクロックがまとまって進む。時間は漁りの主要なコストの1つであり（第四節）、
-            // これがないと漁りがほぼ無時間で、1日に何度でも夜に入らず稼げてしまう。中断（歩き出し）は
-            // Spend に来ないので消費しない。バイト（Storefront.ApplyJobOutcome）と同一のパターン。
-            // GameClock.Advance は日の時計だけを進め、渇き・空腹の掉渣は実時間側が別に負う（二重計上なし）。
+            // 漁り1回ぶん、ソフトクロックがまとまって進む（バイトと同一のパターン）。時間は漁りの主要な
+            // コストの1つであり（第四節）、これがないと漁りがほぼ無時間で1日に何度でも夜に入らず稼げてしまう。
+            // 同じ秒数だけ渇き・空腹も進める。GameClock は日の時計、DrainTime は survival の時計であり、
+            // 時間は一つなので両方が同じだけ動く。SAN は削らない（実時間の摩耗と明示的な代償で扱う）。
+            // 中断（歩き出し）は Spend に来ないので何も消費しない。
             _clock?.Clock?.Advance(_forageClockSeconds);
+            player.Vitals?.Vitals?.DrainTime(_forageClockSeconds);
 
             // 漁る姿は一過性の注目（警官が読む）だけでなく、住処の一帯の警戒度にも残る（第十二節・小）。
             // 路地裏のゴミ箱だけが上昇量を持ち、公園・商業のゴミ箱は 0 なので何もしない。
