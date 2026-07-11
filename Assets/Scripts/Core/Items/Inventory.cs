@@ -82,6 +82,21 @@ namespace KyoumoMushoku.Core.Items
             return true;
         }
 
+        /// <summary>
+        /// 容量を増やす（バックパックの購入）。就寝時オートセーブの <see cref="InventoryState.Capacity"/> が
+        /// そのまま永続するため、拡張は追加のセーブ項目を必要としない。減らす方向には使わない。
+        /// </summary>
+        public void Expand(int extraSlots)
+        {
+            if (extraSlots <= 0)
+            {
+                return;
+            }
+
+            _capacity += extraSlots;
+            Changed?.Invoke();
+        }
+
         public bool TryRemoveAt(int index, out ItemInstance removed)
         {
             if (index < 0 || index >= _items.Count)

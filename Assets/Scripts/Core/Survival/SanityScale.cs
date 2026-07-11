@@ -24,6 +24,9 @@ namespace KyoumoMushoku.Core.Survival
         /// <summary>精神崩壊時、睡眠による SAN 回復量にかかる倍率。</summary>
         public const float BrokenSleepRecoveryMultiplier = 0.5f;
 
+        /// <summary>精神崩壊時、バイトの効率（報酬倍率）。暴落するが、0 にはしない。「割に合わないが、まだできる」（第三節）。</summary>
+        public const float BrokenJobEfficiency = 0.3f;
+
         /// <summary>睡眠による SAN 回復量の下限。回復不能な悪循環に陥らせないために設ける。</summary>
         public const float MinimumSleepRecovery = 5f;
 
@@ -59,6 +62,18 @@ namespace KyoumoMushoku.Core.Survival
 
         /// <summary>低 SAN で失われるのは「他者と関わる行動」だけである。確率ではなく閾値で決める。</summary>
         public static bool CanRespondToConversation(float sanity) => sanity >= ConversationThreshold;
+
+        /// <summary>
+        /// 商品の価格が読めるか。精神崩壊すると値札がぼやける（第三節：商品の価格 ??）。
+        /// 読めなくても買う行為そのものは決して封鎖しない。欠落は用いるが、操作は奪わない。
+        /// </summary>
+        public static bool CanReadPrices(float sanity) => sanity >= BreakdownThreshold;
+
+        /// <summary>
+        /// バイトの効率（報酬倍率）。SAN が崩壊帯（20 未満）に落ちると暴落する（第三節）。
+        /// 禁止ではなく暴落なのは、バイトが唯一の安定収入であり、進行不能に陥らせないためである。
+        /// </summary>
+        public static float JobEfficiency(float sanity) => sanity >= BreakdownThreshold ? 1f : BrokenJobEfficiency;
 
         /// <summary>
         /// 睡眠による SAN の回復量。精神崩壊時は下がるが、下限を割らない。

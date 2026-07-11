@@ -16,7 +16,9 @@ namespace KyoumoMushoku.Core.Items
             int slots,
             VitalsDelta effect = default,
             VitalsDelta rottenPenalty = default,
-            int sellPriceYen = 0)
+            int sellPriceYen = 0,
+            int buyPriceYen = 0,
+            int capacityBonus = 0)
         {
             if (id.IsEmpty)
             {
@@ -35,6 +37,8 @@ namespace KyoumoMushoku.Core.Items
             Effect = effect;
             RottenPenalty = rottenPenalty;
             SellPriceYen = sellPriceYen;
+            BuyPriceYen = buyPriceYen;
+            CapacityBonus = capacityBonus;
         }
 
         public ItemId Id { get; }
@@ -54,6 +58,18 @@ namespace KyoumoMushoku.Core.Items
         public VitalsDelta RottenPenalty { get; }
 
         public int SellPriceYen { get; }
+
+        /// <summary>店で買うときの価格。0 なら店では売られていない（第十一節）。</summary>
+        public int BuyPriceYen { get; }
+
+        /// <summary>
+        /// 買うとカバンの容量を増やす装備（バックパック）。0 なら容量には影響しない。
+        /// 容量制のもとでは、これがマス数だけを持つ「背負う道具」を表す（第十一節）。
+        /// </summary>
+        public int CapacityBonus { get; }
+
+        /// <summary>店で買えるか。買値が付いているものだけを店頭に並べる。</summary>
+        public bool IsForSale => BuyPriceYen > 0;
 
         public bool IsFood => Category == ItemCategory.Food;
 

@@ -34,6 +34,12 @@ namespace KyoumoMushoku.Gameplay.Items
             public float rottenSanity;
 
             public int sellPriceYen;
+
+            [Tooltip("店で買うときの価格。0 なら店では売られていない（第十一節）。")]
+            public int buyPriceYen;
+
+            [Tooltip("買うとカバンの容量を増やす装備（バックパック）。0 なら容量に影響しない。")]
+            public int capacityBonus;
         }
 
         [SerializeField] List<Entry> _entries = new List<Entry>();
@@ -86,7 +92,9 @@ namespace KyoumoMushoku.Gameplay.Items
                     Mathf.Max(1, entry.slots),
                     new VitalsDelta { Hp = entry.hp, Thirst = entry.thirst, Hunger = entry.hunger, Sanity = entry.sanity },
                     new VitalsDelta { Hp = entry.rottenHp, Sanity = entry.rottenSanity },
-                    entry.sellPriceYen);
+                    entry.sellPriceYen,
+                    entry.buyPriceYen,
+                    entry.capacityBonus);
             }
         }
 
@@ -96,16 +104,20 @@ namespace KyoumoMushoku.Gameplay.Items
         {
             _entries = new List<Entry>
             {
-                new Entry { id = "water_bottle", displayName = "ペットボトルの水", category = ItemCategory.Water, slots = 2, thirst = 45f },
+                new Entry { id = "water_bottle", displayName = "ペットボトルの水", category = ItemCategory.Water, slots = 2, thirst = 45f, buyPriceYen = 100 },
                 new Entry { id = "half_bottle", displayName = "飲みかけのペットボトル", category = ItemCategory.Water, slots = 2, thirst = 18f, sanity = -4f },
-                new Entry { id = "onigiri", displayName = "おにぎり", category = ItemCategory.Food, slots = 1, hunger = 25f },
+                new Entry { id = "onigiri", displayName = "おにぎり", category = ItemCategory.Food, slots = 1, hunger = 25f, buyPriceYen = 130 },
                 new Entry { id = "bento", displayName = "コンビニ弁当", category = ItemCategory.Food, slots = 2, hunger = 40f, rottenHp = -14f, rottenSanity = -8f },
                 new Entry { id = "bread", displayName = "パン", category = ItemCategory.Food, slots = 2, hunger = 22f, rottenHp = -10f, rottenSanity = -6f },
                 new Entry { id = "can_aluminum", displayName = "アルミ缶", category = ItemCategory.Salvage, slots = 1, sellPriceYen = 20 },
                 new Entry { id = "bottle_empty", displayName = "空き瓶", category = ItemCategory.Salvage, slots = 2, sellPriceYen = 50 },
                 new Entry { id = "umbrella_broken", displayName = "壊れた傘", category = ItemCategory.Salvage, slots = 3, sellPriceYen = 120 },
-                new Entry { id = "can_coffee", displayName = "缶コーヒー", category = ItemCategory.Consumable, slots = 1, thirst = 10f, sanity = 12f },
+                new Entry { id = "can_coffee", displayName = "缶コーヒー", category = ItemCategory.Consumable, slots = 1, thirst = 10f, sanity = 12f, buyPriceYen = 120 },
                 new Entry { id = "cigarette", displayName = "拾ったタバコ", category = ItemCategory.Consumable, slots = 1, hp = -3f, sanity = 10f },
+
+                // バックパック：3日目のマイルストーン。持ち物には入らず、容量を広げる（第十一節）。
+                // 廃品拾いだけでは 2,000 円に届かない＝必ずバイトを組み合わせる、という経済の要（命題④）。
+                new Entry { id = "backpack", displayName = "バックパック", category = ItemCategory.Equipment, slots = 1, buyPriceYen = 2000, capacityBonus = 12 },
             };
             _byId = null;
         }
