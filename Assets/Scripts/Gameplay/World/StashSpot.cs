@@ -4,6 +4,7 @@ using KyoumoMushoku.Core.Randomness;
 using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.Police;
+using KyoumoMushoku.Gameplay.UI;
 using TMPro;
 using UnityEngine;
 
@@ -74,10 +75,10 @@ namespace KyoumoMushoku.Gameplay.World
         public event Action<StashSpot, PlayerContext, Stash> Opened;
 
         /// <summary>この保管庫の呼び名（UI 表示・第十二節）。種別で変わる。</summary>
-        public string KindLabel => _kind == StashKind.CoinLocker ? "コインロッカー" : "段ボール箱";
+        public string KindLabel => StashText.KindLabel(_kind == StashKind.CoinLocker);
 
         /// <summary>料金の呼び名（UI 表示）。段ボール箱は場所代、コインロッカーは使用料。</summary>
-        public string RentLabel => _kind == StashKind.CoinLocker ? "使用料" : "場所代";
+        public string RentLabel => StashText.RentLabel(_kind == StashKind.CoinLocker);
 
         // コインロッカーは商業ゾーンの什器で、段ボールを担いで置くのではなく、その場で借りて開ける（初回に器を用意する）。
         bool IsCoinLocker => _kind == StashKind.CoinLocker;
@@ -149,15 +150,15 @@ namespace KyoumoMushoku.Gameplay.World
         {
             if (_stash != null)
             {
-                return $"{KindLabel}（{_stash.UsedSlots}/{_stash.Capacity}マス）を開ける";
+                return StashText.OpenStash(KindLabel, _stash.UsedSlots, _stash.Capacity);
             }
 
             if (IsCoinLocker)
             {
-                return "コインロッカーを開ける";
+                return StashText.OpenCoinLocker;
             }
 
-            return IsCarryingBox(player) ? "ここに段ボールを置く" : "（段ボールがあればここに置ける）";
+            return IsCarryingBox(player) ? StashText.PlaceCardboardHere : StashText.PlaceHint;
         }
 
         // 設置済みの箱・コインロッカーは即時に開ける（チャネル 0）。空で段ボールを背負っているときだけ、設置にチャネル時間がかかる。
@@ -211,13 +212,13 @@ namespace KyoumoMushoku.Gameplay.World
             var catalog = player.Inventory != null ? player.Inventory.Catalog : _catalog;
             if (catalog == null || player.Carry == null || player.Carry.Slot == null)
             {
-                return "ここには置けない。";
+                return StashText.CannotPlaceHere;
             }
 
             // カタログを先に確かめてから下ろす。下ろしてから失敗して段ボールを失う、を避ける。
             if (!player.Carry.Slot.TryTakeOut(out _))
             {
-                return "置く段ボールがない。";
+                return StashText.NoCardboardToPlace;
             }
 
             _catalog = catalog;
@@ -228,7 +229,7 @@ namespace KyoumoMushoku.Gameplay.World
 
             // 罰の前にルールを提示する（第十二節）。設置した本人はいまここに立っている。
             _elder?.SayPlacementRule();
-            return "段ボール箱を置いた。";
+            return StashText.CardboardPlaced;
         }
 
         // 設置の中断は何も消費しない。段ボールは背負ったまま（漁りの中断と同じ・第五節）。
@@ -401,26 +402,14 @@ namespace KyoumoMushoku.Gameplay.World
         public void ShowForecast(StashEventKind kind)
         {
             _forecastKind = kind;
-            SetNotice(kind switch
-            {
-                StashEventKind.CityCleaning => "清掃予告の貼り紙：明日の朝、この辺りの清掃が入る",
-                StashEventKind.ScavengedByPeers => "荒らされた足跡がある……明日あたり誰かに漁られそうだ",
-                StashEventKind.PoliceRemoval => "昼間、警官がこの辺りを下見していた。明日、撤去されるかもしれない",
-                _ => string.Empty,
-            });
+            SetNotice(StashText.Forecast(kind));
         }
 
         /// <summary>事後説明を世界の中に出す（第十四節・見えない変化を後から世界が語る）。</summary>
         public void ShowAftermath(StashEventKind kind, int lost)
         {
             _forecastKind = StashEventKind.None; // 事後を出す＝先の予告は無い。
-            SetNotice(kind switch
-            {
-                StashEventKind.CityCleaning => $"清掃が入った（{lost}点を失った）",
-                StashEventKind.ScavengedByPeers => $"同業者に漁られた（{lost}点を失った）",
-                StashEventKind.PoliceRemoval => $"警察に撤去された（{lost}点を失い、警戒度が上がった）",
-                _ => string.Empty,
-            });
+            SetNotice(StashText.Aftermath(kind, lost));
         }
 
         public void ClearNotice()

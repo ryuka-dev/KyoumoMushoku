@@ -28,11 +28,11 @@ namespace KyoumoMushoku.Gameplay.World
 
         /// <summary>初めて段ボール箱を置いたとき、罰の前にルールを提示する（第十二節）。</summary>
         public void SayPlacementRule() =>
-            Say("ここ、たまに清掃が入るぞ。貯め込みすぎると狙われる。");
+            Say(StashText.ElderPlacementRule);
 
         /// <summary>場所代を受け取ったときの一言（第十二節）。支払いは世界の中の彼を通して行われる。</summary>
         public void SayRentPaid() =>
-            Say("あいよ、今日のぶんは確かに。ここは見といてやる。");
+            Say(StashText.ElderRentPaid);
 
         /// <summary>
         /// 今日の場所代を払った箱を、その日のうちに担いで持ち出したときの一言。払った代償が
@@ -40,7 +40,7 @@ namespace KyoumoMushoku.Gameplay.World
         /// rent の扱いそのものは変えない――回収は従来どおりこの箱の据え置きを畳む。
         /// </summary>
         public void SayRentForfeited() =>
-            Say("箱ごと持ってくのか。今日払ったぶんは、もう戻らねえぞ。");
+            Say(StashText.ElderRentForfeited);
 
         /// <summary>
         /// 保管庫を開けた瞬間の一言。起きたことの説明を最優先し、次に噂話（SAN 70 以上）、最後に貯め込みの小言。
@@ -53,33 +53,16 @@ namespace KyoumoMushoku.Gameplay.World
             switch (ElderRemark.Decide(aftermath, forecast, usedSlots, sanity))
             {
                 case ElderRemarkKind.Aftermath:
-                    Say(AftermathLine(aftermath, aftermathLost));
+                    Say(StashText.ElderAftermath(aftermath, aftermathLost));
                     break;
                 case ElderRemarkKind.Rumor:
-                    Say(RumorLine(forecast));
+                    Say(StashText.ElderRumor(forecast));
                     break;
                 case ElderRemarkKind.HoardNag:
-                    Say("その箱、膨らみすぎだ。目立つぞ。");
+                    Say(StashText.ElderHoardNag);
                     break;
             }
         }
-
-        static string AftermathLine(StashEventKind kind, int lost) => kind switch
-        {
-            StashEventKind.CityCleaning => $"昨夜、清掃が入っただろ。貼り紙が出てたはずだ（{lost}点）。",
-            StashEventKind.ScavengedByPeers => $"誰かに漁られたな。膨らんだ箱は目立つ（{lost}点）。",
-            StashEventKind.PoliceRemoval => $"警察に持ってかれたか。ここらで目立ちすぎたんだ（{lost}点）。",
-            _ => string.Empty,
-        };
-
-        // 噂話（SAN 70 以上）は前倒しの助言。有効な対抗手段を世界の言葉で示す（第十二節）。
-        static string RumorLine(StashEventKind kind) => kind switch
-        {
-            StashEventKind.CityCleaning => "明日、清掃が入るらしい。大事な物は今のうちに持って出な。",
-            StashEventKind.ScavengedByPeers => "この辺で漁られる話をよく聞く。抱えて持ち歩くのも手だ。",
-            StashEventKind.PoliceRemoval => "警官が下見してた。明日は箱を空にしておけ。",
-            _ => string.Empty,
-        };
 
         void Say(string line)
         {

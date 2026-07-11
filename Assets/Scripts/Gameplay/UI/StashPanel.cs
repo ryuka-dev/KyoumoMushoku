@@ -196,9 +196,9 @@ namespace KyoumoMushoku.Gameplay.UI
         {
             _feedback = _spot.PayRent(_ctx) switch
             {
-                StashSpot.PayRentOutcome.Paid => $"{_spot.RentLabel} {_spot.RentCostYen}円を払った。今日はここが少し安全だ。",
-                StashSpot.PayRentOutcome.AlreadyPaid => "今日のぶんはもう払ってある。",
-                StashSpot.PayRentOutcome.CannotAfford => $"{_spot.RentLabel}が払えない。",
+                StashSpot.PayRentOutcome.Paid => StashText.RentPaid(_spot.RentLabel, _spot.RentCostYen),
+                StashSpot.PayRentOutcome.AlreadyPaid => StashText.RentAlreadyPaid,
+                StashSpot.PayRentOutcome.CannotAfford => StashText.RentCannotAfford(_spot.RentLabel),
                 _ => _feedback,
             };
         }
@@ -214,14 +214,14 @@ namespace KyoumoMushoku.Gameplay.UI
             var item = inventory[index];
             if (!_stash.CanDeposit(item))
             {
-                _feedback = "箱がいっぱいだ。";
+                _feedback = StashText.BoxFull;
                 return;
             }
 
             // 空きは先に確かめてある。抜いてから預ける。
             inventory.TryRemoveAt(index, out var removed);
             _stash.TryDeposit(removed);
-            _feedback = $"{NameOf(removed)}を箱に入れた。";
+            _feedback = StashText.Deposited(NameOf(removed));
         }
 
         void Withdraw(int index)
@@ -235,13 +235,13 @@ namespace KyoumoMushoku.Gameplay.UI
             var item = _stash[index];
             if (!inventory.CanAdd(item))
             {
-                _feedback = "カバンがいっぱいだ。";
+                _feedback = StashText.BagFull;
                 return;
             }
 
             _stash.TryWithdrawAt(index, out var taken);
             inventory.TryAdd(taken);
-            _feedback = $"{NameOf(taken)}を取り出した。";
+            _feedback = StashText.Withdrew(NameOf(taken));
         }
 
         string NameOf(ItemInstance item)
@@ -256,36 +256,36 @@ namespace KyoumoMushoku.Gameplay.UI
         {
             var inventory = _ctx.Inventory.Inventory;
 
+            var label = _spot != null ? _spot.KindLabel : StashText.ShortStashLabel;
+            var headerLabel = _spot != null ? _spot.KindLabel : StashText.DefaultStashLabel;
+
             _sb.Clear();
-            _sb.AppendLine($"＝ {(_spot != null ? _spot.KindLabel : "保管庫")} ＝　［Tab：預ける↔引き出す］　［E／Esc：閉じる］");
+            _sb.AppendLine(StashText.PanelHeader(headerLabel));
             _sb.AppendLine();
 
             var depositActive = _side == Side.Deposit;
-            var label = _spot != null ? _spot.KindLabel : "箱";
 
-            _sb.AppendLine($"{(depositActive ? "▶" : "　")} 預ける（カバン → {label}）　カバン {inventory.UsedSlots}/{inventory.Capacity}マス");
-            AppendItems(inventory.Count, depositActive, i => inventory.TryGetDefinition(i, out var d) ? d.DisplayName : inventory[i].Id, "（カバンは空）");
+            _sb.AppendLine(StashText.DepositHeading(depositActive, label, inventory.UsedSlots, inventory.Capacity));
+            AppendItems(inventory.Count, depositActive, i => inventory.TryGetDefinition(i, out var d) ? d.DisplayName : inventory[i].Id, StashText.BagEmpty);
             _sb.AppendLine();
 
-            _sb.AppendLine($"{(!depositActive ? "▶" : "　")} 引き出す（{label} → カバン）　{label} {_stash.UsedSlots}/{_stash.Capacity}マス");
-            AppendItems(_stash.Count, !depositActive, i => _stash.TryGetDefinition(i, out var d) ? d.DisplayName : _stash[i].Id, $"（{label}は空）");
+            _sb.AppendLine(StashText.WithdrawHeading(!depositActive, label, _stash.UsedSlots, _stash.Capacity));
+            AppendItems(_stash.Count, !depositActive, i => _stash.TryGetDefinition(i, out var d) ? d.DisplayName : _stash[i].Id, StashText.StashEmpty(label));
 
             // 場所代・使用料（第十二節）：払うとその日の安全性が上がり、保管庫イベントが起きにくくなる。
             if (_spot != null && _spot.CanPayRent)
             {
                 _sb.AppendLine();
                 _sb.AppendLine(_spot.RentActive
-                    ? $"{_spot.RentLabel}：本日ぶん支払い済み（今日はここが少し安全だ）"
-                    : $"{_spot.RentLabel}：未払い　［R：{_spot.RentCostYen}円 払う］");
+                    ? StashText.RentPaidStatus(_spot.RentLabel)
+                    : StashText.RentUnpaidStatus(_spot.RentLabel, _spot.RentCostYen));
             }
 
             // 回収（第十二節の対抗手段「別の場所へ移す」）：空の段ボール箱は担ぎ直して運べる。
             if (_spot != null && _spot.IsReclaimable && _stash.UsedSlots == 0)
             {
                 _sb.AppendLine();
-                _sb.AppendLine(_spot.CanReclaim(_ctx)
-                    ? "空の箱　［G：回収して担ぐ］"
-                    : "空の箱（回収するには背負いを空けて）");
+                _sb.AppendLine(_spot.CanReclaim(_ctx) ? StashText.ReclaimReady : StashText.ReclaimBlocked);
             }
 
             if (!string.IsNullOrEmpty(_feedback))
@@ -308,8 +308,7 @@ namespace KyoumoMushoku.Gameplay.UI
             for (var i = 0; i < count; i++)
             {
                 // 数字が効くのは選ばれている側だけ。効かない側は数字を出さず取り違えを避ける。
-                var head = numbered ? $"{i + 1}." : "・";
-                _sb.AppendLine($"　　{head} {nameAt(i)}");
+                _sb.AppendLine(StashText.ItemLine(i + 1, numbered, nameAt(i)));
             }
         }
 
