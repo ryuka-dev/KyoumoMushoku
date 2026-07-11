@@ -113,6 +113,25 @@ namespace KyoumoMushoku.Core.Tests
         }
 
         [Test]
+        public void StashTuning_CoinLocker_IsRoomierAndCostsMoreThanCardboard()
+        {
+            // 中期の器は前期より広く（中容量）、その分ずっと高い使用料を取る（第十二節）。
+            Assert.Greater(StashTuning.CapacityFor(StashKind.CoinLocker), StashTuning.CapacityFor(StashKind.CardboardBox));
+            Assert.Greater(StashTuning.RentCostFor(StashKind.CoinLocker), StashTuning.RentCostFor(StashKind.CardboardBox));
+        }
+
+        [Test]
+        public void StashSafety_CoinLocker_IsSaferThanCardboard_WhenPaid_ButExposedWhenNot()
+        {
+            var lockerPaid = StashSafety.EventChanceMultiplier(StashKind.CoinLocker, rentActive: true);
+            var boxPaid = StashSafety.EventChanceMultiplier(StashKind.CardboardBox, rentActive: true);
+            Assert.Less(lockerPaid, boxPaid); // 払っている限りロッカーの方が高安全（係数が小さい）
+
+            // 使用料が切れた日は無防備（1）に戻る＝「有料である限り高安全」。
+            Assert.AreEqual(1f, StashSafety.EventChanceMultiplier(StashKind.CoinLocker, rentActive: false));
+        }
+
+        [Test]
         public void LostCount_RoundsUpAndNeverExceedsStock()
         {
             Assert.AreEqual(4, StashEventRoll.LostCount(5, StashEventKind.CityCleaning));   // ceil(3.5)

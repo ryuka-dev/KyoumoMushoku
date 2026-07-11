@@ -26,7 +26,10 @@ namespace KyoumoMushoku.Gameplay.UI
 
         readonly StringBuilder _sb = new StringBuilder();
 
-        StashSpot _spot;
+        // ビルダーが Configure で差し込むシーン参照。[SerializeField] にしないと保存/再生で消え、購読できない
+        // （プロジェクトの既知の落とし穴：シーン参照は要 [SerializeField]）。
+        [SerializeField] StashSpot[] _spots = System.Array.Empty<StashSpot>();
+        StashSpot _spot; // いま開いている設置場所。開いた合図で切り替わる。
         Stash _stash;
         PlayerContext _ctx;
         bool _open;
@@ -36,10 +39,11 @@ namespace KyoumoMushoku.Gameplay.UI
 
         public bool IsOpen => _open;
 
-        public void Configure(StashSpot spot, PlayerMotor motor, PlayerInteractor interactor, TMP_Text text)
+        // 1枚のパネルで複数の設置場所（段ボール箱・コインロッカー）を扱う。開いた設置場所に切り替わる。
+        public void Configure(StashSpot[] spots, PlayerMotor motor, PlayerInteractor interactor, TMP_Text text)
         {
             Unsubscribe();
-            _spot = spot;
+            _spots = spots ?? System.Array.Empty<StashSpot>();
             _motor = motor;
             _interactor = interactor;
             _text = text;
@@ -62,25 +66,32 @@ namespace KyoumoMushoku.Gameplay.UI
 
         void Subscribe()
         {
-            if (_spot != null)
+            foreach (var spot in _spots)
             {
-                _spot.Opened += OnOpened;
+                if (spot != null)
+                {
+                    spot.Opened += OnOpened;
+                }
             }
         }
 
         void Unsubscribe()
         {
-            if (_spot != null)
+            foreach (var spot in _spots)
             {
-                _spot.Opened -= OnOpened;
+                if (spot != null)
+                {
+                    spot.Opened -= OnOpened;
+                }
             }
         }
 
         // インタラクタが有効なのはパネルが閉じているときだけなので、この合図は常に「開く」を意味する。
-        void OnOpened(PlayerContext ctx, Stash stash) => Open(ctx, stash);
+        void OnOpened(StashSpot spot, PlayerContext ctx, Stash stash) => Open(spot, ctx, stash);
 
-        void Open(PlayerContext ctx, Stash stash)
+        void Open(StashSpot spot, PlayerContext ctx, Stash stash)
         {
+            _spot = spot;
             _ctx = ctx;
             _stash = stash;
             _open = true;
@@ -171,9 +182,9 @@ namespace KyoumoMushoku.Gameplay.UI
         {
             _feedback = _spot.PayRent(_ctx) switch
             {
-                StashSpot.PayRentOutcome.Paid => $"場所代 {_spot.RentCostYen}円を払った。今日はここが少し安全だ。",
+                StashSpot.PayRentOutcome.Paid => $"{_spot.RentLabel} {_spot.RentCostYen}円を払った。今日はここが少し安全だ。",
                 StashSpot.PayRentOutcome.AlreadyPaid => "今日のぶんはもう払ってある。",
-                StashSpot.PayRentOutcome.CannotAfford => "場所代が払えない。",
+                StashSpot.PayRentOutcome.CannotAfford => $"{_spot.RentLabel}が払えない。",
                 _ => _feedback,
             };
         }
@@ -232,25 +243,26 @@ namespace KyoumoMushoku.Gameplay.UI
             var inventory = _ctx.Inventory.Inventory;
 
             _sb.Clear();
-            _sb.AppendLine("＝ 段ボール箱 ＝　［Tab：預ける↔引き出す］　［E／Esc：閉じる］");
+            _sb.AppendLine($"＝ {(_spot != null ? _spot.KindLabel : "保管庫")} ＝　［Tab：預ける↔引き出す］　［E／Esc：閉じる］");
             _sb.AppendLine();
 
             var depositActive = _side == Side.Deposit;
+            var label = _spot != null ? _spot.KindLabel : "箱";
 
-            _sb.AppendLine($"{(depositActive ? "▶" : "　")} 預ける（カバン → 箱）　カバン {inventory.UsedSlots}/{inventory.Capacity}マス");
+            _sb.AppendLine($"{(depositActive ? "▶" : "　")} 預ける（カバン → {label}）　カバン {inventory.UsedSlots}/{inventory.Capacity}マス");
             AppendItems(inventory.Count, depositActive, i => inventory.TryGetDefinition(i, out var d) ? d.DisplayName : inventory[i].Id, "（カバンは空）");
             _sb.AppendLine();
 
-            _sb.AppendLine($"{(!depositActive ? "▶" : "　")} 引き出す（箱 → カバン）　箱 {_stash.UsedSlots}/{_stash.Capacity}マス");
-            AppendItems(_stash.Count, !depositActive, i => _stash.TryGetDefinition(i, out var d) ? d.DisplayName : _stash[i].Id, "（箱は空）");
+            _sb.AppendLine($"{(!depositActive ? "▶" : "　")} 引き出す（{label} → カバン）　{label} {_stash.UsedSlots}/{_stash.Capacity}マス");
+            AppendItems(_stash.Count, !depositActive, i => _stash.TryGetDefinition(i, out var d) ? d.DisplayName : _stash[i].Id, $"（{label}は空）");
 
-            // 場所代（第十二節）：払うとその日の安全性が上がり、保管庫イベントが起きにくくなる。
+            // 場所代・使用料（第十二節）：払うとその日の安全性が上がり、保管庫イベントが起きにくくなる。
             if (_spot != null && _spot.CanPayRent)
             {
                 _sb.AppendLine();
                 _sb.AppendLine(_spot.RentActive
-                    ? "場所代：本日ぶん支払い済み（今日はここが少し安全だ）"
-                    : $"場所代：未払い　［R：{_spot.RentCostYen}円 払う］");
+                    ? $"{_spot.RentLabel}：本日ぶん支払い済み（今日はここが少し安全だ）"
+                    : $"{_spot.RentLabel}：未払い　［R：{_spot.RentCostYen}円 払う］");
             }
 
             if (!string.IsNullOrEmpty(_feedback))

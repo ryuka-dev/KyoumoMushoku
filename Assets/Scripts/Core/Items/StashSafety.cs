@@ -14,12 +14,20 @@ namespace KyoumoMushoku.Core.Items
         public const float CardboardBoxRentPaidMultiplier = 0.4f;
 
         /// <summary>
-        /// 保管庫イベントの発生確率にかける安全性の係数。種別と、その日の場所代の支払状況で決まる。
-        /// 段ボール箱は無防備（1）が既定で、場所代を払った日だけ下がる。未知の種別は素通し（1）にとどめる。
+        /// コインロッカー・使用料を払った日の発生確率係数（第十二節「高安全」）。段ボール箱より更に大きく下げる。
+        /// 使用料が切れた日は無防備（1）に戻る＝「有料である限り高安全」。
+        /// </summary>
+        public const float CoinLockerRentPaidMultiplier = 0.1f;
+
+        /// <summary>
+        /// 保管庫イベントの発生確率にかける安全性の係数。種別と、その日の場所代・使用料の支払状況で決まる。
+        /// どの種別も無防備（1）が既定で、料金を払った日だけ下がる（段ボール箱より コインロッカーの方が安全）。
+        /// 未知の種別は素通し（1）にとどめる。
         /// </summary>
         public static float EventChanceMultiplier(StashKind kind, bool rentActive) => kind switch
         {
             StashKind.CardboardBox => rentActive ? CardboardBoxRentPaidMultiplier : 1f,
+            StashKind.CoinLocker => rentActive ? CoinLockerRentPaidMultiplier : 1f,
             _ => 1f,
         };
     }

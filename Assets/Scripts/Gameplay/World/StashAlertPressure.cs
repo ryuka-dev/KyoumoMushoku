@@ -45,7 +45,9 @@ namespace KyoumoMushoku.Gameplay.World
             {
                 foreach (var spot in _spots)
                 {
-                    if (spot != null && spot.HasStash)
+                    // 生活ゾーンへの入力なので、生活ゾーンに置かれた保管庫の貯め込みだけを数える。
+                    // 商業ゾーンのコインロッカーは住処から遠く、そこへの貯め込みは住処の一帯を目立たせない（第十二節）。
+                    if (spot != null && spot.HasStash && spot.Zone == AlertZoneId.Residential)
                     {
                         perSecond += StashPressure.HoardRaisePerSecond(spot.StashUsedSlots);
                     }

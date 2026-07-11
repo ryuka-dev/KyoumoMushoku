@@ -67,8 +67,17 @@ namespace KyoumoMushoku.Gameplay.World
         /// <summary>保管庫が埋まっているマス数（イベント抽選の入力）。空・未設置なら 0。</summary>
         public int StashUsedSlots => _stash?.UsedSlots ?? 0;
 
-        /// <summary>設置済みの箱を開ける合図。<c>StashPanel</c> がこれを購読して開く。</summary>
-        public event Action<PlayerContext, Stash> Opened;
+        /// <summary>保管庫を開ける合図（どの設置場所かを渡す）。<c>StashPanel</c> がこれを購読して開く。</summary>
+        public event Action<StashSpot, PlayerContext, Stash> Opened;
+
+        /// <summary>この保管庫の呼び名（UI 表示・第十二節）。種別で変わる。</summary>
+        public string KindLabel => _kind == StashKind.CoinLocker ? "コインロッカー" : "段ボール箱";
+
+        /// <summary>料金の呼び名（UI 表示）。段ボール箱は場所代、コインロッカーは使用料。</summary>
+        public string RentLabel => _kind == StashKind.CoinLocker ? "使用料" : "場所代";
+
+        // コインロッカーは商業ゾーンの什器で、段ボールを担いで置くのではなく、その場で借りて開ける（初回に器を用意する）。
+        bool IsCoinLocker => _kind == StashKind.CoinLocker;
 
         /// <summary>設置している姿は目立つ（第十二節）。警官がチャネル越しにこれを読む。</summary>
         public float SuspicionPerSecond => _suspicionPerSecond;
@@ -118,39 +127,61 @@ namespace KyoumoMushoku.Gameplay.World
                 return false;
             }
 
-            // 置いてあるなら開ける。無いなら、段ボールを背負っているときだけ置ける。
-            return _stash != null || IsCarryingBox(player);
+            // 置いてあるなら開ける。コインロッカーはいつでも借りて開ける。段ボール箱は背負っているときだけ置ける。
+            return _stash != null || IsCoinLocker || IsCarryingBox(player);
         }
 
         public string Describe(PlayerContext player)
         {
             if (_stash != null)
             {
-                return $"段ボール箱（{_stash.UsedSlots}/{_stash.Capacity}マス）を開ける";
+                return $"{KindLabel}（{_stash.UsedSlots}/{_stash.Capacity}マス）を開ける";
+            }
+
+            if (IsCoinLocker)
+            {
+                return "コインロッカーを開ける";
             }
 
             return IsCarryingBox(player) ? "ここに段ボールを置く" : "（段ボールがあればここに置ける）";
         }
 
-        // 設置済みの箱は即時に開ける（チャネル 0）。空で段ボールを背負っているときだけ、設置にチャネル時間がかかる。
+        // 設置済みの箱・コインロッカーは即時に開ける（チャネル 0）。空で段ボールを背負っているときだけ、設置にチャネル時間がかかる。
         public float ChannelSeconds(PlayerContext player) =>
-            _stash == null && IsCarryingBox(player) ? _placeSeconds : 0f;
+            _stash == null && !IsCoinLocker && IsCarryingBox(player) ? _placeSeconds : 0f;
 
         // 即時の経路。設置済みの箱を開ける（ChannelSeconds が 0 を返すのでここに来る）。
         public void Interact(PlayerContext player)
         {
             if (_stash == null)
             {
-                return;
+                // コインロッカーは初回に器を用意する（段ボールと同じ機構を、担がず・その場で使う）。
+                // 開けるだけなら無料。安全性は使用料を払っている間だけ上がる（第十二節「有料である限り高安全」）。
+                if (!IsCoinLocker)
+                {
+                    return;
+                }
+
+                var lockerCatalog = player.Inventory != null ? player.Inventory.Catalog : _catalog;
+                if (lockerCatalog == null)
+                {
+                    return;
+                }
+
+                _catalog = lockerCatalog;
+                _stash = new Stash(lockerCatalog, _kind, _stashSpotId, StashTuning.CapacityFor(_kind));
+                _rentDaysRemaining = 0;
+                ApplyVisual();
             }
 
             // 開けた瞬間、先輩ホームレスが因果を語る（事後説明→噂話→貯め込みの小言）。箱を前にしたこの瞬間が
             // 世界の中の canonical な機会であり、就寝中に起きたイベントの説明はここで初めて本人に届く。
+            // コインロッカーには先輩がいないので、事後説明は貼り紙（保証チャネル）だけが担う。
             _elder?.Comment(_aftermathKind, _aftermathLost, _forecastKind, _stash.UsedSlots);
             _aftermathKind = StashEventKind.None;
             _aftermathLost = 0;
 
-            Opened?.Invoke(player, _stash);
+            Opened?.Invoke(this, player, _stash);
         }
 
         // 設置チャネルの完了。背負っている段ボールを下ろして箱に変える。
@@ -159,7 +190,7 @@ namespace KyoumoMushoku.Gameplay.World
             if (_stash != null)
             {
                 // 通常この経路には来ない（設置済みは ChannelSeconds が 0）。念のため開けるに留める。
-                Opened?.Invoke(player, _stash);
+                Opened?.Invoke(this, player, _stash);
                 return null;
             }
 

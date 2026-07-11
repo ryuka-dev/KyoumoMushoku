@@ -102,10 +102,10 @@ namespace KyoumoMushoku.Editor.Greybox
             var clock = BuildSystems(schedule);
             BuildInteractables(white, spriteMaterial, catalog, loot, clock);
             var store = BuildStore(white, spriteMaterial);
-            var stashSpot = BuildStash(white, spriteMaterial);
+            var stashSpots = BuildStash(white, spriteMaterial);
             var officer = BuildPolice(white, spriteMaterial);
             BuildSessionAndGrade(clock, player);
-            BuildCanvas(player, clock, store, stashSpot);
+            BuildCanvas(player, clock, store, stashSpots);
 
             var hud = clock.gameObject.AddComponent<PhaseZeroHud>();
             hud.Configure(clock, player.GetComponent<ZoneTracker>(), player.GetComponent<PlayerMotor>(), player.transform);
@@ -342,7 +342,7 @@ namespace KyoumoMushoku.Editor.Greybox
         /// くれば置ける。置いたあとは開けてカバンと出し入れする拠点になる。取りに戻るには実移動が要り、
         /// そのぶんソフトクロックが進む。ゴミ箱 C（x=86）と同じ生活ゾーンの左寄り x=78 に据える。
         /// </summary>
-        static StashSpot BuildStash(Sprite white, Material material)
+        static StashSpot[] BuildStash(Sprite white, Material material)
         {
             var root = new GameObject("Stash").transform;
             var position = new Vector3(78f, FirstDistrictLayout.SurfaceY + 0.6f, 0f);
@@ -372,7 +372,24 @@ namespace KyoumoMushoku.Editor.Greybox
             var elder = elderBody.AddComponent<ElderHomeless>();
             elder.BindSpeech(MakeSpeech(root, elderPosition + new Vector3(0f, 2.6f, 0f)));
             spot.BindElder(elder);
-            return spot;
+
+            // 中期：安宿のコインロッカー（第十二節・商業ゾーン・中容量・高安全）。住処（路地裏 x=78）から遠い
+            // 安宿（x=172）の傍に置く。取りに戻るには実際に移動する＝ソフトクロックを進める（第二節）。
+            // 段ボールと違い担いで置くのではなく、その場で借りて開ける。開けるのは無料だが、使用料を払う間だけ高安全。
+            var lockerPosition = new Vector3(168f, FirstDistrictLayout.SurfaceY + 0.9f, 0f);
+            var lockerMarker = MakeQuad("StashSpot_CoinLocker", white, material, new Color(0.35f, 0.45f, 0.6f, 0.9f), sortingOrder: 4);
+            lockerMarker.transform.SetParent(root, false);
+            lockerMarker.transform.position = lockerPosition;
+            lockerMarker.transform.localScale = new Vector3(1.2f, 1.8f, 1f);
+
+            var lockerCollider = lockerMarker.AddComponent<BoxCollider2D>();
+            lockerCollider.isTrigger = true;
+
+            var locker = lockerMarker.AddComponent<StashSpot>();
+            locker.Configure("stash_locker_inn", AlertZoneId.Commercial, StashKind.CoinLocker, placeSeconds: 0.1f);
+            locker.BindNotice(MakeNotice(root, lockerPosition + new Vector3(0f, 3.4f, 0f)));
+
+            return new[] { spot, locker };
         }
 
         /// <summary>
@@ -605,7 +622,7 @@ namespace KyoumoMushoku.Editor.Greybox
         /// Screen Space - Overlay の HUD。ポスト処理の後段に描かれるため SAN の退色を受けず、
         /// 文字は常に読める（第三節）。4状態のゲージ、行動プロンプト、カバンの一覧を持つ。
         /// </summary>
-        static void BuildCanvas(GameObject player, GameClockDriver clock, Storefront store, StashSpot stashSpot)
+        static void BuildCanvas(GameObject player, GameClockDriver clock, Storefront store, StashSpot[] stashSpots)
         {
             var white = AssetDatabase.LoadAssetAtPath<Sprite>(SpritePath);
             var font = TMP_Settings.defaultFontAsset;
@@ -680,7 +697,7 @@ namespace KyoumoMushoku.Editor.Greybox
                 Vector2.zero, new Vector2(820f, 620f), 30f, TextAlignmentOptions.Top);
 
             var stashPanel = canvasGo.AddComponent<StashPanel>();
-            stashPanel.Configure(stashSpot, player.GetComponent<PlayerMotor>(),
+            stashPanel.Configure(stashSpots, player.GetComponent<PlayerMotor>(),
                 player.GetComponent<PlayerInteractor>(), stashText);
 
             canvasGo.AddComponent<ModalBackdrop>().Configure(stashPanel, stashBackdrop);
