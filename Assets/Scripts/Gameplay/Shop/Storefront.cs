@@ -83,7 +83,7 @@ namespace KyoumoMushoku.Gameplay.Shop
         public bool CanInteract(PlayerContext player) =>
             player.Vitals != null && player.Vitals.Vitals.IsAlive;
 
-        public string Describe(PlayerContext player) => "コンビニ";
+        public string Describe(PlayerContext player) => ShopText.StoreName;
 
         public void Interact(PlayerContext player) => Entered?.Invoke(player);
 

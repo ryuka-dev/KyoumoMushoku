@@ -178,11 +178,11 @@ namespace KyoumoMushoku.Gameplay.UI
             var result = _store.TryBuy(id, _ctx, out var bought);
             _store.Speak(result switch
             {
-                PurchaseResult.Bought => bought != null ? $"{bought.DisplayName}、まいど。" : "まいど。",
-                PurchaseResult.CannotAfford => "金が足りないよ。",
-                PurchaseResult.InventoryFull => "そんなに持てないだろ。",
-                PurchaseResult.AlreadyOwned => "もう持ってるだろ。",
-                _ => "それは置いてないよ。",
+                PurchaseResult.Bought => ShopText.BoughtThanks(bought != null ? bought.DisplayName : null),
+                PurchaseResult.CannotAfford => ShopText.CannotAfford,
+                PurchaseResult.InventoryFull => ShopText.InventoryFull,
+                PurchaseResult.AlreadyOwned => ShopText.AlreadyOwned,
+                _ => ShopText.NotSold,
             });
         }
 
@@ -191,17 +191,11 @@ namespace KyoumoMushoku.Gameplay.UI
             var result = _store.SellSalvage(_ctx);
             if (result.SoldCount > 0)
             {
-                var line = $"{result.SoldCount}点で{result.PaidYen}円だ。";
-                if (result.CapReached)
-                {
-                    line += "…今日はこれで勘弁してくれ。";
-                }
-
-                _store.Speak(line);
+                _store.Speak(ShopText.SalvageSold(result.SoldCount, result.PaidYen, result.CapReached));
             }
             else
             {
-                _store.Speak(result.CapReached ? "今日はもう買い取れないよ。" : "売る物がないな。");
+                _store.Speak(result.CapReached ? ShopText.BuybackCapReached : ShopText.NothingToSell);
             }
         }
 
@@ -213,9 +207,9 @@ namespace KyoumoMushoku.Gameplay.UI
             var canReadPrices = SanityScale.CanReadPrices(sanity);
 
             _sb.Clear();
-            _sb.AppendLine("＝ コンビニ ＝　　［E／Esc で出る］");
+            _sb.AppendLine(ShopText.MenuHeader);
             _sb.AppendLine();
-            _sb.AppendLine("＜買う＞");
+            _sb.AppendLine(ShopText.MenuBuyHeading);
 
             for (var i = 0; i < _store.OfferIds.Count; i++)
             {
@@ -229,30 +223,30 @@ namespace KyoumoMushoku.Gameplay.UI
                 if (def.CapacityBonus > 0 && inventory != null &&
                     inventory.Capacity >= Inventory.DefaultCapacity + def.CapacityBonus)
                 {
-                    tail = "購入済み";
+                    tail = ShopText.OfferOwned;
                 }
                 else if (canReadPrices)
                 {
-                    tail = $"{def.BuyPriceYen}円";
+                    tail = ShopText.OfferPrice(def.BuyPriceYen);
                 }
                 else
                 {
-                    tail = "??円";
+                    tail = ShopText.OfferPriceUnreadable;
                 }
 
-                _sb.AppendLine($"  {i + 1}. {def.DisplayName}　{tail}");
+                _sb.AppendLine(ShopText.MenuOfferLine(i + 1, def.DisplayName, tail));
             }
 
             if (!canReadPrices)
             {
-                _sb.AppendLine("　　「値札がぼやけて読めない」");
+                _sb.AppendLine(ShopText.PriceUnreadableNote);
             }
 
             _sb.AppendLine();
             var remaining = _store.Ledger.RemainingToday(_store.BuybackDailyCapYen);
-            _sb.AppendLine($"＜売る＞　S：換金廃品を売る（本日あと {remaining}円）");
+            _sb.AppendLine(ShopText.MenuSellHeading(remaining));
             _sb.AppendLine();
-            _sb.AppendLine("＜はたらく＞　W：レジ打ち（気分と空腹を削る）");
+            _sb.AppendLine(ShopText.MenuWorkHeading);
 
             return _sb.ToString();
         }
@@ -320,21 +314,21 @@ namespace KyoumoMushoku.Gameplay.UI
         {
             var performance = _store.JobRounds > 0 ? (float)_hits / _store.JobRounds : 0f;
             var paid = _store.ApplyJobOutcome(performance, _ctx);
-            _store.Speak(paid > 0 ? $"お疲れさん。{paid}円だ。" : "今日はもう帰りな。");
+            _store.Speak(ShopText.JobDone(paid));
             _mode = Mode.Menu;
         }
 
         string ComposeWork(float low, float high)
         {
             _sb.Clear();
-            _sb.AppendLine($"＝ レジ打ち ＝　ラウンド {_round}/{_store.JobRounds}");
+            _sb.AppendLine(ShopText.WorkHeader(_round, _store.JobRounds));
             _sb.AppendLine();
             // 等幅を強制する。比例フォントのままだと '-' と '=' の幅が違い、カーソル位置が実際とずれて見える。
             _sb.AppendLine($"<mspace=0.6em>{BuildBar(_cursor, low, high)}</mspace>");
             _sb.AppendLine();
-            _sb.AppendLine("Space：打つ　　Esc：やめる");
+            _sb.AppendLine(ShopText.WorkControls);
             _sb.AppendLine();
-            _sb.AppendLine($"命中 {_hits}");
+            _sb.AppendLine(ShopText.WorkHits(_hits));
             return _sb.ToString();
         }
 
