@@ -13,6 +13,7 @@ using KyoumoMushoku.Gameplay.Items;
 using KyoumoMushoku.Gameplay.Knacks;
 using KyoumoMushoku.Gameplay.Player;
 using KyoumoMushoku.Gameplay.Police;
+using KyoumoMushoku.Gameplay.Progress;
 using KyoumoMushoku.Gameplay.Rendering;
 using KyoumoMushoku.Gameplay.Session;
 using KyoumoMushoku.Gameplay.Shop;
@@ -275,6 +276,7 @@ namespace KyoumoMushoku.Editor.Greybox
             player.AddComponent<CarryIndicator>();
 
             player.AddComponent<PlayerKnacks>();
+            player.AddComponent<PlayerMilestones>();
             player.AddComponent<PlayerConsumer>();
             player.AddComponent<PlayerInteractor>();
 
@@ -741,6 +743,11 @@ namespace KyoumoMushoku.Editor.Greybox
             var carriedSprite = player.transform.Find("CarriedBox").GetComponent<SpriteRenderer>();
             player.GetComponent<CarryIndicator>().Bind(carriedSprite, carryLabel);
 
+            // 段階目標の一覧（第八節）。背負いの一言のさらに下に常時出す。達成済みは打ち消し線。
+            var milestoneText = MakeText(canvasT, font, "MilestoneList", new Vector2(0f, 1f),
+                new Vector2(24f, -24f - 4f * 40f - 8f - 88f - 48f), new Vector2(760f, 160f), 24f, TextAlignmentOptions.TopLeft);
+            canvasGo.AddComponent<MilestoneHud>().Configure(player.GetComponent<PlayerMilestones>(), milestoneText);
+
             var interactor = player.GetComponent<PlayerInteractor>();
 
             var promptText = MakeText(canvasT, font, "InteractionPrompt", new Vector2(0.5f, 0f),
@@ -750,7 +757,8 @@ namespace KyoumoMushoku.Editor.Greybox
             // 漁りの結果を世界の言葉で短く伝えるトースト（第十四節）。プロンプトの少し上に出す。
             var toastText = MakeText(canvasT, font, "ActionToast", new Vector2(0.5f, 0f),
                 new Vector2(0f, 170f), new Vector2(1000f, 50f), 30f, TextAlignmentOptions.Center);
-            canvasGo.AddComponent<ActionToast>().Configure(interactor, player.GetComponent<PlayerKnacks>(), toastText);
+            canvasGo.AddComponent<ActionToast>().Configure(interactor, player.GetComponent<PlayerKnacks>(),
+                player.GetComponent<PlayerMilestones>(), toastText);
 
             var inventoryText = MakeText(canvasT, font, "Inventory", new Vector2(1f, 1f),
                 new Vector2(-24f, -24f), new Vector2(470f, 780f), 26f, TextAlignmentOptions.TopLeft);
@@ -792,8 +800,25 @@ namespace KyoumoMushoku.Editor.Greybox
 
             canvasGo.AddComponent<ModalBackdrop>().Configure(stashPanel, stashBackdrop);
 
-            // どちらかのパネルが開いている間、数字キーはそのパネルが使う。飲食の数字入力を黙らせる。
-            inventoryView.BindModal(shopPanel, stashPanel);
+            // 垂直スライスの結算画面（第八節）。4日目の朝に一度だけ開くモーダル。体裁は店パネルと同じ。
+            var resultBackdrop = MakeUIImage(canvasT, white, new Color(0.05f, 0.06f, 0.08f, 0.86f), "ResultBackdrop",
+                new Vector2(0f, 0f), new Vector2(880f, 680f));
+            var resultRt = resultBackdrop.rectTransform;
+            resultRt.anchorMin = resultRt.anchorMax = resultRt.pivot = new Vector2(0.5f, 0.5f);
+            resultRt.anchoredPosition = Vector2.zero;
+
+            var resultText = MakeText(canvasT, font, "SliceResultPanel", new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(820f, 620f), 30f, TextAlignmentOptions.Top);
+
+            var resultPanel = canvasGo.AddComponent<SliceResultPanel>();
+            resultPanel.Configure(player.GetComponent<PlayerMilestones>(), player.GetComponent<PlayerKnacks>(),
+                player.GetComponent<PlayerWallet>(), player.GetComponent<PlayerMotor>(),
+                player.GetComponent<PlayerInteractor>(), resultText);
+
+            canvasGo.AddComponent<ModalBackdrop>().Configure(resultPanel, resultBackdrop);
+
+            // いずれかのパネルが開いている間、数字キーはそのパネルが使う。飲食の数字入力を黙らせる。
+            inventoryView.BindModal(shopPanel, stashPanel, resultPanel);
         }
 
         static Image MakeGauge(Transform parent, Sprite white, TMP_FontAsset font, string label, Color color, int row)

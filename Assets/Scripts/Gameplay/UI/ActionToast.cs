@@ -1,6 +1,8 @@
 using KyoumoMushoku.Core.Knacks;
+using KyoumoMushoku.Core.Progress;
 using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.Knacks;
+using KyoumoMushoku.Gameplay.Progress;
 using TMPro;
 using UnityEngine;
 
@@ -18,16 +20,18 @@ namespace KyoumoMushoku.Gameplay.UI
         [SerializeField] TMP_Text _text;
         [SerializeField] PlayerInteractor _interactor;
         [SerializeField] PlayerKnacks _knacks;
+        [SerializeField] PlayerMilestones _milestones;
         [SerializeField] float _holdSeconds = 2.5f;
         [SerializeField] float _fadeSeconds = 0.6f;
 
         float _remaining;
 
-        public void Configure(PlayerInteractor interactor, PlayerKnacks knacks, TMP_Text text)
+        public void Configure(PlayerInteractor interactor, PlayerKnacks knacks, PlayerMilestones milestones, TMP_Text text)
         {
             Unsubscribe();
             _interactor = interactor;
             _knacks = knacks;
+            _milestones = milestones;
             _text = text;
             Subscribe();
         }
@@ -55,6 +59,11 @@ namespace KyoumoMushoku.Gameplay.UI
             {
                 _knacks.Acquired += OnKnackAcquired;
             }
+
+            if (_milestones != null)
+            {
+                _milestones.Achieved += OnMilestoneAchieved;
+            }
         }
 
         void Unsubscribe()
@@ -68,12 +77,20 @@ namespace KyoumoMushoku.Gameplay.UI
             {
                 _knacks.Acquired -= OnKnackAcquired;
             }
+
+            if (_milestones != null)
+            {
+                _milestones.Achieved -= OnMilestoneAchieved;
+            }
         }
 
         void OnActionReported(string message) => Show(message);
 
         // 習得の瞬間は明示的に通知する（第六節）。習得したのはルールであって数値ではない。
         void OnKnackAcquired(KnackId id) => Show(HudText.KnackAcquired(GameTextLabels.Knack(id)));
+
+        // 目標の達成も明示的に通知する（第八節）。
+        void OnMilestoneAchieved(MilestoneId id) => Show(HudText.MilestoneAchieved(GameTextLabels.Milestone(id)));
 
         void Show(string message)
         {

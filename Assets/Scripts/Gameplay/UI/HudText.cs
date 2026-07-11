@@ -27,6 +27,14 @@ namespace KyoumoMushoku.Gameplay.UI
         // 習得の瞬間は明示的に通知する（第六節）。習得したのはルールであって数値ではない。
         public static string KnackAcquired(string knackName) => $"コツを覚えた：{knackName}";
 
+        // 目標の達成も明示的に通知する（第八節）。
+        public static string MilestoneAchieved(string milestoneName) => $"めあてを果たした：{milestoneName}";
+
+        // ── 目標一覧（MilestoneHud） ─────────────────────────────
+        public static string MilestoneListHeader => "めあて";
+        public static string MilestoneLine(string name, bool achieved) =>
+            achieved ? $"・<s>{name}</s>（済）" : $"・{name}";
+
         // ── インタラクトの促し（InteractionPrompt） ──────────────
         public static string Rummaging(string progressBar) => $"漁っている… {progressBar}　［動くと手を止める］";
         public static string Interactable(string description) => $"{description}　［E］";

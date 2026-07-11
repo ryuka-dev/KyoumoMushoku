@@ -1,6 +1,7 @@
 using KyoumoMushoku.Core.DayCycle;
 using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Police;
+using KyoumoMushoku.Core.Progress;
 using KyoumoMushoku.Core.Survival;
 using KyoumoMushoku.Core.Zones;
 
@@ -45,6 +46,15 @@ namespace KyoumoMushoku.Gameplay.UI
             KnackId.IronStomach => "鉄の胃袋",
             KnackId.StreetSleeper => "路上の寝方",
             KnackId.FamiliarFace => "通りすがりの顔",
+            _ => "―",
+        };
+
+        /// <summary>段階目標の表示名（第八節）。識別子とは別概念であり、ここに集約する。</summary>
+        public static string Milestone(MilestoneId id) => id switch
+        {
+            MilestoneId.SurviveThreeDays => "3日間生存する",
+            MilestoneId.FirstInnStay => "初めて安宿に泊まる",
+            MilestoneId.BuyBackpack => "バックパックを購入する",
             _ => "―",
         };
 

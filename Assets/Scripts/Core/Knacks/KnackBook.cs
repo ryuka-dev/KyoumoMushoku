@@ -20,6 +20,9 @@ namespace KyoumoMushoku.Core.Knacks
 
         public bool Has(KnackId id) => _state.Acquired.Contains(id);
 
+        /// <summary>習得済みのコツの数。結算画面の表示に使う。</summary>
+        public int AcquiredCount => _state.Acquired.Count;
+
         public int RummageCount => _state.RummageCount;
         public int ForageWarnedCount => _state.ForageWarnedCount;
         public int OutdoorSleepCount => _state.OutdoorSleepCount;
