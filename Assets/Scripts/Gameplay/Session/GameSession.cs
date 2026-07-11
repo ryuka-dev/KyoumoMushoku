@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Persistence;
 using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Randomness;
@@ -7,6 +8,7 @@ using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Economy;
 using KyoumoMushoku.Gameplay.Items;
+using KyoumoMushoku.Gameplay.Knacks;
 using KyoumoMushoku.Gameplay.Persistence;
 using KyoumoMushoku.Gameplay.Police;
 using KyoumoMushoku.Gameplay.Shop;
@@ -34,6 +36,7 @@ namespace KyoumoMushoku.Gameplay.Session
         PlayerVitals _vitals;
         PlayerWallet _wallet;
         PlayerInventory _inventory;
+        PlayerKnacks _knacks;
         Hospital _hospital;
         ZoneAlertDirector _alerts;
         Storefront _storefront;
@@ -62,6 +65,7 @@ namespace KyoumoMushoku.Gameplay.Session
                 _vitals ??= _player.GetComponent<PlayerVitals>();
                 _wallet = _player.GetComponent<PlayerWallet>();
                 _inventory = _player.GetComponent<PlayerInventory>();
+                _knacks = _player.GetComponent<PlayerKnacks>();
                 _playerBody = _player.GetComponent<Rigidbody2D>();
             }
         }
@@ -136,7 +140,15 @@ namespace KyoumoMushoku.Gameplay.Session
             // 静穏ゾーンではこれが積み上がってベンチの撤去を招く（第五節・SleepSpotClosure）。
             if (spot.IsFree)
             {
-                _alerts?.Raise(spot.Zone, ZoneAlertTuning.FreeSleepRaise);
+                // 路上の寝方（第六節）：目立たない寝方を覚えると、無料就寝が残す警戒度が減る＝撤去を招きにくい。
+                // 判定は習得前の状態で行う。覚えたその晩ではなく、次の晩から効く。
+                var scale = _knacks != null && _knacks.Has(KnackId.StreetSleeper)
+                    ? KnackTuning.StreetSleeperFreeSleepScale
+                    : 1f;
+                _alerts?.Raise(spot.Zone, ZoneAlertTuning.FreeSleepRaise * scale);
+
+                // 野外で寝た回数を数える。2回で 路上の寝方 を覚える。
+                _knacks?.RecordOutdoorSleep();
             }
 
             Save(spot.RespawnId);
@@ -159,13 +171,18 @@ namespace KyoumoMushoku.Gameplay.Session
                 return;
             }
 
+            // 路上の寝方（第六節）：野外の無料の寝床では回復が上がる。有料の安宿には効かない。
+            var outdoorBonus = spot.IsFree && _knacks != null && _knacks.Has(KnackId.StreetSleeper)
+                ? KnackTuning.StreetSleeperRecoveryBonus
+                : 0f;
+
             // SAN の回復だけは崩壊時に下がるが、下限を割らない（第三節）。
             vitals.Apply(new VitalsDelta
             {
-                Hp = spot.HpRecovery,
+                Hp = spot.HpRecovery + outdoorBonus,
                 Thirst = spot.ThirstRecovery,
                 Hunger = spot.HungerRecovery,
-                Sanity = SanityScale.SleepRecovery(spot.SanityRecovery, vitals.Sanity),
+                Sanity = SanityScale.SleepRecovery(spot.SanityRecovery + outdoorBonus, vitals.Sanity),
             });
         }
 
@@ -236,6 +253,7 @@ namespace KyoumoMushoku.Gameplay.Session
             _inventory?.RestoreState(save.Inventory);
             _clock?.RestoreState(save.Clock);
             _alerts?.RestoreState(save.ZoneAlerts);
+            _knacks?.RestoreState(save.Knacks);
 
             if (!string.IsNullOrEmpty(save.SleepSpotId) &&
                 _respawnPoints.TryGetValue(save.SleepSpotId, out var point))
@@ -258,6 +276,7 @@ namespace KyoumoMushoku.Gameplay.Session
                 Vitals = _vitals != null ? _vitals.Vitals.CaptureState() : new VitalsState(),
                 Inventory = _inventory != null ? _inventory.Inventory.CaptureState() : new Core.Items.InventoryState(),
                 ZoneAlerts = _alerts != null ? _alerts.CaptureState() : new ZoneAlertState(),
+                Knacks = _knacks != null ? _knacks.CaptureState() : new KnackState(),
                 WalletYen = _wallet != null ? _wallet.Wallet.Yen : 0,
                 SleepSpotId = sleepSpotId ?? string.Empty,
             };

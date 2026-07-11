@@ -1,9 +1,11 @@
+using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Randomness;
 using KyoumoMushoku.Core.Survival;
 using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.Items;
+using KyoumoMushoku.Gameplay.Knacks;
 using KyoumoMushoku.Gameplay.Survival;
 using KyoumoMushoku.Gameplay.UI;
 using KyoumoMushoku.Gameplay.World;
@@ -72,12 +74,14 @@ namespace KyoumoMushoku.Gameplay.Police
         PlayerVitals _vitals;
         PlayerInventory _inventory;
         PlayerInteractor _interactor;
+        PlayerKnacks _knacks;
         ZoneTracker _tracker;
 
         IRng _rng;
         float _suspicion;
         float _patrolDirection = 1f;
         bool _raisedResidentialThisPursuit;
+        bool _warnedThisEncounter;
 
         /// <summary>いまの段階。診断用の HUD が観測する。ゲームプレイの権威ではない。</summary>
         public PoliceStage Stage { get; private set; } = PoliceStage.Unaware;
@@ -109,6 +113,7 @@ namespace KyoumoMushoku.Gameplay.Police
                 _playerBody = _player.GetComponent<Rigidbody2D>();
                 _inventory = _player.GetComponent<PlayerInventory>();
                 _interactor = _player.GetComponent<PlayerInteractor>();
+                _knacks = _player.GetComponent<PlayerKnacks>();
                 _tracker = _player.GetComponent<ZoneTracker>();
             }
 
@@ -217,14 +222,50 @@ namespace KyoumoMushoku.Gameplay.Police
                     break;
                 case PoliceStage.Warning:
                     Say(WarningLine);
+                    OnWarned();
                     break;
                 case PoliceStage.Pursuing:
                     _raisedResidentialThisPursuit = false;
                     Say(PursueLine);
                     break;
+                case PoliceStage.Unaware:
+                    // 遭遇が終わった。次に気づかれたときは、また1回目の警告から数える。
+                    _warnedThisEncounter = false;
+                    break;
             }
 
             ApplyTint();
+        }
+
+        /// <summary>
+        /// 警告を発した瞬間の帰結（第五節・第2段階）。世界に3つの作用を起こす。
+        /// 初めての警告ならコツ `通りすがりの顔` を授け、漁り中なら手を止めさせ（コツ `手を止めない` が無ければ）、
+        /// そしてゾーンに控えめな警戒度を残す（各遭遇の1回目はコツ `通りすがりの顔` が免れる）。
+        /// </summary>
+        void OnWarned()
+        {
+            // 初めて警告された、という出来事そのものが 通りすがりの顔 を授ける（閾値1・第六節）。
+            _knacks?.RecordFirstWarning();
+
+            // 漁っている最中なら手が止まる。3回止められると 手を止めない を覚える。
+            // コツを既に持っているなら手は止まらない。習得の可否は止められる前の状態で判定する。
+            if (_interactor != null && _interactor.Channeling is ISuspiciousAct)
+            {
+                var alreadySteady = _knacks != null && _knacks.Has(KnackId.SteadyHands);
+                _knacks?.RecordForageWarned();
+                if (!alreadySteady)
+                {
+                    _interactor.InterruptChannel();
+                }
+            }
+
+            // 警告はゾーンの警戒度も控えめに上げる。各遭遇の1回目だけは 通りすがりの顔 が免れる。
+            var forgiven = !_warnedThisEncounter && _knacks != null && _knacks.Has(KnackId.FamiliarFace);
+            _warnedThisEncounter = true;
+            if (!forgiven)
+            {
+                _alerts.Raise(_zone, ZoneAlertTuning.WarningRaise);
+            }
         }
 
         void Act(float delta)
@@ -377,6 +418,7 @@ namespace KyoumoMushoku.Gameplay.Police
             _suspicion = 0f;
             Stage = PoliceStage.Unaware;
             _raisedResidentialThisPursuit = false;
+            _warnedThisEncounter = false;
             ApplyTint();
         }
 

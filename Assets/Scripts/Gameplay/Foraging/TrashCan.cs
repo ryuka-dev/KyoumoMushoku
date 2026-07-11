@@ -1,6 +1,7 @@
 using KyoumoMushoku.Core.DayCycle;
 using KyoumoMushoku.Core.Foraging;
 using KyoumoMushoku.Core.Items;
+using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Randomness;
 using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Interaction;
@@ -46,6 +47,12 @@ namespace KyoumoMushoku.Gameplay.Foraging
         int _remainingToday;
         int _lastSeenDay = int.MinValue;
 
+        // 次の1回分を先に引いて確定させておく（あたりの見分け方・第六節）。実際に漁るとこれが出る。
+        // 再抽選しないことが「情報は奪ってよいが嘘はつかない」を守る（第三節）。時間帯が変われば引き直す。
+        LootDraw _nextDraw;
+        bool _hasNextDraw;
+        bool _nextDrawNight;
+
         public void Configure(TrashCanKind kind, TrashCanLootAsset loot, GameClockDriver clock,
             int yieldsPerDay, float rummageSeconds)
         {
@@ -77,6 +84,7 @@ namespace KyoumoMushoku.Gameplay.Foraging
             {
                 _lastSeenDay = day;
                 _remainingToday = _yieldsPerDay;
+                _hasNextDraw = false; // 新しい1日。次に出るものを引き直す。
                 ApplyTint();
             }
         }
@@ -106,7 +114,54 @@ namespace KyoumoMushoku.Gameplay.Foraging
                 return "ゴミ箱（カバンが一杯だ）";
             }
 
-            return "ゴミ箱を漁る";
+            return "ゴミ箱を漁る" + PeekSuffix(player);
+        }
+
+        /// <summary>
+        /// あたりの見分け方（第六節）を持つなら、次に出るものを先に読む。開示の段階は SAN に依存する
+        /// （<see cref="ForageSight"/>）。ここに見えるものが実際に漁って出るものである（再抽選しない・第三節）。
+        /// `??` の脇には必ず理由を添える。持たない・読めないときは何も足さない。
+        /// </summary>
+        string PeekSuffix(PlayerContext player)
+        {
+            if (player.Knacks == null || player.Vitals == null || player.Inventory == null)
+            {
+                return string.Empty;
+            }
+
+            var peek = ForageSight.Read(player.Knacks.Has(KnackId.SpotDuds), player.Vitals.Vitals.Sanity);
+            if (peek == ForagePeek.Hidden)
+            {
+                return string.Empty;
+            }
+
+            if (peek == ForagePeek.Unreadable)
+            {
+                return "（??・よく見えない）";
+            }
+
+            EnsureNextDraw(player.Inventory.Catalog);
+            if (!_hasNextDraw)
+            {
+                return string.Empty;
+            }
+
+            if (!_nextDraw.HasItem)
+            {
+                return "（空っぽのようだ）";
+            }
+
+            if (peek != ForagePeek.Detailed)
+            {
+                // 空か当たりかは分かるが、中身までは分からない。
+                return "（当たりのようだ）";
+            }
+
+            var catalog = player.Inventory.Catalog;
+            var name = catalog != null && catalog.TryGet(_nextDraw.Item, out var definition)
+                ? definition.DisplayName
+                : _nextDraw.Item.Value;
+            return $"（{name}が見える）";
         }
 
         // 即時のフォールバック。通常はチャネル経由で完了するため呼ばれない。
@@ -129,11 +184,16 @@ namespace KyoumoMushoku.Gameplay.Foraging
             }
 
             var catalog = player.Inventory.Catalog;
-            var draw = _loot.TableFor(_kind, IsNight).Draw(_rng, catalog);
+
+            // 先引き済みの1回を使う（あたりの見分け方で見えていたものと必ず一致する・第三節）。
+            EnsureNextDraw(catalog);
+            var draw = _nextDraw;
 
             if (!draw.HasItem)
             {
                 Spend();
+                _hasNextDraw = false;
+                player.Knacks?.RecordRummage();
                 return "空っぽだった。";
             }
 
@@ -144,15 +204,39 @@ namespace KyoumoMushoku.Gameplay.Foraging
             var instance = new ItemInstance(draw.Item, draw.State);
             if (!player.Inventory.Inventory.TryAdd(instance))
             {
-                // 入りきらないときは資源を消費せず、正直に伝える（第十四節）。空間を空ければ取り直せる。
+                // 入りきらないときは資源を消費せず、正直に伝える（第十四節）。次に出るものはそのまま残る。
                 return $"{name}を見つけたが、カバンに入りきらない。";
             }
 
             Spend();
+            _hasNextDraw = false;
+            player.Knacks?.RecordRummage();
 
             // 状態（新鮮／傷み／腐敗）はここでは言わない。読めるかどうかは SAN の問題であり、
             // 食品カードの `??` で読む（第三節）。ここで漏らすと情報機構を迂回してしまう。
             return $"{name}が出た。";
+        }
+
+        /// <summary>
+        /// 次に出る1回を、まだ引いていなければ引く。時間帯が変わっていたら引き直す（昼夜でテーブルが違う）。
+        /// 引くには食品状態の抽選にカタログが要るため、プレイヤーが調べる／漁る瞬間に遅延して引く。
+        /// </summary>
+        void EnsureNextDraw(IItemCatalog catalog)
+        {
+            if (Depleted || _loot == null)
+            {
+                _hasNextDraw = false;
+                return;
+            }
+
+            if (_hasNextDraw && _nextDrawNight == IsNight)
+            {
+                return;
+            }
+
+            _nextDraw = _loot.TableFor(_kind, IsNight).Draw(_rng, catalog);
+            _hasNextDraw = true;
+            _nextDrawNight = IsNight;
         }
 
         void Spend()

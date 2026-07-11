@@ -17,6 +17,12 @@ namespace KyoumoMushoku.Core.Police
         public const float CaptureRaise = 25f;
 
         /// <summary>
+        /// 警告を受けること自体も、そのゾーンの警戒度を控えめに上げる（第五節・第2段階）。
+        /// 捕縛ほど大きくはないが、顔を覚えられ始める。コツ `通りすがりの顔` は各遭遇の1回目の警告分を免れる（第六節）。
+        /// </summary>
+        public const float WarningRaise = 5f;
+
+        /// <summary>
         /// 無料の就寝場所で寝ると、そのゾーンに顔を覚えられる。無料のベッドが自分自身を腐食していく（第五節）。
         /// 金を払って泊まる安宿では誰も気に留めない。
         ///

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using KyoumoMushoku.Gameplay.Economy;
 using KyoumoMushoku.Gameplay.Items;
+using KyoumoMushoku.Gameplay.Knacks;
 using KyoumoMushoku.Gameplay.Player;
 using KyoumoMushoku.Gameplay.Survival;
 using UnityEngine;
@@ -59,7 +60,8 @@ namespace KyoumoMushoku.Gameplay.Interaction
                 transform,
                 GetComponent<PlayerVitals>(),
                 GetComponent<PlayerInventory>(),
-                GetComponent<PlayerWallet>());
+                GetComponent<PlayerWallet>(),
+                GetComponent<PlayerKnacks>());
         }
 
         void Update()
@@ -86,6 +88,23 @@ namespace KyoumoMushoku.Gameplay.Interaction
             Current.Interact(_context);
 
             // 相手が消えたり満杯が解消したりするため、同フレームで対象を取り直す。
+            UpdateCurrent();
+        }
+
+        /// <summary>
+        /// 外側の圧力（警官の警告など）が、進行中の調べものを一度だけ中断させる（第五節・第2段階）。
+        /// 中断そのものは資源を消費しない。手が止まるだけであり、やり直せばまた漁れる。
+        /// コツ `手を止めない`（第六節）を持つなら、警官はそもそもこれを呼ばない。
+        /// </summary>
+        public void InterruptChannel()
+        {
+            if (_channeling == null)
+            {
+                return;
+            }
+
+            _channeling.CancelChannel(_context);
+            _channeling = null;
             UpdateCurrent();
         }
 

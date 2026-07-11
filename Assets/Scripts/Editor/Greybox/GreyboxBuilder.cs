@@ -8,6 +8,7 @@ using KyoumoMushoku.Gameplay.Economy;
 using KyoumoMushoku.Gameplay.Foraging;
 using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.Items;
+using KyoumoMushoku.Gameplay.Knacks;
 using KyoumoMushoku.Gameplay.Player;
 using KyoumoMushoku.Gameplay.Police;
 using KyoumoMushoku.Gameplay.Rendering;
@@ -191,6 +192,7 @@ namespace KyoumoMushoku.Editor.Greybox
             player.AddComponent<PlayerVitals>().Configure(tuning);
             player.AddComponent<PlayerWallet>();
             player.AddComponent<PlayerInventory>().Configure(catalog);
+            player.AddComponent<PlayerKnacks>();
             player.AddComponent<PlayerConsumer>();
             player.AddComponent<PlayerInteractor>();
 
@@ -586,7 +588,7 @@ namespace KyoumoMushoku.Editor.Greybox
             // 漁りの結果を世界の言葉で短く伝えるトースト（第十四節）。プロンプトの少し上に出す。
             var toastText = MakeText(canvasT, font, "ActionToast", new Vector2(0.5f, 0f),
                 new Vector2(0f, 170f), new Vector2(1000f, 50f), 30f, TextAlignmentOptions.Center);
-            canvasGo.AddComponent<ActionToast>().Configure(interactor, toastText);
+            canvasGo.AddComponent<ActionToast>().Configure(interactor, player.GetComponent<PlayerKnacks>(), toastText);
 
             var inventoryText = MakeText(canvasT, font, "Inventory", new Vector2(1f, 1f),
                 new Vector2(-24f, -24f), new Vector2(470f, 780f), 26f, TextAlignmentOptions.TopLeft);

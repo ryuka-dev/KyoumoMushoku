@@ -1,4 +1,5 @@
 using KyoumoMushoku.Core.DayCycle;
+using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Survival;
 using KyoumoMushoku.Core.Zones;
@@ -33,6 +34,17 @@ namespace KyoumoMushoku.Gameplay.UI
             Core.Police.PoliceStage.Noticing => "注意",
             Core.Police.PoliceStage.Warning => "警告",
             Core.Police.PoliceStage.Pursuing => "追い出し",
+            _ => "―",
+        };
+
+        /// <summary>コツの表示名（第六節）。識別子とは別概念であり、ここに集約する。</summary>
+        public static string Knack(KnackId id) => id switch
+        {
+            KnackId.SpotDuds => "あたりの見分け方",
+            KnackId.SteadyHands => "手を止めない",
+            KnackId.IronStomach => "鉄の胃袋",
+            KnackId.StreetSleeper => "路上の寝方",
+            KnackId.FamiliarFace => "通りすがりの顔",
             _ => "―",
         };
 

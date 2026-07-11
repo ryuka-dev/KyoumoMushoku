@@ -1,5 +1,6 @@
 using KyoumoMushoku.Gameplay.Economy;
 using KyoumoMushoku.Gameplay.Items;
+using KyoumoMushoku.Gameplay.Knacks;
 using KyoumoMushoku.Gameplay.Survival;
 using UnityEngine;
 
@@ -12,17 +13,22 @@ namespace KyoumoMushoku.Gameplay.Interaction
     /// </summary>
     public sealed class PlayerContext
     {
-        public PlayerContext(Transform transform, PlayerVitals vitals, PlayerInventory inventory, PlayerWallet wallet)
+        public PlayerContext(Transform transform, PlayerVitals vitals, PlayerInventory inventory, PlayerWallet wallet,
+            PlayerKnacks knacks)
         {
             Transform = transform;
             Vitals = vitals;
             Inventory = inventory;
             Wallet = wallet;
+            Knacks = knacks;
         }
 
         public Transform Transform { get; }
         public PlayerVitals Vitals { get; }
         public PlayerInventory Inventory { get; }
         public PlayerWallet Wallet { get; }
+
+        /// <summary>習得したコツ（第六節）。漁りの見立てなど、相手のルール変化を読むために使う。</summary>
+        public PlayerKnacks Knacks { get; }
     }
 }
