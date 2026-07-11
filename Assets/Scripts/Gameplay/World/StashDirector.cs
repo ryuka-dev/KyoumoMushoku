@@ -68,6 +68,8 @@ namespace KyoumoMushoku.Gameplay.World
                     _alerts?.Raise(spot.Zone, StashEventTuning.PoliceRemovalAlertRaise);
                 }
 
+                // 先輩ホームレスが次に箱を開けたとき語れるよう、起きたことを覚えさせる（第十四節）。
+                spot.QueueAftermath(pending.Kind, lost);
                 fired[pending.SpotId] = (pending.Kind, lost);
             }
 

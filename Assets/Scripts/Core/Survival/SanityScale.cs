@@ -64,6 +64,12 @@ namespace KyoumoMushoku.Core.Survival
         public static bool CanRespondToConversation(float sanity) => sanity >= ConversationThreshold;
 
         /// <summary>
+        /// 噂話が耳に届くか（第十二・十四節）。SAN 70 以上でのみ、先輩ホームレスの前倒しの予告・対抗手段の助言が聞こえる。
+        /// 低 SAN で失われるのは「応じる」ことであって「聞こえる」ことではない――事後説明や貼り紙は SAN を問わず届く。
+        /// </summary>
+        public static bool CanHearRumors(float sanity) => sanity >= ElatedThreshold;
+
+        /// <summary>
         /// 商品の価格が読めるか。精神崩壊すると値札がぼやける（第三節：商品の価格 ??）。
         /// 読めなくても買う行為そのものは決して封鎖しない。欠落は用いるが、操作は奪わない。
         /// </summary>

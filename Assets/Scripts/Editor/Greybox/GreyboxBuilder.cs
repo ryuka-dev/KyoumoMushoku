@@ -360,6 +360,18 @@ namespace KyoumoMushoku.Editor.Greybox
 
             // 保管庫イベントの予告・事後説明を示す貼り紙。マーカー本体の子にしない（縦伸びで文字が歪む）。
             spot.BindNotice(MakeNotice(root, position + new Vector3(0f, 3.4f, 0f)));
+
+            // 路地裏を仕切る先輩ホームレス（因果の解説者・第十四節）。設置ルール・事後説明・噂話を世界の言葉で語る。
+            // 場所代の取り立ては後続（5b-4）で同じ NPC に足す。
+            var elderPosition = new Vector3(72f, FirstDistrictLayout.SurfaceY + 1.5f, 0f);
+            var elderBody = MakeQuad("ElderHomeless", white, material, new Color(0.5f, 0.42f, 0.3f), sortingOrder: 5);
+            elderBody.transform.SetParent(root, false);
+            elderBody.transform.position = elderPosition;
+            elderBody.transform.localScale = new Vector3(1f, 2.4f, 1f);
+
+            var elder = elderBody.AddComponent<ElderHomeless>();
+            elder.BindSpeech(MakeSpeech(root, elderPosition + new Vector3(0f, 2.6f, 0f)));
+            spot.BindElder(elder);
             return spot;
         }
 
