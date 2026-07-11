@@ -32,12 +32,16 @@ namespace KyoumoMushoku.Gameplay.Progress
             }
         }
 
-        public void RecordInnStay()
+        /// <summary>安宿に泊まった。初回の達成なら true（呼び手が記念品を渡す契機に使う）。</summary>
+        public bool RecordInnStay()
         {
             if (_book.RecordInnStay())
             {
                 Announce(MilestoneId.FirstInnStay);
+                return true;
             }
+
+            return false;
         }
 
         public void RecordBackpackPurchase()

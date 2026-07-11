@@ -126,6 +126,10 @@ namespace KyoumoMushoku.Gameplay.Items
                 // 段ボール：三役（売る・敷く・住まわせる）。鞄には入らず背負いスロットで運ぶ（第十一節）。
                 // ゴミ箱C（路地裏）から出る。占有マス 6（3×2 相当）。売値は渋い。
                 new Entry { id = "cardboard", displayName = "段ボール", category = ItemCategory.Salvage, slots = 6, sellPriceYen = 30, carriedOnBack = true },
+
+                // 安宿の鍵：初めて安宿に泊まった証（第十一節・マイルストーンの記録用）。
+                // 売れず、使えもしない。達成の権威は段階目標のフラグであり、これはただの世界内の記念品。
+                new Entry { id = "inn_key", displayName = "安宿の鍵", category = ItemCategory.Special, slots = 1 },
             };
             _byId = null;
         }

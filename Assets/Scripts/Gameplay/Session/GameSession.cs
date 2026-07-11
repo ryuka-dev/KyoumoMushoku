@@ -32,6 +32,9 @@ namespace KyoumoMushoku.Gameplay.Session
         [SerializeField] GameClockDriver _clock;
         [SerializeField] Transform _player;
 
+        [Tooltip("初めて安宿に泊まった証として渡すアイテムの識別子（第十一節・安宿の鍵）。")]
+        [SerializeField] string _innKeyItemId = "inn_key";
+
         readonly Dictionary<string, IRespawnPoint> _respawnPoints = new();
         readonly Dictionary<string, StashSpot> _stashSpots = new();
 
@@ -145,10 +148,10 @@ namespace KyoumoMushoku.Gameplay.Session
             ApplySleepRecovery(spot);
 
             // 泊まったという事実は日付が変わる前の出来事として数える（第八節）。
-            // 安宿＝金を払う就寝場所。初めての宿泊が段階目標になる。
-            if (!spot.IsFree)
+            // 安宿＝金を払う就寝場所。初めての宿泊が段階目標になり、その証として鍵が残る（第十一節）。
+            if (!spot.IsFree && _milestones != null && _milestones.RecordInnStay())
             {
-                _milestones?.RecordInnStay();
+                GrantInnKeepsake();
             }
 
             // 日付の切り替わりは就寝の瞬間だけに起こる（第二節）。警戒度の減衰もここで行う。
@@ -225,6 +228,18 @@ namespace KyoumoMushoku.Gameplay.Session
                 Hunger = spot.HungerRecovery - tuning.OvernightHungerDrain,
                 Sanity = SanityScale.SleepRecovery(spot.SanityRecovery + outdoorBonus, vitals.Sanity),
             });
+        }
+
+        /// <summary>
+        /// 初めて安宿に泊まった証（第十一節・安宿の鍵）。カバンに空きが無ければ諦める。
+        /// 達成の権威はあくまで段階目標のフラグであり、鍵はただの世界内の記念品である。
+        /// </summary>
+        void GrantInnKeepsake()
+        {
+            if (_inventory != null && _inventory.Inventory != null)
+            {
+                _inventory.Inventory.TryAdd(new ItemInstance(new ItemId(_innKeyItemId)));
+            }
         }
 
         void OnPlayerDied()

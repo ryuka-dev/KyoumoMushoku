@@ -181,3 +181,17 @@ MonoBehaviour:
     buyPriceYen: 0
     capacityBonus: 0
     carriedOnBack: 1
+  - id: inn_key
+    displayName: "\u5B89\u5BBF\u306E\u9375"
+    category: 5
+    slots: 1
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
+    carriedOnBack: 0
