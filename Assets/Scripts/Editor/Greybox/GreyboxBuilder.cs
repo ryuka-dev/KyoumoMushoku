@@ -45,6 +45,9 @@ namespace KyoumoMushoku.Editor.Greybox
         const string ItemDatabasePath = "Assets/Config/ItemDatabase.asset";
         const string TrashCanLootPath = "Assets/Config/TrashCanLoot.asset";
         const string VitalsTuningPath = "Assets/Config/VitalsTuning.asset";
+        const string SleepTuningPath = "Assets/Config/SleepTuning.asset";
+        const string ShopTuningPath = "Assets/Config/ShopTuning.asset";
+        const string WaterTuningPath = "Assets/Config/WaterTuning.asset";
         const string SpritePath = "Assets/Art/Greybox/White.png";
         const string AreaPrefabFolder = "Assets/Prefabs/Areas";
 
@@ -66,6 +69,9 @@ namespace KyoumoMushoku.Editor.Greybox
             EnsureItemDatabaseAsset();
             EnsureTrashCanLootAsset();
             EnsureVitalsTuningAsset();
+            EnsureSleepTuningAsset();
+            EnsureShopTuningAsset();
+            EnsureWaterTuningAsset();
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -76,9 +82,13 @@ namespace KyoumoMushoku.Editor.Greybox
             var catalog = AssetDatabase.LoadAssetAtPath<ItemDatabaseAsset>(ItemDatabasePath);
             var loot = AssetDatabase.LoadAssetAtPath<TrashCanLootAsset>(TrashCanLootPath);
             var tuning = AssetDatabase.LoadAssetAtPath<VitalsTuningAsset>(VitalsTuningPath);
+            var sleepTuning = AssetDatabase.LoadAssetAtPath<SleepTuningAsset>(SleepTuningPath);
+            var shopTuning = AssetDatabase.LoadAssetAtPath<ShopTuningAsset>(ShopTuningPath);
+            var waterTuning = AssetDatabase.LoadAssetAtPath<WaterTuningAsset>(WaterTuningPath);
             var spriteMaterial = AssetDatabase.GetBuiltinExtraResource<Material>("Sprites-Default.mat");
 
-            if (white == null || schedule == null || catalog == null || loot == null || tuning == null || spriteMaterial == null)
+            if (white == null || schedule == null || catalog == null || loot == null || tuning == null ||
+                sleepTuning == null || shopTuning == null || waterTuning == null || spriteMaterial == null)
             {
                 Debug.LogError("Greybox build aborted: required assets could not be loaded after scene switch.");
                 return;
@@ -101,8 +111,8 @@ namespace KyoumoMushoku.Editor.Greybox
 
             // ゴミ箱は時計（昼夜・日替りのリポップ）に配線するため、システムを先に建てる。
             var clock = BuildSystems(schedule);
-            BuildInteractables(white, spriteMaterial, catalog, loot, clock);
-            var store = BuildStore(white, spriteMaterial);
+            BuildInteractables(white, spriteMaterial, catalog, loot, clock, sleepTuning, waterTuning);
+            var store = BuildStore(white, spriteMaterial, shopTuning);
             var stashSpots = BuildStash(white, spriteMaterial);
             var officer = BuildPolice(white, spriteMaterial);
             BuildSessionAndGrade(clock, player);
@@ -348,7 +358,7 @@ namespace KyoumoMushoku.Editor.Greybox
         /// コンビニ前（商業ゾーン）の左寄り x=114 に据える。夜に弁当が出るゴミ箱 B（x=128）とは離し、
         /// 「昼は働き、夜はそのゴミを漁る」皮肉が同じ区域に同居する。取引の結果は店主が世界の言葉で語る。
         /// </summary>
-        static Storefront BuildStore(Sprite white, Material material)
+        static Storefront BuildStore(Sprite white, Material material, ShopTuningAsset shopTuning)
         {
             var root = new GameObject("Store").transform;
             var position = new Vector3(114f, FirstDistrictLayout.SurfaceY + 1.5f, 0f);
@@ -364,8 +374,8 @@ namespace KyoumoMushoku.Editor.Greybox
             var store = marker.AddComponent<Storefront>();
             store.Configure(
                 new[] { "water_bottle", "onigiri", "can_coffee", "backpack" },
-                buybackDailyCapYen: 300, jobRounds: 5, jobSanityCost: 25f, jobHungerCost: 15f,
-                jobShiftSeconds: 90f);
+                shopTuning.BuybackDailyCapYen, shopTuning.JobRounds, shopTuning.JobSanityCost,
+                shopTuning.JobHungerCost, shopTuning.JobShiftSeconds);
 
             // 店主の頭上の台詞。マーカーは縦に伸びているので、台詞は親にせず root 直下（等倍）に置く。
             store.BindClerk(MakeSpeech(root, position + new Vector3(0f, 3.4f, 0f)));
@@ -502,31 +512,32 @@ namespace KyoumoMushoku.Editor.Greybox
         /// 店（購入・バイト・買い取り）は <see cref="BuildStore"/> が別に置く（Phase 4）。
         /// </summary>
         static void BuildInteractables(Sprite white, Material material, ItemDatabaseAsset catalog,
-            TrashCanLootAsset loot, GameClockDriver clock)
+            TrashCanLootAsset loot, GameClockDriver clock, SleepTuningAsset sleepTuning, WaterTuningAsset waterTuning)
         {
             var root = new GameObject("Interactables").transform;
 
             // 病院：公園側の最も安全で貧しい端（第十三節）。
             var hospital = MakeInteractableMarker("Hospital", root, white, material,
                 new Vector3(-17f, FirstDistrictLayout.SurfaceY + 1.5f, 0f), new Color(0.80f, 0.35f, 0.35f));
-            hospital.AddComponent<Hospital>().Configure(medicalFeeYen: 500);
+            // 医療費は Hospital 自身が持つ（課金する当人が持つのが自然）。既定の初期街区額を使う。
+            hospital.AddComponent<Hospital>();
 
             // 公園の水道：無料・SAN を削らない。
             var tap = MakeInteractableMarker("WaterTap_Park", root, white, material,
                 new Vector3(30f, FirstDistrictLayout.SurfaceY + 1f, 0f), new Color(0.35f, 0.6f, 0.85f));
-            tap.AddComponent<WaterSource>().Configure("水を飲む", thirstRestored: 35f, sanityCost: 0f);
+            tap.AddComponent<WaterSource>().Configure("水を飲む", waterTuning.TapThirstRestored, sanityCost: 0f);
 
             // 公衆トイレの水：無料だが尊厳と引き換え。飲むと SAN が減る。
             var toilet = MakeInteractableMarker("WaterTap_Toilet", root, white, material,
                 new Vector3(57f, FirstDistrictLayout.SurfaceY + 1f, 0f), new Color(0.45f, 0.55f, 0.55f));
-            toilet.AddComponent<WaterSource>().Configure("トイレの水を飲む", thirstRestored: 35f, sanityCost: -6f);
+            toilet.AddComponent<WaterSource>().Configure("トイレの水を飲む",
+                waterTuning.ToiletThirstRestored, waterTuning.ToiletSanityCost);
 
             // 公園のベンチ：静穏ゾーン。無料・回復控えめ。通い詰めると近隣の苦情でベンチが撤去される（第五節）。
             var bench = MakeInteractableMarker("SleepSpot_Bench", root, white, material,
                 new Vector3(10f, FirstDistrictLayout.SurfaceY + 1f, 0f), new Color(0.55f, 0.45f, 0.35f));
             var benchSpot = bench.AddComponent<SleepSpot>();
-            benchSpot.Configure("bench_park", "ベンチで寝る", AlertZoneId.Quiet,
-                costYen: 0, fullRestore: false, hpRecovery: 20f, thirstRecovery: 0f, hungerRecovery: 0f, sanityRecovery: 10f);
+            ConfigureSleepSpot(benchSpot, "bench_park", "ベンチで寝る", AlertZoneId.Quiet, sleepTuning.Bench);
 
             // 苦情の貼り紙・撤去を示すラベル。ベンチ本体の子にしない。本体は縦に引き伸ばされており、文字まで歪むためである。
             benchSpot.BindNotice(MakeNotice(root, new Vector3(10f, FirstDistrictLayout.SurfaceY + 3.4f, 0f)));
@@ -534,36 +545,39 @@ namespace KyoumoMushoku.Editor.Greybox
             // 地下通路：生活ゾーン。無料だが SAN の回復が悪い。
             var underpass = MakeInteractableMarker("SleepSpot_Underpass", root, white, material,
                 new Vector3(125f, FirstDistrictLayout.UnderpassY + 1f, 0f), new Color(0.4f, 0.38f, 0.42f));
-            underpass.AddComponent<SleepSpot>().Configure("underpass_residential", "地下通路で寝る", AlertZoneId.Residential,
-                costYen: 0, fullRestore: false, hpRecovery: 25f, thirstRecovery: 0f, hungerRecovery: 0f, sanityRecovery: 5f);
+            ConfigureSleepSpot(underpass.AddComponent<SleepSpot>(), "underpass_residential", "地下通路で寝る",
+                AlertZoneId.Residential, sleepTuning.Underpass);
 
             // 安宿：商業ゾーン。有料・完全回復＋セーブ。
             var inn = MakeInteractableMarker("SleepSpot_Inn", root, white, material,
                 new Vector3(172f, FirstDistrictLayout.SurfaceY + 1.5f, 0f), new Color(0.7f, 0.6f, 0.4f));
-            inn.AddComponent<SleepSpot>().Configure("inn_commercial", "安宿に泊まる", AlertZoneId.Commercial,
-                costYen: 1500, fullRestore: true, hpRecovery: 0f, thirstRecovery: 0f, hungerRecovery: 0f, sanityRecovery: 0f);
+            ConfigureSleepSpot(inn.AddComponent<SleepSpot>(), "inn_commercial", "安宿に泊まる",
+                AlertZoneId.Commercial, sleepTuning.Inn);
 
             // ゴミ箱3種（第十三節）。勾配に沿って、安全で貧しい公園から、危険で豊かな路地裏・コンビニへ。
             // A：公園。缶・瓶が中心、食品は少ない。静穏ゾーン。
             BuildTrashCan(root, white, material, loot, clock, "TrashCan_A_Park",
-                TrashCanKind.Park, new Vector3(16f, FirstDistrictLayout.SurfaceY + 1f, 0f),
-                yieldsPerDay: 3, rummageSeconds: 1.8f);
+                TrashCanKind.Park, new Vector3(16f, FirstDistrictLayout.SurfaceY + 1f, 0f));
 
             // C：路地裏の大型ゴミ箱。廃品が中心、食品は状態が悪い。大型ゆえ漁りに時間がかかる。生活ゾーン。
             // ここを漁ると生活ゾーンの警戒度が少し上がる＝住処の近くで目立つ（第十二節・小）。
             BuildTrashCan(root, white, material, loot, clock, "TrashCan_C_BackAlley",
                 TrashCanKind.BackAlley, new Vector3(86f, FirstDistrictLayout.SurfaceY + 1f, 0f),
-                yieldsPerDay: 3, rummageSeconds: 2.6f,
                 alertZone: AlertZoneId.Residential, alertRaise: ZoneAlertTuning.ForageResidentialRaise);
 
             // B：コンビニ前。昼は乏しいが、夜に弁当・パンが出る。状態は良いが商業ゾーンで危険。
             BuildTrashCan(root, white, material, loot, clock, "TrashCan_B_ConvenienceStore",
-                TrashCanKind.ConvenienceStore, new Vector3(128f, FirstDistrictLayout.SurfaceY + 1f, 0f),
-                yieldsPerDay: 4, rummageSeconds: 2.2f);
+                TrashCanKind.ConvenienceStore, new Vector3(128f, FirstDistrictLayout.SurfaceY + 1f, 0f));
+        }
+
+        static void ConfigureSleepSpot(SleepSpot spot, string respawnId, string label, AlertZoneId zone,
+            SleepTuningAsset.Recovery r)
+        {
+            spot.Configure(respawnId, label, zone, r.costYen, r.fullRestore, r.hp, r.thirst, r.hunger, r.sanity);
         }
 
         static void BuildTrashCan(Transform parent, Sprite white, Material material, TrashCanLootAsset loot,
-            GameClockDriver clock, string name, TrashCanKind kind, Vector3 position, int yieldsPerDay, float rummageSeconds,
+            GameClockDriver clock, string name, TrashCanKind kind, Vector3 position,
             AlertZoneId alertZone = AlertZoneId.None, float alertRaise = 0f)
         {
             var can = MakeQuad(name, white, material, new Color(0.55f, 0.5f, 0.35f), sortingOrder: 5);
@@ -574,8 +588,10 @@ namespace KyoumoMushoku.Editor.Greybox
             var collider = can.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
 
+            // 湧き・漁り時間はゴミ箱の産出テーブル資産が種類ごとに一括で持つ（数値集中化）。
+            var spawn = loot.SpawnFor(kind);
             var trash = can.AddComponent<TrashCan>();
-            trash.Configure(kind, loot, clock, yieldsPerDay, rummageSeconds);
+            trash.Configure(kind, loot, clock, spawn.YieldsPerDay, spawn.RummageSeconds, spawn.ForageClockSeconds);
             trash.BindZoneAlert(alertZone, alertRaise);
         }
 
@@ -887,6 +903,42 @@ namespace KyoumoMushoku.Editor.Greybox
 
             EnsureAssetFolder(Path.GetDirectoryName(VitalsTuningPath)!.Replace('\\', '/'));
             AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<VitalsTuningAsset>(), VitalsTuningPath);
+            AssetDatabase.SaveAssets();
+        }
+
+        static void EnsureSleepTuningAsset()
+        {
+            if (AssetDatabase.LoadAssetAtPath<SleepTuningAsset>(SleepTuningPath) != null)
+            {
+                return;
+            }
+
+            EnsureAssetFolder(Path.GetDirectoryName(SleepTuningPath)!.Replace('\\', '/'));
+            AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<SleepTuningAsset>(), SleepTuningPath);
+            AssetDatabase.SaveAssets();
+        }
+
+        static void EnsureShopTuningAsset()
+        {
+            if (AssetDatabase.LoadAssetAtPath<ShopTuningAsset>(ShopTuningPath) != null)
+            {
+                return;
+            }
+
+            EnsureAssetFolder(Path.GetDirectoryName(ShopTuningPath)!.Replace('\\', '/'));
+            AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<ShopTuningAsset>(), ShopTuningPath);
+            AssetDatabase.SaveAssets();
+        }
+
+        static void EnsureWaterTuningAsset()
+        {
+            if (AssetDatabase.LoadAssetAtPath<WaterTuningAsset>(WaterTuningPath) != null)
+            {
+                return;
+            }
+
+            EnsureAssetFolder(Path.GetDirectoryName(WaterTuningPath)!.Replace('\\', '/'));
+            AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<WaterTuningAsset>(), WaterTuningPath);
             AssetDatabase.SaveAssets();
         }
 

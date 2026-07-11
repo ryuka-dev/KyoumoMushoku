@@ -42,13 +42,56 @@ namespace KyoumoMushoku.Gameplay.Foraging
         public struct KindTables
         {
             public TrashCanKind kind;
+
+            [Header("湧き・時間コスト（第四・十三節）")]
+            [Tooltip("1日に漁れる回数。使い切ると翌日まで空。")]
+            [Min(1)] public int yieldsPerDay;
+
+            [Tooltip("1回の漁りにかかる実時間（長押し）。大型のゴミ箱ほど長い。")]
+            [Min(0.1f)] public float rummageSeconds;
+
+            [Tooltip("漁り1回ごとにソフトクロックが進む秒数（＝1日を消費する。第四節：漁りのコストは時間）。")]
+            [Min(0f)] public float forageClockSeconds;
+
             public Table day;
             public Table night;
+        }
+
+        /// <summary>ゴミ箱1基ぶんの湧き・時間パラメータ（テーブルとは別に、種類ごとに1組）。</summary>
+        public readonly struct SpawnParams
+        {
+            public SpawnParams(int yieldsPerDay, float rummageSeconds, float forageClockSeconds)
+            {
+                YieldsPerDay = yieldsPerDay;
+                RummageSeconds = rummageSeconds;
+                ForageClockSeconds = forageClockSeconds;
+            }
+
+            public int YieldsPerDay { get; }
+            public float RummageSeconds { get; }
+            public float ForageClockSeconds { get; }
         }
 
         [SerializeField] List<KindTables> _kinds = new List<KindTables>();
 
         Dictionary<(TrashCanKind kind, bool night), LootTable> _cache;
+
+        /// <summary>指定の種類の湧き・時間パラメータを返す。無ければ穏当な既定。</summary>
+        public SpawnParams SpawnFor(TrashCanKind kind)
+        {
+            foreach (var k in _kinds)
+            {
+                if (k.kind == kind)
+                {
+                    return new SpawnParams(
+                        Mathf.Max(1, k.yieldsPerDay),
+                        Mathf.Max(0.1f, k.rummageSeconds),
+                        Mathf.Max(0f, k.forageClockSeconds));
+                }
+            }
+
+            return new SpawnParams(3, 2f, 0f);
+        }
 
         /// <summary>指定の種類・時間帯のテーブルを返す。無ければ空振りだけのテーブル。</summary>
         public LootTable TableFor(TrashCanKind kind, bool night)
@@ -112,6 +155,7 @@ namespace KyoumoMushoku.Gameplay.Foraging
                 new KindTables
                 {
                     kind = TrashCanKind.Park,
+                    yieldsPerDay = 3, rummageSeconds = 1.8f, forageClockSeconds = 15f,
                     day = new Table
                     {
                         emptyWeight = 20f,
@@ -142,6 +186,7 @@ namespace KyoumoMushoku.Gameplay.Foraging
                 new KindTables
                 {
                     kind = TrashCanKind.ConvenienceStore,
+                    yieldsPerDay = 4, rummageSeconds = 2.2f, forageClockSeconds = 18f,
                     day = new Table
                     {
                         emptyWeight = 45f,
@@ -171,6 +216,7 @@ namespace KyoumoMushoku.Gameplay.Foraging
                 new KindTables
                 {
                     kind = TrashCanKind.BackAlley,
+                    yieldsPerDay = 3, rummageSeconds = 2.6f, forageClockSeconds = 22f,
                     day = new Table
                     {
                         emptyWeight = 18f,

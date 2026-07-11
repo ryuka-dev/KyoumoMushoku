@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Foraging.TrashCanLootAsset
   _kinds:
   - kind: 0
+    yieldsPerDay: 3
+    rummageSeconds: 1.8
+    forageClockSeconds: 15
     day:
       emptyWeight: 20
       items:
@@ -47,6 +50,9 @@ MonoBehaviour:
       staleWeight: 45
       rottenWeight: 35
   - kind: 1
+    yieldsPerDay: 4
+    rummageSeconds: 2.2
+    forageClockSeconds: 18
     day:
       emptyWeight: 45
       items:
@@ -76,6 +82,9 @@ MonoBehaviour:
       staleWeight: 28
       rottenWeight: 7
   - kind: 2
+    yieldsPerDay: 3
+    rummageSeconds: 2.6
+    forageClockSeconds: 22
     day:
       emptyWeight: 18
       items:

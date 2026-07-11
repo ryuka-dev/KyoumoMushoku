@@ -35,8 +35,11 @@ namespace KyoumoMushoku.Gameplay.Foraging
         [Tooltip("1日に漁れる回数。使い切ると翌日まで空。叩き台。")]
         [SerializeField, Min(1)] int _yieldsPerDay = 3;
 
-        [Tooltip("1回の漁りにかかる秒数。大型のゴミ箱ほど長い。叩き台。")]
+        [Tooltip("1回の漁りにかかる秒数（長押し）。大型のゴミ箱ほど長い。叩き台。")]
         [SerializeField, Min(0.1f)] float _rummageSeconds = 2f;
+
+        [Tooltip("漁り1回ごとにソフトクロックが進む秒数（＝1日を消費する）。漁りの主要なコストは時間である（第四節）。叩き台。")]
+        [SerializeField, Min(0f)] float _forageClockSeconds;
 
         [Tooltip("漁っている姿を見られている間、毎秒どれだけ注目度が上がるか。叩き台。")]
         [SerializeField, Min(0f)] float _suspicionPerSecond = 18f;
@@ -62,13 +65,14 @@ namespace KyoumoMushoku.Gameplay.Foraging
         bool _nextDrawNight;
 
         public void Configure(TrashCanKind kind, TrashCanLootAsset loot, GameClockDriver clock,
-            int yieldsPerDay, float rummageSeconds)
+            int yieldsPerDay, float rummageSeconds, float forageClockSeconds)
         {
             _kind = kind;
             _loot = loot;
             _clock = clock;
             _yieldsPerDay = Mathf.Max(1, yieldsPerDay);
             _rummageSeconds = Mathf.Max(0.1f, rummageSeconds);
+            _forageClockSeconds = Mathf.Max(0f, forageClockSeconds);
         }
 
         void Reset()
@@ -266,6 +270,12 @@ namespace KyoumoMushoku.Gameplay.Foraging
         {
             _remainingToday--;
             ApplyTint();
+
+            // 漁り1回ぶん、ソフトクロックがまとまって進む。時間は漁りの主要なコストの1つであり（第四節）、
+            // これがないと漁りがほぼ無時間で、1日に何度でも夜に入らず稼げてしまう。中断（歩き出し）は
+            // Spend に来ないので消費しない。バイト（Storefront.ApplyJobOutcome）と同一のパターン。
+            // GameClock.Advance は日の時計だけを進め、渇き・空腹の掉渣は実時間側が別に負う（二重計上なし）。
+            _clock?.Clock?.Advance(_forageClockSeconds);
 
             // 漁る姿は一過性の注目（警官が読む）だけでなく、住処の一帯の警戒度にも残る（第十二節・小）。
             // 路地裏のゴミ箱だけが上昇量を持ち、公園・商業のゴミ箱は 0 なので何もしない。

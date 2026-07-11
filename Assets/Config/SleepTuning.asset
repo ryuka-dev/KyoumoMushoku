@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98effdc6f43a8f140b75351eb49a0ab5, type: 3}
+  m_Name: SleepTuning
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.World.SleepTuningAsset
+  _bench:
+    costYen: 0
+    fullRestore: 0
+    hp: 5
+    thirst: 0
+    hunger: 0
+    sanity: 10
+  _underpass:
+    costYen: 0
+    fullRestore: 0
+    hp: 5
+    thirst: 0
+    hunger: 0
+    sanity: 5
+  _inn:
+    costYen: 1500
+    fullRestore: 1
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 0
