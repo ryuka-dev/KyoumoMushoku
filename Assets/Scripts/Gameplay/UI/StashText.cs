@@ -105,7 +105,7 @@ namespace KyoumoMushoku.Gameplay.UI
         public static string RentAlreadyPaid => "今日のぶんはもう払ってある。";
         public static string RentCannotAfford(string rentLabel) => $"{rentLabel}が払えない。";
 
-        // 出し入れの反馈
+        // 出し入れのフィードバック
         public static string BoxFull => "箱がいっぱいだ。";
         public static string Deposited(string name) => $"{name}を箱に入れた。";
         public static string BagFull => "カバンがいっぱいだ。";
