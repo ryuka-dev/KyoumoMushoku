@@ -14,7 +14,7 @@ namespace KyoumoMushoku.Gameplay.Items
     [RequireComponent(typeof(PlayerCarry))]
     public sealed class CarryIndicator : MonoBehaviour
     {
-        [Tooltip("背負っている間、玩家の姿に重ねて見せる占位 sprite（世界内の表現・無くても可）。")]
+        [Tooltip("背負っている間、プレイヤーの姿に重ねて見せる占位 sprite（世界内の表現・無くても可）。")]
         [SerializeField] SpriteRenderer _carriedSprite;
 
         [Tooltip("背負っている間、HUD に出す一言（無くても可）。")]

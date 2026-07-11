@@ -223,7 +223,7 @@ namespace KyoumoMushoku.Editor.Greybox
             player.AddComponent<PlayerInventory>().Configure(catalog);
             player.AddComponent<PlayerCarry>();
 
-            // 段ボールを背負っている間だけ見せる占位 sprite（第十四節・世界内の表現）。玩家の背に重ねる。
+            // 段ボールを背負っている間だけ見せる占位 sprite（第十四節・世界内の表現）。プレイヤーの背に重ねる。
             // 表示の切替そのものは CarryIndicator が PlayerCarry を毎フレーム読んで駆動する（状態の所有者ではない）。
             // ここでは器だけ建て、HUD のラベルと結ぶのは Canvas を建てたあと（BuildCanvas）。
             var carriedBox = MakeQuad("CarriedBox", white, material, new Color(0.62f, 0.47f, 0.30f), sortingOrder: 11);
