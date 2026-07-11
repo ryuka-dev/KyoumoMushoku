@@ -102,22 +102,25 @@ namespace KyoumoMushoku.Core.Survival
         }
 
         /// <summary>
-        /// ソフトクロックが実フレームの外でまとまって進んだぶん（漁りなどの行動）を、渇きと空腹に反映する。
-        /// 時間が経てば喉は渇き、腹は減る。<see cref="Advance"/> と違い、走行倍率もダメージも扱わない
-        /// （行動中は動いておらず、ゼロ割れの遡及ダメージは通常の <see cref="Advance"/> に委ねる）。
+        /// ソフトクロックが実フレームの外でまとまって進んだぶん（漁り・バイトなどの行動）を、渇きと空腹に
+        /// 反映する。時間が経てば喉は渇き、腹は減る。<see cref="Advance"/> と違いダメージは扱わない
+        /// （ゼロ割れの遡及ダメージは通常の <see cref="Advance"/> に委ねる）。
+        ///
+        /// <paramref name="intensity"/> は活動の強度倍率である。待機のまま時間が過ぎるなら 1、バイトの
+        /// ように激しく体を使うなら 2 といった値を渡す。待機の消耗と労働の消耗は同じではない。
         ///
         /// SAN はここでは削らない。SAN は実時間の緩やかな摩耗と明示的な代償（バイト）で扱う――
         /// 就寝の一晩ぶんの消費が渇き・空腹だけを削り SAN を削らないのと同じ規則である。
         /// </summary>
-        public void DrainTime(float seconds)
+        public void DrainTime(float seconds, float intensity = 1f)
         {
-            if (seconds <= 0f)
+            if (seconds <= 0f || intensity <= 0f)
             {
                 return;
             }
 
-            _thirst = Clamp(_thirst - _tuning.ThirstDrainPerSecond * seconds, 0f, _tuning.MaxThirst);
-            _hunger = Clamp(_hunger - _tuning.HungerDrainPerSecond * seconds, 0f, _tuning.MaxHunger);
+            _thirst = Clamp(_thirst - _tuning.ThirstDrainPerSecond * seconds * intensity, 0f, _tuning.MaxThirst);
+            _hunger = Clamp(_hunger - _tuning.HungerDrainPerSecond * seconds * intensity, 0f, _tuning.MaxHunger);
         }
 
         /// <summary>

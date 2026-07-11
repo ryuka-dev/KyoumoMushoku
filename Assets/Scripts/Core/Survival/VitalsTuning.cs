@@ -26,8 +26,8 @@ namespace KyoumoMushoku.Core.Survival
         /// <summary>SAN。最も緩やか。1ゲームデイでおよそ 10〜15 低下する。</summary>
         public float SanityDrainPerSecond = 0.025f;
 
-        /// <summary>走行中、渇きと空腹の低下が速まる。</summary>
-        public float RunDrainMultiplier = 1.6f;
+        /// <summary>走行中、渇きと空腹の低下が速まる。走るのは待機の倍の消耗（叩き台）。</summary>
+        public float RunDrainMultiplier = 2.0f;
 
         /// <summary>これを下回ると「空腹度が低い」状態。走行時の消耗がさらに増える。</summary>
         public float LowHungerThreshold = 30f;

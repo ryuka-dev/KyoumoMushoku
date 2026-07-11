@@ -35,11 +35,11 @@ namespace KyoumoMushoku.Gameplay.Shop
         [Tooltip("バイト1回で削られる SAN。最も回復させづらい資源を大量に消費する（第四節）。叩き台。")]
         [SerializeField, Min(0f)] float _jobSanityCost = 25f;
 
-        [Tooltip("バイト1回で減る空腹。叩き台。")]
-        [SerializeField, Min(0f)] float _jobHungerCost = 15f;
-
         [Tooltip("バイト1回（1シフト）で進むソフトクロックの秒数。時間はバイトの主要なコストの1つ（第四節）。叩き台。")]
         [SerializeField, Min(0f)] float _jobShiftSeconds = 90f;
+
+        [Tooltip("労働の強度倍率。1シフトぶんの時間を、待機より速く渇き・空腹に反映する（第四節）。叩き台。")]
+        [SerializeField, Min(0f)] float _jobDrainMultiplier = 2f;
 
         [SerializeField] NpcSpeech _clerk;
 
@@ -58,14 +58,14 @@ namespace KyoumoMushoku.Gameplay.Shop
         public SalvageLedger Ledger => _ledger;
 
         public void Configure(string[] offerIds, int buybackDailyCapYen, int jobRounds,
-            float jobSanityCost, float jobHungerCost, float jobShiftSeconds)
+            float jobSanityCost, float jobShiftSeconds, float jobDrainMultiplier)
         {
             _offerIds = offerIds;
             _buybackDailyCapYen = Mathf.Max(0, buybackDailyCapYen);
             _jobRounds = Mathf.Max(1, jobRounds);
             _jobSanityCost = Mathf.Max(0f, jobSanityCost);
-            _jobHungerCost = Mathf.Max(0f, jobHungerCost);
             _jobShiftSeconds = Mathf.Max(0f, jobShiftSeconds);
+            _jobDrainMultiplier = Mathf.Max(0f, jobDrainMultiplier);
         }
 
         public void BindClerk(NpcSpeech clerk) => _clerk = clerk;
@@ -131,10 +131,12 @@ namespace KyoumoMushoku.Gameplay.Shop
             var paid = JobReward.Payout(performance01, vitals.Sanity);
 
             player.Wallet?.Wallet.Add(paid);
-            vitals.Apply(new VitalsDelta { Sanity = -_jobSanityCost, Hunger = -_jobHungerCost });
+            vitals.Apply(new VitalsDelta { Sanity = -_jobSanityCost });
 
             // 1シフトぶん、ソフトクロックがまとまって進む。時間はバイトの主要なコストの1つであり（第四節）、
             // これがないと働くことがほぼ無時間で、1日に何度でも稼げてしまう。中断（Esc）はここに来ないので消費しない。
+            // 同じ1シフトの時間を、労働の強度倍率で渇き・空腹にも反映する（待機の消耗とは違う）。SAN は上で別途。
+            vitals.DrainTime(_jobShiftSeconds, _jobDrainMultiplier);
             _clock?.Clock?.Advance(_jobShiftSeconds);
             return paid;
         }

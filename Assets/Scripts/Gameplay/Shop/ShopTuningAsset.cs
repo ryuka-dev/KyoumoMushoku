@@ -22,16 +22,16 @@ namespace KyoumoMushoku.Gameplay.Shop
         [Tooltip("バイト1回で削られる SAN。最も回復させづらい資源を大量に消費する（第四節）。")]
         [SerializeField, Min(0f)] float _jobSanityCost = 25f;
 
-        [Tooltip("バイト1回で減る空腹。")]
-        [SerializeField, Min(0f)] float _jobHungerCost = 15f;
-
         [Tooltip("バイト1回（1シフト）で進むソフトクロックの秒数。")]
         [SerializeField, Min(0f)] float _jobShiftSeconds = 90f;
+
+        [Tooltip("労働の強度倍率。待機のまま時間が過ぎるより速く渇き・空腹を消費する（第四節）。")]
+        [SerializeField, Min(0f)] float _jobDrainMultiplier = 2f;
 
         public int BuybackDailyCapYen => _buybackDailyCapYen;
         public int JobRounds => _jobRounds;
         public float JobSanityCost => _jobSanityCost;
-        public float JobHungerCost => _jobHungerCost;
         public float JobShiftSeconds => _jobShiftSeconds;
+        public float JobDrainMultiplier => _jobDrainMultiplier;
     }
 }

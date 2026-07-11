@@ -21,7 +21,7 @@ namespace KyoumoMushoku.Gameplay.Survival
         [SerializeField] float _sanityDrainPerSecond = 0.025f;
 
         [Header("走行と空腹")]
-        [SerializeField] float _runDrainMultiplier = 1.6f;
+        [SerializeField] float _runDrainMultiplier = 2.0f;
         [SerializeField] float _lowHungerThreshold = 30f;
         [SerializeField] float _lowHungerRunDrainMultiplier = 1.5f;
 

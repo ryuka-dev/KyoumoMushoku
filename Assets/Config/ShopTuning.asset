@@ -15,5 +15,5 @@ MonoBehaviour:
   _buybackDailyCapYen: 300
   _jobRounds: 5
   _jobSanityCost: 25
-  _jobHungerCost: 15
   _jobShiftSeconds: 90
+  _jobDrainMultiplier: 2

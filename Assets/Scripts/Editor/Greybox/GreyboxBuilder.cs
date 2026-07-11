@@ -375,7 +375,7 @@ namespace KyoumoMushoku.Editor.Greybox
             store.Configure(
                 new[] { "water_bottle", "onigiri", "can_coffee", "backpack" },
                 shopTuning.BuybackDailyCapYen, shopTuning.JobRounds, shopTuning.JobSanityCost,
-                shopTuning.JobHungerCost, shopTuning.JobShiftSeconds);
+                shopTuning.JobShiftSeconds, shopTuning.JobDrainMultiplier);
 
             // 店主の頭上の台詞。マーカーは縦に伸びているので、台詞は親にせず root 直下（等倍）に置く。
             store.BindClerk(MakeSpeech(root, position + new Vector3(0f, 3.4f, 0f)));

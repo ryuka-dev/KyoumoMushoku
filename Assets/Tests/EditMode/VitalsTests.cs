@@ -45,6 +45,20 @@ namespace KyoumoMushoku.Core.Tests
         }
 
         [Test]
+        public void DrainTime_Intensity_ScalesConsumption()
+        {
+            var tuning = Tuning();
+            var idle = new Vitals(tuning);
+            var working = new Vitals(tuning);
+
+            idle.DrainTime(10f);
+            working.DrainTime(10f, intensity: 2f);
+
+            Assert.AreEqual(2f * (100f - idle.Hunger), 100f - working.Hunger, 1e-3f, "労働は待機の倍だけ空腹を使う。");
+            Assert.AreEqual(2f * (100f - idle.Thirst), 100f - working.Thirst, 1e-3f, "労働は待機の倍だけ渇きを使う。");
+        }
+
+        [Test]
         public void DrainTime_ClampsAtZero_WithoutRetroactiveDamage()
         {
             var tuning = Tuning();
