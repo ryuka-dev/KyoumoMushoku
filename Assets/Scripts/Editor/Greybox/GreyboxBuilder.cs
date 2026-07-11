@@ -364,7 +364,8 @@ namespace KyoumoMushoku.Editor.Greybox
             var store = marker.AddComponent<Storefront>();
             store.Configure(
                 new[] { "water_bottle", "onigiri", "can_coffee", "backpack" },
-                buybackDailyCapYen: 300, jobRounds: 5, jobSanityCost: 25f, jobHungerCost: 15f);
+                buybackDailyCapYen: 300, jobRounds: 5, jobSanityCost: 25f, jobHungerCost: 15f,
+                jobShiftSeconds: 90f);
 
             // 店主の頭上の台詞。マーカーは縦に伸びているので、台詞は親にせず root 直下（等倍）に置く。
             store.BindClerk(MakeSpeech(root, position + new Vector3(0f, 3.4f, 0f)));

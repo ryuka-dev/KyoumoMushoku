@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Shop;
 using KyoumoMushoku.Core.Survival;
+using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.UI;
 using UnityEngine;
@@ -37,9 +38,16 @@ namespace KyoumoMushoku.Gameplay.Shop
         [Tooltip("バイト1回で減る空腹。叩き台。")]
         [SerializeField, Min(0f)] float _jobHungerCost = 15f;
 
+        [Tooltip("バイト1回（1シフト）で進むソフトクロックの秒数。時間はバイトの主要なコストの1つ（第四節）。叩き台。")]
+        [SerializeField, Min(0f)] float _jobShiftSeconds = 90f;
+
         [SerializeField] NpcSpeech _clerk;
 
         readonly SalvageLedger _ledger = new SalvageLedger();
+
+        // シーン内の唯一の時計。就寝で日付が変わる canonical な経路（GameSession）と同じく、
+        // 横断的な単一オブジェクトは参照を直列化せず起動時に一度だけ拾う（SleepSpot が ZoneAlertDirector を拾うのと同じ）。
+        GameClockDriver _clock;
 
         /// <summary>プレイヤーが店に入った（調べた）。<see cref="StorefrontPanel"/> がこれを合図に開く。</summary>
         public event Action<PlayerContext> Entered;
@@ -50,13 +58,14 @@ namespace KyoumoMushoku.Gameplay.Shop
         public SalvageLedger Ledger => _ledger;
 
         public void Configure(string[] offerIds, int buybackDailyCapYen, int jobRounds,
-            float jobSanityCost, float jobHungerCost)
+            float jobSanityCost, float jobHungerCost, float jobShiftSeconds)
         {
             _offerIds = offerIds;
             _buybackDailyCapYen = Mathf.Max(0, buybackDailyCapYen);
             _jobRounds = Mathf.Max(1, jobRounds);
             _jobSanityCost = Mathf.Max(0f, jobSanityCost);
             _jobHungerCost = Mathf.Max(0f, jobHungerCost);
+            _jobShiftSeconds = Mathf.Max(0f, jobShiftSeconds);
         }
 
         public void BindClerk(NpcSpeech clerk) => _clerk = clerk;
@@ -64,6 +73,11 @@ namespace KyoumoMushoku.Gameplay.Shop
         void Reset()
         {
             GetComponent<Collider2D>().isTrigger = true;
+        }
+
+        void Start()
+        {
+            _clock = FindFirstObjectByType<GameClockDriver>();
         }
 
         public bool CanInteract(PlayerContext player) =>
@@ -118,6 +132,10 @@ namespace KyoumoMushoku.Gameplay.Shop
 
             player.Wallet?.Wallet.Add(paid);
             vitals.Apply(new VitalsDelta { Sanity = -_jobSanityCost, Hunger = -_jobHungerCost });
+
+            // 1シフトぶん、ソフトクロックがまとまって進む。時間はバイトの主要なコストの1つであり（第四節）、
+            // これがないと働くことがほぼ無時間で、1日に何度でも稼げてしまう。中断（Esc）はここに来ないので消費しない。
+            _clock?.Clock?.Advance(_jobShiftSeconds);
             return paid;
         }
     }
