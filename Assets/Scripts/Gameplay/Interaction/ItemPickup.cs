@@ -1,4 +1,5 @@
 using KyoumoMushoku.Core.Items;
+using KyoumoMushoku.Gameplay.UI;
 using UnityEngine;
 
 namespace KyoumoMushoku.Gameplay.Interaction
@@ -42,7 +43,7 @@ namespace KyoumoMushoku.Gameplay.Interaction
                 ? definition.DisplayName
                 : _itemId;
 
-            return player.Inventory.Inventory.CanAdd(Instance) ? $"{name}を拾う" : $"{name}（カバンが一杯だ）";
+            return player.Inventory.Inventory.CanAdd(Instance) ? WorldText.Pick(name) : WorldText.PickBagFull(name);
         }
 
         public void Interact(PlayerContext player)

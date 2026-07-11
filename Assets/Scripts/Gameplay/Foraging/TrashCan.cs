@@ -7,6 +7,7 @@ using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.Police;
+using KyoumoMushoku.Gameplay.UI;
 using UnityEngine;
 
 namespace KyoumoMushoku.Gameplay.Foraging
@@ -120,16 +121,16 @@ namespace KyoumoMushoku.Gameplay.Foraging
         {
             if (Depleted)
             {
-                return "ゴミ箱（もう漁るものはない）";
+                return ForageText.Depleted;
             }
 
             if (player.Inventory != null && player.Inventory.Inventory != null &&
                 player.Inventory.Inventory.FreeSlots <= 0)
             {
-                return "ゴミ箱（カバンが一杯だ）";
+                return ForageText.BagFull;
             }
 
-            return "ゴミ箱を漁る" + PeekSuffix(player);
+            return ForageText.Rummage + PeekSuffix(player);
         }
 
         /// <summary>
@@ -152,7 +153,7 @@ namespace KyoumoMushoku.Gameplay.Foraging
 
             if (peek == ForagePeek.Unreadable)
             {
-                return "（??・よく見えない）";
+                return ForageText.PeekUnreadable;
             }
 
             EnsureNextDraw(player.Inventory.Catalog);
@@ -163,20 +164,20 @@ namespace KyoumoMushoku.Gameplay.Foraging
 
             if (!_nextDraw.HasItem)
             {
-                return "（空っぽのようだ）";
+                return ForageText.PeekEmpty;
             }
 
             if (peek != ForagePeek.Detailed)
             {
                 // 空か当たりかは分かるが、中身までは分からない。
-                return "（当たりのようだ）";
+                return ForageText.PeekHit;
             }
 
             var catalog = player.Inventory.Catalog;
             var name = catalog != null && catalog.TryGet(_nextDraw.Item, out var definition)
                 ? definition.DisplayName
                 : _nextDraw.Item.Value;
-            return $"（{name}が見える）";
+            return ForageText.PeekNamed(name);
         }
 
         // 即時のフォールバック。通常はチャネル経由で完了するため呼ばれない。
@@ -209,7 +210,7 @@ namespace KyoumoMushoku.Gameplay.Foraging
                 Spend();
                 _hasNextDraw = false;
                 player.Knacks?.RecordRummage();
-                return "空っぽだった。";
+                return ForageText.FoundEmpty;
             }
 
             KyoumoMushoku.Core.Items.ItemDefinition definition = null;
@@ -227,9 +228,7 @@ namespace KyoumoMushoku.Gameplay.Foraging
             if (!placed)
             {
                 // 入りきらないときは資源を消費せず、正直に伝える（第十四節）。次に出るものはそのまま残る。
-                return onBack
-                    ? $"{name}を見つけたが、もう担げない。"
-                    : $"{name}を見つけたが、カバンに入りきらない。";
+                return onBack ? ForageText.CannotCarry(name) : ForageText.CannotFit(name);
             }
 
             Spend();
@@ -238,7 +237,7 @@ namespace KyoumoMushoku.Gameplay.Foraging
 
             // 状態（新鮮／傷み／腐敗）はここでは言わない。読めるかどうかは SAN の問題であり、
             // 食品カードの `??` で読む（第三節）。ここで漏らすと情報機構を迂回してしまう。
-            return $"{name}が出た。";
+            return ForageText.Found(name);
         }
 
         /// <summary>

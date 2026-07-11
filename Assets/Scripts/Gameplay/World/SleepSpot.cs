@@ -3,6 +3,7 @@ using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.Police;
 using KyoumoMushoku.Gameplay.Session;
+using KyoumoMushoku.Gameplay.UI;
 using TMPro;
 using UnityEngine;
 
@@ -148,8 +149,8 @@ namespace KyoumoMushoku.Gameplay.World
                 // 貼り紙は予告、撤去そのものは事後説明（第十四節）。いずれも世界の中の情報として出す。
                 _notice.text = _state switch
                 {
-                    SleepSpotState.Removed => "撤去済み（苦情多数のため）",
-                    SleepSpotState.Warned => "苦情の貼り紙：はやく出ていけ",
+                    SleepSpotState.Removed => WorldText.SleepNoticeRemoved,
+                    SleepSpotState.Warned => WorldText.SleepNoticeWarned,
                     _ => string.Empty,
                 };
             }
@@ -175,20 +176,20 @@ namespace KyoumoMushoku.Gameplay.World
         {
             if (_state == SleepSpotState.Removed)
             {
-                return $"{_label}（撤去された）";
+                return WorldText.SleepRemoved(_label);
             }
 
             if (_costYen > 0 && (player.Wallet == null || !player.Wallet.Wallet.CanAfford(_costYen)))
             {
-                return $"{_label}（所持金が足りない）";
+                return WorldText.SleepCannotAfford(_label);
             }
 
             if (_costYen > 0)
             {
-                return $"{_label}（{_costYen}円）";
+                return WorldText.SleepCost(_label, _costYen);
             }
 
-            return _state == SleepSpotState.Warned ? $"{_label}（苦情の貼り紙）" : _label;
+            return _state == SleepSpotState.Warned ? WorldText.SleepWarned(_label) : _label;
         }
 
         public void Interact(PlayerContext player)

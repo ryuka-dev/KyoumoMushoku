@@ -26,13 +26,6 @@ namespace KyoumoMushoku.Gameplay.Police
     /// </summary>
     public sealed class PoliceOfficer : MonoBehaviour
     {
-        // 台詞は世界の中の情報である。誰が言ったのかが分かるよう、頭上に出す（第十四節）。
-        const string NoticeLine = "……おい。";
-        const string WarningLine = "ここは君の居場所じゃない。立ち去りなさい。";
-        const string PursueLine = "待ちなさい！";
-        const string CaptureLine = "二度とここで漁るな。";
-        const string CaptureWithSeizureLine = "腐ったものは預かる。二度とここで漁るな。";
-
         [Tooltip("この警官が見ている警戒ゾーン。段階進行の速さはこのゾーンの警戒度が駆動する。")]
         [SerializeField] AlertZoneId _zone = AlertZoneId.Commercial;
 
@@ -229,15 +222,15 @@ namespace KyoumoMushoku.Gameplay.Police
             switch (next)
             {
                 case PoliceStage.Noticing:
-                    Say(NoticeLine);
+                    Say(PoliceText.Notice);
                     break;
                 case PoliceStage.Warning:
-                    Say(WarningLine);
+                    Say(PoliceText.Warning);
                     OnWarned();
                     break;
                 case PoliceStage.Pursuing:
                     _raisedResidentialThisPursuit = false;
-                    Say(PursueLine);
+                    Say(PoliceText.Pursue);
                     break;
                 case PoliceStage.Unaware:
                     // 遭遇が終わった。次に気づかれたときは、また1回目の警告から数える。
@@ -378,7 +371,7 @@ namespace KyoumoMushoku.Gameplay.Police
 
             var seized = Confiscate();
             EscortToAreaEdge();
-            Say(seized > 0 ? CaptureWithSeizureLine : CaptureLine);
+            Say(seized > 0 ? PoliceText.CaptureWithSeizure : PoliceText.Capture);
 
             Reset();
         }

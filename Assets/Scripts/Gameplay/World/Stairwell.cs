@@ -1,4 +1,5 @@
 using KyoumoMushoku.Gameplay.Interaction;
+using KyoumoMushoku.Gameplay.UI;
 using UnityEngine;
 
 namespace KyoumoMushoku.Gameplay.World
@@ -34,8 +35,8 @@ namespace KyoumoMushoku.Gameplay.World
 
         public string Describe(PlayerContext player) =>
             _linked != null && _linked.transform.position.y < transform.position.y
-                ? "階段を降りる"
-                : "階段を昇る";
+                ? WorldText.StairsDown
+                : WorldText.StairsUp;
 
         public void Interact(PlayerContext player)
         {
