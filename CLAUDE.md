@@ -39,6 +39,24 @@
 
 実装の優先順位（Phase 0〜5）は第九節に定義してある。垂直スライスが証明すべき4つの命題に寄与しない機能を、Phase 0〜4 に持ち込まないこと。
 
+## 数値とローカライズの複用ルール（seam）
+
+新しくプレイヤー向け文字列や平衡数値を追加するときは、既存の集約の仕組みを必ず複用する。バラした直書きを増やさない。
+
+### ローカライズ（プレイヤー向け文字列）
+
+- プレイヤーの目に触れる文字列は、域別のテキストモジュール経由でのみ書く。モジュールは `Assets/Scripts/Gameplay/UI` にあり、命名規約は `*Text.cs` / `*TextLabels.cs`（`WorldText`／`ShopText`／`StashText`／`PoliceText`／`ForageText`／`HudText`／`GameTextLabels`／`FoodCardText`）。新モジュールもこの命名に従えば自動で許可される。
+- 後端は今は日本語ベタ書きのメソッド本体でよい。将来の多言語化は本体をテーブル参照へ差し替えるだけで済む。
+- 例外（テキストモジュールを通さなくてよいもの）：Core 層（純粋ロジック・診断のみ）、Inspector 属性（`[Tooltip]`／`[Header]`）、ログ・例外メッセージ、`ItemDatabaseAsset` のようなデータ seed（アイテムの表示名など）。就寝場所や水源の呼び名は設置ごとの data（`[SerializeField]` 既定値＋builder の Configure）であり、これもデータ扱い。
+- この規約は `LocalizationConventionTests`（EditMode）が自動で守る。テキストモジュール外に日本語リテラルを直書きするとテストが赤になる。真にデータ／診断なら、テストの許可一覧に理由付きで加える。
+
+### 数値（平衡・チューニング）
+
+- プレイテストで調整する平衡数値は `Assets/Config/*.asset`（ScriptableObject）に置く。Inspector・Play 中に可変。既存：`VitalsTuning`／`DaySchedule`／`ItemDatabase`／`TrashCanLoot`／`SleepTuning`／`ShopTuning`／`WaterTuning`。
+- 純粋 Core ロジックがコンパイル時に参照する構造的定数（SAN 閾値・警戒度規則・コツ・保管庫イベント）は、従来どおり per-domain の静的 `*Tuning` クラス。
+- `GreyboxBuilder` に生の数値字面量を直接書かない。builder は資産を読み、各コンポーネントを Configure するだけにする（位置・色・sorting などの構造値は除く）。
+- 落とし穴：`Ensure*Asset()` は存在しなければ生成するだけで、既存 `Assets/Config/*.asset` は再ビルドで上書きされず実行時の権威になる。コード既定値を変えたら、当該 `.asset` を削除して `KyoumoMushoku/Build Greybox Scene` で再生成する（Inspector で直接編集してもよい）。`VitalsTests` は `new VitalsTuning()` のコード既定値を検証し厳密値を直書きするため、掉率変更時は期待値の追随が要る。
+
 ## 備考
 
 - 本ファイルはプロジェクトの土台整備段階（Git リポジトリ初期化・企画資料整理）で作成されたものであり、開発の進行に応じて更新すること。
