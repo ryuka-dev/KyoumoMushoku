@@ -73,7 +73,7 @@ namespace KyoumoMushoku.Gameplay.UI
         void OnActionReported(string message) => Show(message);
 
         // 習得の瞬間は明示的に通知する（第六節）。習得したのはルールであって数値ではない。
-        void OnKnackAcquired(KnackId id) => Show($"コツを覚えた：{GameTextLabels.Knack(id)}");
+        void OnKnackAcquired(KnackId id) => Show(HudText.KnackAcquired(GameTextLabels.Knack(id)));
 
         void Show(string message)
         {

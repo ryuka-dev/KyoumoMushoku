@@ -30,7 +30,7 @@ namespace KyoumoMushoku.Gameplay.UI
             // 漁りなど時間のかかる調べものの最中は、進捗と中断の仕方を示す（第十節：探索時間の手応え）。
             if (_interactor.IsChanneling)
             {
-                _text.text = $"漁っている… {ProgressBar(_interactor.ChannelProgress)}　［動くと手を止める］";
+                _text.text = HudText.Rummaging(ProgressBar(_interactor.ChannelProgress));
                 return;
             }
 
@@ -43,7 +43,7 @@ namespace KyoumoMushoku.Gameplay.UI
 
             var description = current.Describe(_interactor.Context);
             _text.text = current.CanInteract(_interactor.Context)
-                ? $"{description}　［E］"
+                ? HudText.Interactable(description)
                 : description;
         }
 

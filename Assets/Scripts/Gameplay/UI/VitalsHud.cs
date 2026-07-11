@@ -68,12 +68,12 @@ namespace KyoumoMushoku.Gameplay.UI
             var day = _clock != null && _clock.Clock != null ? _clock.Clock.Day : 1;
             var phase = _clock != null && _clock.Clock != null
                 ? GameTextLabels.Phase(_clock.Clock.Phase)
-                : "―";
+                : HudText.Unknown;
             var yen = _wallet != null && _wallet.Wallet != null ? _wallet.Wallet.Yen : 0;
-            var zone = _zones != null ? GameTextLabels.Zone(_zones.CurrentZone) : "―";
+            var zone = _zones != null ? GameTextLabels.Zone(_zones.CurrentZone) : HudText.Unknown;
             var mood = GameTextLabels.SanityTier(vitals.SanityTier);
 
-            return $"{day}日目　{phase}　　所持金 {yen}円\n気分：{mood}　　現在地：{zone}";
+            return HudText.Status(day, phase, yen, mood, zone);
         }
 
         static void SetFill(Image image, float fraction)

@@ -107,11 +107,11 @@ namespace KyoumoMushoku.Gameplay.UI
             var sanity = _vitals.Vitals.Sanity;
 
             _builder.Clear();
-            _builder.AppendLine($"カバン　{inventory.UsedSlots}/{inventory.Capacity}マス");
+            _builder.AppendLine(HudText.BagHeader(inventory.UsedSlots, inventory.Capacity));
 
             if (inventory.Count == 0)
             {
-                _builder.AppendLine("（空）");
+                _builder.AppendLine(HudText.BagEmpty);
                 return _builder.ToString();
             }
 
@@ -123,7 +123,7 @@ namespace KyoumoMushoku.Gameplay.UI
                 }
 
                 var item = inventory[i];
-                _builder.AppendLine($"{i + 1}. {FoodCardText.Headline(definition, item.Freshness, sanity)}");
+                _builder.AppendLine(HudText.InventoryItemLine(i + 1, FoodCardText.Headline(definition, item.Freshness, sanity)));
 
                 var effect = FoodCardText.EffectLines(definition, item.Freshness, sanity);
                 if (!string.IsNullOrEmpty(effect))
@@ -138,7 +138,7 @@ namespace KyoumoMushoku.Gameplay.UI
                 }
             }
 
-            _builder.AppendLine("\n数字キーで飲食・使用");
+            _builder.AppendLine(HudText.EatHint);
             return _builder.ToString();
         }
     }
