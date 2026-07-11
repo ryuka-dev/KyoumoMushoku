@@ -30,6 +30,10 @@ namespace KyoumoMushoku.Gameplay.World
         public void SayPlacementRule() =>
             Say("ここ、たまに清掃が入るぞ。貯め込みすぎると狙われる。");
 
+        /// <summary>場所代を受け取ったときの一言（第十二節）。支払いは世界の中の彼を通して行われる。</summary>
+        public void SayRentPaid() =>
+            Say("あいよ、今日のぶんは確かに。ここは見といてやる。");
+
         /// <summary>
         /// 保管庫を開けた瞬間の一言。起きたことの説明を最優先し、次に噂話（SAN 70 以上）、最後に貯め込みの小言。
         /// 何も言うことがなければ黙る。

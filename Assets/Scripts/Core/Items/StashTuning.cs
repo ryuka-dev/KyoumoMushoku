@@ -17,5 +17,18 @@ namespace KyoumoMushoku.Core.Items
             StashKind.CardboardBox => CardboardBoxCapacity,
             _ => 1,
         };
+
+        /// <summary>段ボール箱の場所代（1日・円）。第十二節・価格表（第十一節）の 300 円。叩き台。</summary>
+        public const int CardboardBoxRentYen = 300;
+
+        /// <summary>
+        /// 種別ごとの場所代（1日・円）。0 なら場所代を取らない種別。払うとその日の安全性が上がり、
+        /// 保管庫イベントの発生確率が下がる（<see cref="StashSafety"/>）。未知の種別は 0（取らない）。
+        /// </summary>
+        public static int RentCostFor(StashKind kind) => kind switch
+        {
+            StashKind.CardboardBox => CardboardBoxRentYen,
+            _ => 0,
+        };
     }
 }

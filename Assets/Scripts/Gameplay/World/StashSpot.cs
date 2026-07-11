@@ -45,6 +45,10 @@ namespace KyoumoMushoku.Gameplay.World
         IItemCatalog _catalog;
         Stash _stash;
 
+        // 場所代の残り効果（日数）。その日に払うと 1 になり、就寝＝日境界で減る。一過性であり永続しない
+        // （就寝時のセーブは日境界の減衰の後に走るため、保存される値は常に 0。買い取り枠と同じ扱い・第二節）。
+        int _rentDaysRemaining;
+
         // 先輩ホームレスが語るための一過性の状態。予告の種別と、直近に起きたイベント。
         // いずれもセッション内の一過性であり、確実な経路（貼り紙ラベル）はこれと独立に永続する。
         StashEventKind _forecastKind = StashEventKind.None;
@@ -68,6 +72,22 @@ namespace KyoumoMushoku.Gameplay.World
 
         /// <summary>設置している姿は目立つ（第十二節）。警官がチャネル越しにこれを読む。</summary>
         public float SuspicionPerSecond => _suspicionPerSecond;
+
+        /// <summary>この保管庫の場所代（1日・円）。0 なら場所代を取らない種別。</summary>
+        public int RentCostYen => StashTuning.RentCostFor(_kind);
+
+        /// <summary>場所代を取る保管庫が置かれているか。UI が支払いの導線を出すかを決める。</summary>
+        public bool CanPayRent => _stash != null && RentCostYen > 0;
+
+        /// <summary>今日の場所代を払い済みか（安全性が上がっている状態）。</summary>
+        public bool RentActive => _stash != null && _rentDaysRemaining > 0;
+
+        /// <summary>保管庫イベントの発生確率にかける安全性の係数（種別＋その日の場所代）。空・未設置なら 1。</summary>
+        public float EventChanceMultiplier =>
+            _stash != null ? StashSafety.EventChanceMultiplier(_kind, RentActive) : 1f;
+
+        /// <summary>場所代の支払い結果。UI はこれを世界の言葉へ翻訳する。</summary>
+        public enum PayRentOutcome { Paid, AlreadyPaid, CannotAfford, NotRentable, NoStash }
 
         public void Configure(string stashSpotId, AlertZoneId zone, StashKind kind, float placeSeconds)
         {
@@ -157,6 +177,7 @@ namespace KyoumoMushoku.Gameplay.World
 
             _catalog = catalog;
             _stash = new Stash(catalog, _kind, _stashSpotId, StashTuning.CapacityFor(_kind));
+            _rentDaysRemaining = 0; // 置いたばかりの箱は場所代を払っていない。
             ClearNotice(); // 置いたばかりの箱にはまだ予告が無い。
             ApplyVisual();
 
@@ -180,6 +201,7 @@ namespace KyoumoMushoku.Gameplay.World
         public int Restore(StashState state, IItemCatalog catalog)
         {
             _catalog = catalog;
+            _rentDaysRemaining = 0; // 場所代は一過性。ロードした朝はまだ払っていない状態から始まる。
 
             if (state is null || catalog is null)
             {
@@ -192,6 +214,52 @@ namespace KyoumoMushoku.Gameplay.World
             var dropped = _stash.Restore(state);
             ApplyVisual();
             return dropped;
+        }
+
+        /// <summary>
+        /// 場所代を払う（第十二節）。支払先は世界の中の先輩ホームレスで、払うとその日の安全性が上がり
+        /// 保管庫イベントの発生確率が下がる（<see cref="StashSafety"/>）。効果は就寝＝日境界で切れる。
+        /// 今日ぶんを既に払っていれば二重に取らない。所持金が足りなければ何も取らない（第三節）。
+        /// </summary>
+        public PayRentOutcome PayRent(PlayerContext player)
+        {
+            if (_stash == null)
+            {
+                return PayRentOutcome.NoStash;
+            }
+
+            var cost = RentCostYen;
+            if (cost <= 0)
+            {
+                return PayRentOutcome.NotRentable;
+            }
+
+            if (RentActive)
+            {
+                return PayRentOutcome.AlreadyPaid;
+            }
+
+            var wallet = player?.Wallet?.Wallet;
+            if (wallet == null || !wallet.TrySpend(cost))
+            {
+                return PayRentOutcome.CannotAfford;
+            }
+
+            _rentDaysRemaining = 1; // 今夜の抽選ぶんを守る。就寝時の日境界で減る。
+            _elder?.SayRentPaid(); // 支払先は世界の中の先輩（第十二節）。彼が受け取りを認める。
+            return PayRentOutcome.Paid;
+        }
+
+        /// <summary>
+        /// 日境界で場所代の効果を1日ぶん減らす（<see cref="StashDirector"/> が翌日ぶんの抽選の後に呼ぶ）。
+        /// 抽選は払い済みの安全性を読んだあとにこれで切れるので、払った効果はちょうどその夜に効く。
+        /// </summary>
+        public void TickRentDay()
+        {
+            if (_rentDaysRemaining > 0)
+            {
+                _rentDaysRemaining--;
+            }
         }
 
         public void BindNotice(TMP_Text notice) => _notice = notice;

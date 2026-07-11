@@ -39,6 +39,7 @@ namespace KyoumoMushoku.Gameplay.World
             var spots = FindSpotsById();
             var fired = FireDue(currentDay, spots);
             RollForTomorrow(currentDay, spots);
+            TickRent(spots);
             RefreshNotices(spots, fired);
         }
 
@@ -89,7 +90,8 @@ namespace KyoumoMushoku.Gameplay.World
                 }
 
                 var alert = _alerts != null ? _alerts.Level(spot.Zone) : 0f;
-                var kind = StashEventRoll.Roll(_rng, alert, spot.StashUsedSlots);
+                // 場所代を払った箱は安全性が上がり、発生確率が下がる（第十二節・StashSafety）。
+                var kind = StashEventRoll.Roll(_rng, alert, spot.StashUsedSlots, spot.EventChanceMultiplier);
                 if (kind != StashEventKind.None)
                 {
                     _pending.Add(new PendingStashEvent
@@ -98,6 +100,21 @@ namespace KyoumoMushoku.Gameplay.World
                         Kind = kind,
                         TriggerDay = currentDay + 1,
                     });
+                }
+            }
+        }
+
+        /// <summary>
+        /// 翌日ぶんの抽選のあと、各保管庫の場所代の効果を1日ぶん減らす。抽選は払い済みの安全性を読んだ
+        /// あとにこれで切れるので、払った効果はちょうどその夜の抽選に効き、翌日には切れる（＝1日ぶん）。
+        /// </summary>
+        void TickRent(Dictionary<string, StashSpot> spots)
+        {
+            foreach (var spot in spots.Values)
+            {
+                if (spot.HasStash)
+                {
+                    spot.TickRentDay();
                 }
             }
         }

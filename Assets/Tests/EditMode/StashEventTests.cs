@@ -78,6 +78,41 @@ namespace KyoumoMushoku.Core.Tests
         }
 
         [Test]
+        public void SafetyMultiplier_OfZero_NeverFires_EvenWhenCertain()
+        {
+            // 係数0（完全に安全）なら、必ず発生する側の抽選（0.0）でも None。
+            Assert.AreEqual(StashEventKind.None,
+                StashEventRoll.Roll(new ScriptedRng(0.0), residentialAlert: 100f, usedSlots: 12, safetyMultiplier: 0f));
+        }
+
+        [Test]
+        public void SafetyMultiplier_LowersTheChance_ChangingTheOutcomeAtAFixedDraw()
+        {
+            // 発生確率 = alert01*0.6 + fullness01*0.25。alert=100,slots=12 → 0.85。
+            // 抽選値 0.5 は 0.85 未満なので無防備（係数1）では発生する。
+            Assert.AreNotEqual(StashEventKind.None,
+                StashEventRoll.Roll(new ScriptedRng(0.0, 0.5), residentialAlert: 100f, usedSlots: 12, safetyMultiplier: 1f));
+
+            // 場所代を払った箱（係数0.4）では 0.34 に下がり、同じ抽選値 0.5 では発生しない。
+            Assert.AreEqual(StashEventKind.None,
+                StashEventRoll.Roll(new ScriptedRng(0.5), residentialAlert: 100f, usedSlots: 12, safetyMultiplier: 0.4f));
+        }
+
+        [Test]
+        public void StashSafety_CardboardBox_IsSaferWhenRentIsPaid()
+        {
+            // 無防備は素通し（1）、場所代を払った日は下がる（1未満）。
+            Assert.AreEqual(1f, StashSafety.EventChanceMultiplier(StashKind.CardboardBox, rentActive: false));
+            Assert.Less(StashSafety.EventChanceMultiplier(StashKind.CardboardBox, rentActive: true), 1f);
+        }
+
+        [Test]
+        public void StashTuning_CardboardBox_ChargesRent()
+        {
+            Assert.AreEqual(300, StashTuning.RentCostFor(StashKind.CardboardBox));
+        }
+
+        [Test]
         public void LostCount_RoundsUpAndNeverExceedsStock()
         {
             Assert.AreEqual(4, StashEventRoll.LostCount(5, StashEventKind.CityCleaning));   // ceil(3.5)

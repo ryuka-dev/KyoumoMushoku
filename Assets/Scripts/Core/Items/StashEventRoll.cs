@@ -13,8 +13,13 @@ namespace KyoumoMushoku.Core.Items
     /// </summary>
     public static class StashEventRoll
     {
-        /// <summary>その日に起きるイベントを引く。起きないなら <see cref="StashEventKind.None"/>。</summary>
-        public static StashEventKind Roll(IRng rng, float residentialAlert, int usedSlots)
+        /// <summary>
+        /// その日に起きるイベントを引く。起きないなら <see cref="StashEventKind.None"/>。
+        /// <paramref name="safetyMultiplier"/>（[0,1]・既定 1）は保管庫の安全性で、発生確率を下げる
+        /// （場所代・種別。<see cref="StashSafety"/>）。1 は無防備、0 は完全に安全。
+        /// </summary>
+        public static StashEventKind Roll(
+            IRng rng, float residentialAlert, int usedSlots, float safetyMultiplier = 1f)
         {
             if (rng is null || usedSlots <= 0)
             {
@@ -23,8 +28,8 @@ namespace KyoumoMushoku.Core.Items
 
             var alert01 = Clamp01(residentialAlert / ZoneAlertTuning.MaxLevel);
             var fullness01 = Clamp01(usedSlots / (float)StashEventTuning.FullnessReferenceSlots);
-            var probability = alert01 * StashEventTuning.AlertContribution +
-                              fullness01 * StashEventTuning.FullnessContribution;
+            var probability = (alert01 * StashEventTuning.AlertContribution +
+                               fullness01 * StashEventTuning.FullnessContribution) * Clamp01(safetyMultiplier);
 
             if (rng.NextDouble() >= probability)
             {

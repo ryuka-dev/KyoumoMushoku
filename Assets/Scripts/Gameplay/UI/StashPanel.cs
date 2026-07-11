@@ -134,6 +134,10 @@ namespace KyoumoMushoku.Gameplay.UI
                     _side = _side == Side.Deposit ? Side.Withdraw : Side.Deposit;
                     _feedback = string.Empty;
                 }
+                else if (keyboard.rKey.wasPressedThisFrame && _spot != null && _spot.CanPayRent)
+                {
+                    PayRent();
+                }
                 else
                 {
                     for (var i = 0; i < 9; i++)
@@ -160,6 +164,18 @@ namespace KyoumoMushoku.Gameplay.UI
             {
                 Withdraw(index);
             }
+        }
+
+        // 場所代を払う（第十二節）。支払先は箱の傍の先輩ホームレスで、その日の安全性が上がる。
+        void PayRent()
+        {
+            _feedback = _spot.PayRent(_ctx) switch
+            {
+                StashSpot.PayRentOutcome.Paid => $"場所代 {_spot.RentCostYen}円を払った。今日はここが少し安全だ。",
+                StashSpot.PayRentOutcome.AlreadyPaid => "今日のぶんはもう払ってある。",
+                StashSpot.PayRentOutcome.CannotAfford => "場所代が払えない。",
+                _ => _feedback,
+            };
         }
 
         void Deposit(int index)
@@ -227,6 +243,15 @@ namespace KyoumoMushoku.Gameplay.UI
 
             _sb.AppendLine($"{(!depositActive ? "▶" : "　")} 引き出す（箱 → カバン）　箱 {_stash.UsedSlots}/{_stash.Capacity}マス");
             AppendItems(_stash.Count, !depositActive, i => _stash.TryGetDefinition(i, out var d) ? d.DisplayName : _stash[i].Id, "（箱は空）");
+
+            // 場所代（第十二節）：払うとその日の安全性が上がり、保管庫イベントが起きにくくなる。
+            if (_spot != null && _spot.CanPayRent)
+            {
+                _sb.AppendLine();
+                _sb.AppendLine(_spot.RentActive
+                    ? "場所代：本日ぶん支払い済み（今日はここが少し安全だ）"
+                    : $"場所代：未払い　［R：{_spot.RentCostYen}円 払う］");
+            }
 
             if (!string.IsNullOrEmpty(_feedback))
             {
