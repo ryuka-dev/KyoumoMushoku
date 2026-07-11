@@ -198,6 +198,16 @@ namespace KyoumoMushoku.Editor.Greybox
             player.AddComponent<PlayerWallet>();
             player.AddComponent<PlayerInventory>().Configure(catalog);
             player.AddComponent<PlayerCarry>();
+
+            // 段ボールを背負っている間だけ見せる占位 sprite（第十四節・世界内の表現）。玩家の背に重ねる。
+            // 表示の切替そのものは CarryIndicator が PlayerCarry を毎フレーム読んで駆動する（状態の所有者ではない）。
+            // ここでは器だけ建て、HUD のラベルと結ぶのは Canvas を建てたあと（BuildCanvas）。
+            var carriedBox = MakeQuad("CarriedBox", white, material, new Color(0.62f, 0.47f, 0.30f), sortingOrder: 11);
+            carriedBox.transform.SetParent(player.transform, false);
+            carriedBox.transform.localPosition = new Vector3(0.55f, 0.25f, 0f);
+            carriedBox.transform.localScale = new Vector3(0.8f, 0.5f, 1f);
+            player.AddComponent<CarryIndicator>();
+
             player.AddComponent<PlayerKnacks>();
             player.AddComponent<PlayerConsumer>();
             player.AddComponent<PlayerInteractor>();
@@ -650,6 +660,13 @@ namespace KyoumoMushoku.Editor.Greybox
             hud.Configure(player.GetComponent<PlayerVitals>(), player.GetComponent<PlayerWallet>(),
                 clock, player.GetComponent<ZoneTracker>());
             hud.BindFills(hp, thirst, hunger, sanity, status);
+
+            // 背負い中の一言（第十四節・HUD 側の表現）。占位 sprite と対で CarryIndicator が駆動する。
+            // 状態欄のすぐ下に置く。背負っていない間は空文字なので何も出ない。
+            var carryLabel = MakeText(canvasT, font, "CarryLabel", new Vector2(0f, 1f),
+                new Vector2(24f, -24f - 4f * 40f - 8f - 88f), new Vector2(760f, 40f), 26f, TextAlignmentOptions.TopLeft);
+            var carriedSprite = player.transform.Find("CarriedBox").GetComponent<SpriteRenderer>();
+            player.GetComponent<CarryIndicator>().Bind(carriedSprite, carryLabel);
 
             var interactor = player.GetComponent<PlayerInteractor>();
 
