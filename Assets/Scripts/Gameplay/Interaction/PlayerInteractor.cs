@@ -61,7 +61,8 @@ namespace KyoumoMushoku.Gameplay.Interaction
                 GetComponent<PlayerVitals>(),
                 GetComponent<PlayerInventory>(),
                 GetComponent<PlayerWallet>(),
-                GetComponent<PlayerKnacks>());
+                GetComponent<PlayerKnacks>(),
+                GetComponent<PlayerCarry>());
         }
 
         void Update()

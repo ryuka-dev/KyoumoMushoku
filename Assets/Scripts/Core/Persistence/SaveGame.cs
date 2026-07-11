@@ -20,9 +20,10 @@ namespace KyoumoMushoku.Core.Persistence
         /// <summary>
         /// 版 1：Phase 1〜2。時計・状態・カバン・所持金・就寝場所。
         /// 版 2：Phase 3。警戒ゾーンごとの警戒度を加えた。
-        /// 版 3：Phase 5a。習得したコツと触発カウンタを加えた。古い版は <see cref="SaveGameMigration"/> が引き上げる。
+        /// 版 3：Phase 5a。習得したコツと触発カウンタを加えた。
+        /// 版 4：Phase 5b。背負いスロット（段ボール）を加えた。古い版は <see cref="SaveGameMigration"/> が引き上げる。
         /// </summary>
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 4;
 
         public const int OldestSupportedVersion = 1;
 
@@ -43,6 +44,9 @@ namespace KyoumoMushoku.Core.Persistence
         /// 版 2 以前は誰もコツを知らなかった状態として引き上げる。
         /// </summary>
         public KnackState Knacks = new KnackState();
+
+        /// <summary>背負っている段ボール（第十一節）。担いだまま寝ることもあるため永続する。</summary>
+        public CarrySlotState CarrySlot = new CarrySlotState();
 
         public int WalletYen;
 

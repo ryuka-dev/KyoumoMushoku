@@ -68,7 +68,9 @@ namespace KyoumoMushoku.Core.Items
         }
 
         public bool CanAdd(ItemInstance item) =>
-            _catalog.TryGet(item.ItemId, out var definition) && definition.Slots <= FreeSlots;
+            _catalog.TryGet(item.ItemId, out var definition) &&
+            !definition.CarriedOnBack && // 背負い物（段ボール）は鞄に入れず、背負いスロットで運ぶ（第十一節）
+            definition.Slots <= FreeSlots;
 
         public bool TryAdd(ItemInstance item)
         {

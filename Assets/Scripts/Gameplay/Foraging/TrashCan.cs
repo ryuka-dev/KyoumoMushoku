@@ -197,15 +197,24 @@ namespace KyoumoMushoku.Gameplay.Foraging
                 return "空っぽだった。";
             }
 
-            var name = catalog != null && catalog.TryGet(draw.Item, out var definition)
-                ? definition.DisplayName
-                : draw.Item.Value;
+            KyoumoMushoku.Core.Items.ItemDefinition definition = null;
+            var found = catalog != null && catalog.TryGet(draw.Item, out definition);
+            var name = found ? definition.DisplayName : draw.Item.Value;
+            var onBack = found && definition.CarriedOnBack;
 
             var instance = new ItemInstance(draw.Item, draw.State);
-            if (!player.Inventory.Inventory.TryAdd(instance))
+
+            // 段ボールなどの背負い物は鞄ではなく背負いスロットへ（第十一節）。
+            var placed = onBack
+                ? player.Carry != null && player.Carry.Slot != null && player.Carry.Slot.TryCarry(instance)
+                : player.Inventory.Inventory.TryAdd(instance);
+
+            if (!placed)
             {
                 // 入りきらないときは資源を消費せず、正直に伝える（第十四節）。次に出るものはそのまま残る。
-                return $"{name}を見つけたが、カバンに入りきらない。";
+                return onBack
+                    ? $"{name}を見つけたが、もう担げない。"
+                    : $"{name}を見つけたが、カバンに入りきらない。";
             }
 
             Spend();

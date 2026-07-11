@@ -37,6 +37,7 @@ namespace KyoumoMushoku.Gameplay.Session
         PlayerWallet _wallet;
         PlayerInventory _inventory;
         PlayerKnacks _knacks;
+        PlayerCarry _carry;
         Hospital _hospital;
         ZoneAlertDirector _alerts;
         Storefront _storefront;
@@ -66,6 +67,7 @@ namespace KyoumoMushoku.Gameplay.Session
                 _wallet = _player.GetComponent<PlayerWallet>();
                 _inventory = _player.GetComponent<PlayerInventory>();
                 _knacks = _player.GetComponent<PlayerKnacks>();
+                _carry = _player.GetComponent<PlayerCarry>();
                 _playerBody = _player.GetComponent<Rigidbody2D>();
             }
         }
@@ -254,6 +256,7 @@ namespace KyoumoMushoku.Gameplay.Session
             _clock?.RestoreState(save.Clock);
             _alerts?.RestoreState(save.ZoneAlerts);
             _knacks?.RestoreState(save.Knacks);
+            _carry?.RestoreState(save.CarrySlot);
 
             if (!string.IsNullOrEmpty(save.SleepSpotId) &&
                 _respawnPoints.TryGetValue(save.SleepSpotId, out var point))
@@ -277,6 +280,7 @@ namespace KyoumoMushoku.Gameplay.Session
                 Inventory = _inventory != null ? _inventory.Inventory.CaptureState() : new Core.Items.InventoryState(),
                 ZoneAlerts = _alerts != null ? _alerts.CaptureState() : new ZoneAlertState(),
                 Knacks = _knacks != null ? _knacks.CaptureState() : new KnackState(),
+                CarrySlot = _carry != null ? _carry.CaptureState() : new Core.Items.CarrySlotState(),
                 WalletYen = _wallet != null ? _wallet.Wallet.Yen : 0,
                 SleepSpotId = sleepSpotId ?? string.Empty,
             };

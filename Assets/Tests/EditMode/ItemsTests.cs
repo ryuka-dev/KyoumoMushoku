@@ -23,6 +23,7 @@ namespace KyoumoMushoku.Core.Tests
         public static readonly ItemId WaterBottle = new ItemId("water_bottle");
         public static readonly ItemId Onigiri = new ItemId("onigiri");
         public static readonly ItemId Bento = new ItemId("bento");
+        public static readonly ItemId Cardboard = new ItemId("cardboard");
         public static readonly ItemId Unknown = new ItemId("does_not_exist");
 
         public static FakeCatalog Catalog() => new FakeCatalog()
@@ -32,7 +33,9 @@ namespace KyoumoMushoku.Core.Tests
                 effect: new VitalsDelta { Hunger = 25f }))
             .Add(new ItemDefinition(Bento, "コンビニ弁当", ItemCategory.Food, slots: 2,
                 effect: new VitalsDelta { Hunger = 40f },
-                rottenPenalty: new VitalsDelta { Hp = -12f, Sanity = -8f }));
+                rottenPenalty: new VitalsDelta { Hp = -12f, Sanity = -8f }))
+            .Add(new ItemDefinition(Cardboard, "段ボール", ItemCategory.Salvage, slots: 6,
+                sellPriceYen: 30, carriedOnBack: true));
     }
 
     public sealed class FoodKnowledgeTests
@@ -176,6 +179,69 @@ namespace KyoumoMushoku.Core.Tests
         }
     }
 
+    public sealed class CarrySlotTests
+    {
+        [Test]
+        public void OnlyCarriedOnBackItems_CanBeCarried()
+        {
+            var slot = new CarrySlot(TestItems.Catalog());
+
+            Assert.IsFalse(slot.CanCarry(new ItemInstance(TestItems.Onigiri)), "鞄物は担がない。");
+            Assert.IsTrue(slot.CanCarry(new ItemInstance(TestItems.Cardboard)));
+            Assert.IsTrue(slot.TryCarry(new ItemInstance(TestItems.Cardboard)));
+            Assert.IsTrue(slot.IsOccupied);
+        }
+
+        [Test]
+        public void OnlyOneThingAtATime_TheSlotHoldsASingleCardboard()
+        {
+            var slot = new CarrySlot(TestItems.Catalog());
+            slot.TryCarry(new ItemInstance(TestItems.Cardboard));
+
+            Assert.IsFalse(slot.CanCarry(new ItemInstance(TestItems.Cardboard)), "両手はふさがっている。");
+            Assert.IsFalse(slot.TryCarry(new ItemInstance(TestItems.Cardboard)));
+        }
+
+        [Test]
+        public void TakeOut_EmptiesTheSlotAndReturnsTheItem()
+        {
+            var slot = new CarrySlot(TestItems.Catalog());
+            slot.TryCarry(new ItemInstance(TestItems.Cardboard));
+
+            Assert.IsTrue(slot.TryTakeOut(out var taken));
+            Assert.AreEqual(TestItems.Cardboard, taken.ItemId);
+            Assert.IsFalse(slot.IsOccupied);
+            Assert.IsFalse(slot.TryTakeOut(out _), "空のスロットからは何も出ない。");
+        }
+
+        [Test]
+        public void CaptureAndRestore_RoundTrips()
+        {
+            var slot = new CarrySlot(TestItems.Catalog());
+            slot.TryCarry(new ItemInstance(TestItems.Cardboard));
+
+            var restored = new CarrySlot(TestItems.Catalog());
+            Assert.AreEqual(0, restored.Restore(slot.CaptureState()));
+            Assert.IsTrue(restored.IsOccupied);
+            Assert.AreEqual(TestItems.Cardboard, restored.Item.ItemId);
+        }
+
+        [Test]
+        public void Restore_TreatsSaveDataAsUntrustedInput()
+        {
+            // 背負い物でないものが載っていたら、担がずに捨てる。
+            var badState = new CarrySlotState { Occupied = true, Item = new ItemInstance(TestItems.Onigiri) };
+            var slot = new CarrySlot(TestItems.Catalog());
+
+            Assert.AreEqual(1, slot.Restore(badState), "背負い物でないものは担がず、捨てた個数を返す。");
+            Assert.IsFalse(slot.IsOccupied);
+
+            var emptyState = new CarrySlotState();
+            Assert.AreEqual(0, slot.Restore(emptyState));
+            Assert.IsFalse(slot.IsOccupied);
+        }
+    }
+
     public sealed class InventoryTests
     {
         [Test]
@@ -211,6 +277,17 @@ namespace KyoumoMushoku.Core.Tests
 
             Assert.IsFalse(inventory.CanAdd(new ItemInstance(TestItems.Unknown)));
             Assert.IsFalse(inventory.TryAdd(new ItemInstance(TestItems.Unknown)));
+            Assert.AreEqual(0, inventory.Count);
+        }
+
+        [Test]
+        public void CarriedOnBackItems_NeverEnterTheBag()
+        {
+            var inventory = new Inventory(TestItems.Catalog(), capacity: 12);
+
+            Assert.IsFalse(inventory.CanAdd(new ItemInstance(TestItems.Cardboard)),
+                "段ボールは鞄に入れず、背負いスロットで運ぶ。");
+            Assert.IsFalse(inventory.TryAdd(new ItemInstance(TestItems.Cardboard)));
             Assert.AreEqual(0, inventory.Count);
         }
 

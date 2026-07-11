@@ -85,6 +85,8 @@ MonoBehaviour:
         weight: 25
       - id: can_aluminum
         weight: 25
+      - id: cardboard
+        weight: 12
       - id: bread
         weight: 12
       - id: cigarette
@@ -101,6 +103,8 @@ MonoBehaviour:
         weight: 22
       - id: can_aluminum
         weight: 25
+      - id: cardboard
+        weight: 12
       - id: bread
         weight: 12
       - id: cigarette

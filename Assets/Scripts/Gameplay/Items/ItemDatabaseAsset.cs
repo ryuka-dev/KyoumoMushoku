@@ -40,6 +40,9 @@ namespace KyoumoMushoku.Gameplay.Items
 
             [Tooltip("買うとカバンの容量を増やす装備（バックパック）。0 なら容量に影響しない。")]
             public int capacityBonus;
+
+            [Tooltip("グリッド／容量に入れず、背負いスロットで運ぶ（段ボール）。第十一節。")]
+            public bool carriedOnBack;
         }
 
         [SerializeField] List<Entry> _entries = new List<Entry>();
@@ -94,7 +97,8 @@ namespace KyoumoMushoku.Gameplay.Items
                     new VitalsDelta { Hp = entry.rottenHp, Sanity = entry.rottenSanity },
                     entry.sellPriceYen,
                     entry.buyPriceYen,
-                    entry.capacityBonus);
+                    entry.capacityBonus,
+                    entry.carriedOnBack);
             }
         }
 
@@ -118,6 +122,10 @@ namespace KyoumoMushoku.Gameplay.Items
                 // バックパック：3日目のマイルストーン。持ち物には入らず、容量を広げる（第十一節）。
                 // 廃品拾いだけでは 2,000 円に届かない＝必ずバイトを組み合わせる、という経済の要（命題④）。
                 new Entry { id = "backpack", displayName = "バックパック", category = ItemCategory.Equipment, slots = 1, buyPriceYen = 2000, capacityBonus = 12 },
+
+                // 段ボール：三役（売る・敷く・住まわせる）。鞄には入らず背負いスロットで運ぶ（第十一節）。
+                // ゴミ箱C（路地裏）から出る。占有マス 6（3×2 相当）。売値は渋い。
+                new Entry { id = "cardboard", displayName = "段ボール", category = ItemCategory.Salvage, slots = 6, sellPriceYen = 30, carriedOnBack = true },
             };
             _byId = null;
         }

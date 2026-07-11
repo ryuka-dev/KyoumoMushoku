@@ -116,6 +116,9 @@ namespace KyoumoMushoku.Core.Tests
 
             var missingStructure = new SaveGame { Knacks = null };
             Assert.IsFalse(SaveGameValidation.TryValidate(missingStructure, out _));
+
+            var missingCarrySlot = new SaveGame { CarrySlot = null };
+            Assert.IsFalse(SaveGameValidation.TryValidate(missingCarrySlot, out _));
         }
 
         [Test]
@@ -183,6 +186,20 @@ namespace KyoumoMushoku.Core.Tests
             Assert.IsNotNull(save.Knacks);
             Assert.AreEqual(0, save.Knacks.Acquired.Count, "版 2 の世界にはコツがまだ存在しなかった。");
             Assert.AreEqual(30f, save.ZoneAlerts.Zones[0].Level, 1e-4f, "警戒度は引き上げで失われない。");
+            Assert.IsTrue(SaveGameValidation.TryValidate(save, out var validationError), validationError);
+        }
+
+        [Test]
+        public void Version3_IsUpgradedWithNothingOnYourBack()
+        {
+            var save = new SaveGame { Version = 3, CarrySlot = null };
+            save.Knacks.Acquired.Add(KnackId.IronStomach);
+
+            Assert.IsTrue(SaveGameMigration.TryUpgrade(save, out var error), error);
+            Assert.AreEqual(SaveGame.CurrentVersion, save.Version);
+            Assert.IsNotNull(save.CarrySlot);
+            Assert.IsFalse(save.CarrySlot.Occupied, "版 3 の世界では誰も段ボールを担いでいなかった。");
+            Assert.AreEqual(1, save.Knacks.Acquired.Count, "コツは引き上げで失われない。");
             Assert.IsTrue(SaveGameValidation.TryValidate(save, out var validationError), validationError);
         }
 

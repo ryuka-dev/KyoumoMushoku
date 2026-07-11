@@ -1,3 +1,4 @@
+using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Police;
 
@@ -45,6 +46,11 @@ namespace KyoumoMushoku.Core.Persistence
                 UpgradeFrom2To3(save);
             }
 
+            if (save.Version == 3)
+            {
+                UpgradeFrom3To4(save);
+            }
+
             error = null;
             return true;
         }
@@ -67,6 +73,13 @@ namespace KyoumoMushoku.Core.Persistence
         {
             save.Knacks = new KnackState();
             save.Version = 3;
+        }
+
+        /// <summary>版 3 は背負いスロットを持たない。何も担いでいない状態として引き上げる。</summary>
+        static void UpgradeFrom3To4(SaveGame save)
+        {
+            save.CarrySlot = new CarrySlotState();
+            save.Version = 4;
         }
     }
 }

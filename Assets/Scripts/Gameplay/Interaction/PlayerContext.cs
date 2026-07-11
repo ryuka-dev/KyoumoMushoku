@@ -14,13 +14,14 @@ namespace KyoumoMushoku.Gameplay.Interaction
     public sealed class PlayerContext
     {
         public PlayerContext(Transform transform, PlayerVitals vitals, PlayerInventory inventory, PlayerWallet wallet,
-            PlayerKnacks knacks)
+            PlayerKnacks knacks, PlayerCarry carry)
         {
             Transform = transform;
             Vitals = vitals;
             Inventory = inventory;
             Wallet = wallet;
             Knacks = knacks;
+            Carry = carry;
         }
 
         public Transform Transform { get; }
@@ -30,5 +31,8 @@ namespace KyoumoMushoku.Gameplay.Interaction
 
         /// <summary>習得したコツ（第六節）。漁りの見立てなど、相手のルール変化を読むために使う。</summary>
         public PlayerKnacks Knacks { get; }
+
+        /// <summary>背負いスロット（第十一節）。漁った段ボールの行き先。</summary>
+        public PlayerCarry Carry { get; }
     }
 }

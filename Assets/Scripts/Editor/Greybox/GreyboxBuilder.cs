@@ -192,6 +192,7 @@ namespace KyoumoMushoku.Editor.Greybox
             player.AddComponent<PlayerVitals>().Configure(tuning);
             player.AddComponent<PlayerWallet>();
             player.AddComponent<PlayerInventory>().Configure(catalog);
+            player.AddComponent<PlayerCarry>();
             player.AddComponent<PlayerKnacks>();
             player.AddComponent<PlayerConsumer>();
             player.AddComponent<PlayerInteractor>();

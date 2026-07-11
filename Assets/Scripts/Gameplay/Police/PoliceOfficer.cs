@@ -75,6 +75,7 @@ namespace KyoumoMushoku.Gameplay.Police
         PlayerInventory _inventory;
         PlayerInteractor _interactor;
         PlayerKnacks _knacks;
+        PlayerCarry _carry;
         ZoneTracker _tracker;
 
         IRng _rng;
@@ -114,6 +115,7 @@ namespace KyoumoMushoku.Gameplay.Police
                 _inventory = _player.GetComponent<PlayerInventory>();
                 _interactor = _player.GetComponent<PlayerInteractor>();
                 _knacks = _player.GetComponent<PlayerKnacks>();
+                _carry = _player.GetComponent<PlayerCarry>();
                 _tracker = _player.GetComponent<ZoneTracker>();
             }
 
@@ -191,12 +193,21 @@ namespace KyoumoMushoku.Gameplay.Police
         /// </summary>
         float ObservedGainPerSecond()
         {
+            // 目立つ行為はより速く注目を集める。何もしていなくても長居は注意を招く。
+            // 複数の目立ち（漁り・段ボールの背負い）が重なれば、最も目立つものが注目を駆動する。
+            var gain = PoliceEscalation.LoiterGainPerSecond;
+
             if (_interactor != null && _interactor.Channeling is ISuspiciousAct act)
             {
-                return act.SuspicionPerSecond;
+                gain = Mathf.Max(gain, act.SuspicionPerSecond);
             }
 
-            return PoliceEscalation.LoiterGainPerSecond;
+            if (_carry != null && _carry.IsCarrying)
+            {
+                gain = Mathf.Max(gain, _carry.SuspicionPerSecond);
+            }
+
+            return gain;
         }
 
         /// <summary>

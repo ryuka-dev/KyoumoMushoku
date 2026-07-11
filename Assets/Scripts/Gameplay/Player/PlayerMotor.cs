@@ -18,6 +18,7 @@ namespace KyoumoMushoku.Gameplay.Player
         [SerializeField] float _runSpeed = 7.5f;
 
         readonly List<IMovementSpeedModifier> _modifiers = new();
+        readonly List<IRunInhibitor> _runInhibitors = new();
 
         Rigidbody2D _body;
         IPlayerInput _input;
@@ -38,17 +39,33 @@ namespace KyoumoMushoku.Gameplay.Player
             }
 
             GetComponents(_modifiers);
+            GetComponents(_runInhibitors);
         }
 
         public float CurrentSpeed => Mathf.Abs(_body.linearVelocity.x);
 
         void FixedUpdate()
         {
-            IsRunning = _input.RunHeld && !Mathf.Approximately(_input.Horizontal, 0f);
+            // 段ボールを背負っている間などは走れない（第十一節）。走行が封じられていれば歩きに落とす。
+            var canRun = _input.RunHeld && !RunInhibited();
+            IsRunning = canRun && !Mathf.Approximately(_input.Horizontal, 0f);
 
-            var speed = (_input.RunHeld ? _runSpeed : _walkSpeed) * CombinedMultiplier();
+            var speed = (canRun ? _runSpeed : _walkSpeed) * CombinedMultiplier();
             var velocity = _body.linearVelocity;
             _body.linearVelocity = new Vector2(_input.Horizontal * speed, velocity.y);
+        }
+
+        bool RunInhibited()
+        {
+            foreach (var inhibitor in _runInhibitors)
+            {
+                if (inhibitor.InhibitsRun)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         float CombinedMultiplier()

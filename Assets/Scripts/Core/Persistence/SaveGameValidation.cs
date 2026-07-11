@@ -33,7 +33,7 @@ namespace KyoumoMushoku.Core.Persistence
             }
 
             if (save.Clock is null || save.Vitals is null || save.Inventory is null ||
-                save.ZoneAlerts is null || save.Knacks is null)
+                save.ZoneAlerts is null || save.Knacks is null || save.CarrySlot is null)
             {
                 error = "セーブデータの構造が壊れている。";
                 return false;

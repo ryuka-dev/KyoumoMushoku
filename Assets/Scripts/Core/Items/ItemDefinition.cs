@@ -18,7 +18,8 @@ namespace KyoumoMushoku.Core.Items
             VitalsDelta rottenPenalty = default,
             int sellPriceYen = 0,
             int buyPriceYen = 0,
-            int capacityBonus = 0)
+            int capacityBonus = 0,
+            bool carriedOnBack = false)
         {
             if (id.IsEmpty)
             {
@@ -39,6 +40,7 @@ namespace KyoumoMushoku.Core.Items
             SellPriceYen = sellPriceYen;
             BuyPriceYen = buyPriceYen;
             CapacityBonus = capacityBonus;
+            CarriedOnBack = carriedOnBack;
         }
 
         public ItemId Id { get; }
@@ -67,6 +69,12 @@ namespace KyoumoMushoku.Core.Items
         /// 容量制のもとでは、これがマス数だけを持つ「背負う道具」を表す（第十一節）。
         /// </summary>
         public int CapacityBonus { get; }
+
+        /// <summary>
+        /// グリッド／容量のカバンに入れず、独立した背負いスロットで運ぶか（第十一節）。
+        /// 段ボール（3×2）のように嵩張り、鞄に詰めるのではなく担ぐ物を表す。
+        /// </summary>
+        public bool CarriedOnBack { get; }
 
         /// <summary>店で買えるか。買値が付いているものだけを店頭に並べる。</summary>
         public bool IsForSale => BuyPriceYen > 0;
