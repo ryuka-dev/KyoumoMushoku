@@ -56,7 +56,7 @@ namespace KyoumoMushoku.Gameplay.Foraging
         ZoneAlertDirector _alerts;
         IRng _rng;
         int _remainingToday;
-        int _lastSeenDay = int.MinValue;
+        readonly ForageRefillTracker _refill = new ForageRefillTracker();
 
         // 次の1回分を先に引いて確定させておく（あたりの見分け方・第六節）。実際に漁るとこれが出る。
         // 再抽選しないことが「情報は奪ってよいが嘘はつかない」を守る（第三節）。時間帯が変われば引き直す。
@@ -98,13 +98,17 @@ namespace KyoumoMushoku.Gameplay.Foraging
 
         void Update()
         {
-            // リポップ：日付が変わったら満タンに戻す。時計インスタンスの差し替えに頑健なよう、Day を読む。
-            var day = _clock != null && _clock.Clock != null ? _clock.Clock.Day : _lastSeenDay;
-            if (day != _lastSeenDay)
+            // リポップの契機は「日付の変わり目」と「夜への切り替わり」の2つ（ForageRefillTracker）。
+            // 時計インスタンスの差し替え（ロード）に頑健なよう、特定のイベントに依存せず Day と夜フラグを読む。
+            if (_clock == null || _clock.Clock == null)
             {
-                _lastSeenDay = day;
+                return;
+            }
+
+            if (_refill.Observe(_clock.Clock.Day, IsNight))
+            {
                 _remainingToday = _yieldsPerDay;
-                _hasNextDraw = false; // 新しい1日。次に出るものを引き直す。
+                _hasNextDraw = false; // 新しい窓。次に出るものを（その時間帯のテーブルで）引き直す。
                 ApplyTint();
             }
         }
