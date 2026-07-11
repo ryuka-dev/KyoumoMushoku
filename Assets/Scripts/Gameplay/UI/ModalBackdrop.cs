@@ -9,12 +9,14 @@ namespace KyoumoMushoku.Gameplay.UI
     /// </summary>
     public sealed class ModalBackdrop : MonoBehaviour
     {
-        IInputModal _modal;
-        GameObject _backdrop;
+        // モーダルは MonoBehaviour として直列化する。インタフェース参照は Unity が保存できず、
+        // ビルダーの配線が保存/再生で消えるため（InventoryView._modals と同病）。
+        [SerializeField] MonoBehaviour _modal;
+        [SerializeField] GameObject _backdrop;
 
         public void Configure(IInputModal modal, Image backdrop)
         {
-            _modal = modal;
+            _modal = modal as MonoBehaviour;
             _backdrop = backdrop != null ? backdrop.gameObject : null;
             Apply();
         }
@@ -23,14 +25,14 @@ namespace KyoumoMushoku.Gameplay.UI
 
         void Apply()
         {
-            if (_backdrop == null || _modal == null)
+            if (_backdrop == null || !(_modal is IInputModal modal))
             {
                 return;
             }
 
-            if (_backdrop.activeSelf != _modal.IsOpen)
+            if (_backdrop.activeSelf != modal.IsOpen)
             {
-                _backdrop.SetActive(_modal.IsOpen);
+                _backdrop.SetActive(modal.IsOpen);
             }
         }
     }
