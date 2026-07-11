@@ -166,6 +166,52 @@ namespace KyoumoMushoku.Core.Tests
         }
 
         [Test]
+        public void PendingStashEvents_AreTreatedAsUntrustedInput()
+        {
+            var noneKind = new SaveGame();
+            noneKind.PendingStashEvents.Add(new PendingStashEvent { SpotId = "s", Kind = StashEventKind.None, TriggerDay = 2 });
+            Assert.IsFalse(SaveGameValidation.TryValidate(noneKind, out var noneError));
+            StringAssert.Contains("不正な種別", noneError);
+
+            var unknownKind = new SaveGame();
+            unknownKind.PendingStashEvents.Add(new PendingStashEvent { SpotId = "s", Kind = (StashEventKind)99, TriggerDay = 2 });
+            Assert.IsFalse(SaveGameValidation.TryValidate(unknownKind, out var kindError));
+            StringAssert.Contains("不正な種別", kindError);
+
+            var badDay = new SaveGame();
+            badDay.PendingStashEvents.Add(new PendingStashEvent { SpotId = "s", Kind = StashEventKind.CityCleaning, TriggerDay = 0 });
+            Assert.IsFalse(SaveGameValidation.TryValidate(badDay, out var dayError));
+            StringAssert.Contains("発生日", dayError);
+
+            var noId = new SaveGame();
+            noId.PendingStashEvents.Add(new PendingStashEvent { SpotId = string.Empty, Kind = StashEventKind.CityCleaning, TriggerDay = 2 });
+            Assert.IsFalse(SaveGameValidation.TryValidate(noId, out _));
+
+            var duplicated = new SaveGame();
+            duplicated.PendingStashEvents.Add(new PendingStashEvent { SpotId = "s", Kind = StashEventKind.CityCleaning, TriggerDay = 2 });
+            duplicated.PendingStashEvents.Add(new PendingStashEvent { SpotId = "s", Kind = StashEventKind.ScavengedByPeers, TriggerDay = 3 });
+            Assert.IsFalse(SaveGameValidation.TryValidate(duplicated, out var dupError));
+            StringAssert.Contains("二度", dupError);
+
+            var missingStructure = new SaveGame { PendingStashEvents = null };
+            Assert.IsFalse(SaveGameValidation.TryValidate(missingStructure, out _));
+        }
+
+        [Test]
+        public void AValidPendingStashEvent_IsAccepted()
+        {
+            var save = new SaveGame();
+            save.PendingStashEvents.Add(new PendingStashEvent
+            {
+                SpotId = "stash_backalley",
+                Kind = StashEventKind.CityCleaning,
+                TriggerDay = 3,
+            });
+
+            Assert.IsTrue(SaveGameValidation.TryValidate(save, out var error), error);
+        }
+
+        [Test]
         public void AValidPartialKnackState_IsAccepted()
         {
             var save = new SaveGame();
@@ -261,6 +307,20 @@ namespace KyoumoMushoku.Core.Tests
             Assert.AreEqual(0, save.Stashes.Count, "版 4 の世界には保管庫がまだ存在しなかった。");
             Assert.IsTrue(save.CarrySlot.Occupied, "背負い物は引き上げで失われない。");
             Assert.AreEqual(1, save.Knacks.Acquired.Count, "コツは引き上げで失われない。");
+            Assert.IsTrue(SaveGameValidation.TryValidate(save, out var validationError), validationError);
+        }
+
+        [Test]
+        public void Version5_IsUpgradedWithNoPendingEvents()
+        {
+            var save = new SaveGame { Version = 5, PendingStashEvents = null };
+            save.Stashes.Add(new StashState { SpotId = "stash_backalley", Kind = StashKind.CardboardBox, Capacity = 12 });
+
+            Assert.IsTrue(SaveGameMigration.TryUpgrade(save, out var error), error);
+            Assert.AreEqual(SaveGame.CurrentVersion, save.Version);
+            Assert.IsNotNull(save.PendingStashEvents);
+            Assert.AreEqual(0, save.PendingStashEvents.Count, "版 5 の世界には保管庫イベントがまだ存在しなかった。");
+            Assert.AreEqual(1, save.Stashes.Count, "保管庫は引き上げで失われない。");
             Assert.IsTrue(SaveGameValidation.TryValidate(save, out var validationError), validationError);
         }
 

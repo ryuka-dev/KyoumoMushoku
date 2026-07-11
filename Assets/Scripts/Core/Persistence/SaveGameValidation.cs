@@ -35,7 +35,7 @@ namespace KyoumoMushoku.Core.Persistence
 
             if (save.Clock is null || save.Vitals is null || save.Inventory is null ||
                 save.ZoneAlerts is null || save.Knacks is null || save.CarrySlot is null ||
-                save.Stashes is null)
+                save.Stashes is null || save.PendingStashEvents is null)
             {
                 error = "セーブデータの構造が壊れている。";
                 return false;
@@ -76,7 +76,51 @@ namespace KyoumoMushoku.Core.Persistence
                 return false;
             }
 
-            return TryValidateStashes(save.Stashes, out error);
+            if (!TryValidateStashes(save.Stashes, out error))
+            {
+                return false;
+            }
+
+            return TryValidatePendingStashEvents(save.PendingStashEvents, out error);
+        }
+
+        /// <summary>
+        /// 予告済みの保管庫イベントも外部入力である。壊れた構造・識別子欠落・未知や無（None）の種別・
+        /// 不正な発生日・同じ保管庫の二重予告は、黙って直さず拒む。設置場所が世界に無い予告はロード時に捨てられる。
+        /// </summary>
+        static bool TryValidatePendingStashEvents(List<PendingStashEvent> events, out string error)
+        {
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var pending in events)
+            {
+                if (pending is null || string.IsNullOrEmpty(pending.SpotId))
+                {
+                    error = "予告済みイベントの構造が壊れている。";
+                    return false;
+                }
+
+                if (!Enum.IsDefined(typeof(StashEventKind), pending.Kind) || pending.Kind == StashEventKind.None)
+                {
+                    error = $"予告済みイベントに不正な種別が含まれる（{pending.SpotId}：{pending.Kind}）。";
+                    return false;
+                }
+
+                if (pending.TriggerDay < 1)
+                {
+                    error = $"予告済みイベントの発生日が不正である（{pending.SpotId}：{pending.TriggerDay}）。";
+                    return false;
+                }
+
+                if (!seen.Add(pending.SpotId))
+                {
+                    error = $"同じ保管庫の予告が二度現れる（{pending.SpotId}）。";
+                    return false;
+                }
+            }
+
+            error = null;
+            return true;
         }
 
         /// <summary>

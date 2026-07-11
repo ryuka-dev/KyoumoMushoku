@@ -43,6 +43,7 @@ namespace KyoumoMushoku.Gameplay.Session
         Hospital _hospital;
         ZoneAlertDirector _alerts;
         Storefront _storefront;
+        StashDirector _stashDirector;
         IRng _rng;
 
         public void Configure(GameClockDriver clock, Transform player) => (_clock, _player) = (clock, player);
@@ -53,6 +54,7 @@ namespace KyoumoMushoku.Gameplay.Session
             _rng ??= new SystemRng();
             _alerts = FindFirstObjectByType<ZoneAlertDirector>();
             _storefront = FindFirstObjectByType<Storefront>();
+            _stashDirector = FindFirstObjectByType<StashDirector>();
 
             if (_player == null && _vitals == null)
             {
@@ -161,6 +163,12 @@ namespace KyoumoMushoku.Gameplay.Session
                 _knacks?.RecordOutdoorSleep();
             }
 
+            // 保管庫イベントは日境界で進む（第十二節）。警戒度の減衰・無料就寝の上昇を済ませたあとの警戒度を読む。
+            if (_stashDirector != null && _clock != null && _clock.Clock != null)
+            {
+                _stashDirector.BeginNextDay(_clock.Clock.Day);
+            }
+
             Save(spot.RespawnId);
         }
 
@@ -266,6 +274,7 @@ namespace KyoumoMushoku.Gameplay.Session
             _knacks?.RestoreState(save.Knacks);
             _carry?.RestoreState(save.CarrySlot);
             RestoreStashes(save.Stashes);
+            _stashDirector?.RestoreState(save.PendingStashEvents);
 
             if (!string.IsNullOrEmpty(save.SleepSpotId) &&
                 _respawnPoints.TryGetValue(save.SleepSpotId, out var point))
@@ -335,6 +344,9 @@ namespace KyoumoMushoku.Gameplay.Session
                 Knacks = _knacks != null ? _knacks.CaptureState() : new KnackState(),
                 CarrySlot = _carry != null ? _carry.CaptureState() : new Core.Items.CarrySlotState(),
                 Stashes = CaptureStashes(),
+                PendingStashEvents = _stashDirector != null
+                    ? _stashDirector.CaptureState()
+                    : new List<PendingStashEvent>(),
                 WalletYen = _wallet != null ? _wallet.Wallet.Yen : 0,
                 SleepSpotId = sleepSpotId ?? string.Empty,
             };

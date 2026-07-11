@@ -23,9 +23,10 @@ namespace KyoumoMushoku.Core.Persistence
         /// 版 2：Phase 3。警戒ゾーンごとの警戒度を加えた。
         /// 版 3：Phase 5a。習得したコツと触発カウンタを加えた。
         /// 版 4：Phase 5b-1。背負いスロット（段ボール）を加えた。
-        /// 版 5：Phase 5b-2。拠点に置いた保管庫（段ボール箱）を加えた。古い版は <see cref="SaveGameMigration"/> が引き上げる。
+        /// 版 5：Phase 5b-2。拠点に置いた保管庫（段ボール箱）を加えた。
+        /// 版 6：Phase 5b-3。予告済みの保管庫イベントを加えた。古い版は <see cref="SaveGameMigration"/> が引き上げる。
         /// </summary>
-        public const int CurrentVersion = 5;
+        public const int CurrentVersion = 6;
 
         public const int OldestSupportedVersion = 1;
 
@@ -55,6 +56,12 @@ namespace KyoumoMushoku.Core.Persistence
         /// 未設置なら空。版 4 以前は保管庫という概念がまだ無かった状態として引き上げる。
         /// </summary>
         public List<StashState> Stashes = new List<StashState>();
+
+        /// <summary>
+        /// 予告済みで未発生の保管庫イベント（第十二節）。猶予中に終了・再開しても予告が消えないよう永続する。
+        /// 当日の抽選結果そのものは一過性なので載せない。版 5 以前はイベントという概念がまだ無かった状態として引き上げる。
+        /// </summary>
+        public List<PendingStashEvent> PendingStashEvents = new List<PendingStashEvent>();
 
         public int WalletYen;
 

@@ -274,6 +274,9 @@ namespace KyoumoMushoku.Editor.Greybox
 
             // 警戒度の所有者。警官・就寝場所・GameSession がここを探して読む（第五節）。
             clock.gameObject.AddComponent<ZoneAlertDirector>();
+
+            // 保管庫イベントの所有者。日境界で GameSession が BeginNextDay を呼ぶ（第十二節）。
+            clock.gameObject.AddComponent<StashDirector>();
             return clock;
         }
 
@@ -350,6 +353,9 @@ namespace KyoumoMushoku.Editor.Greybox
 
             var spot = marker.AddComponent<StashSpot>();
             spot.Configure("stash_backalley", AlertZoneId.Residential, StashKind.CardboardBox, placeSeconds: 1.5f);
+
+            // 保管庫イベントの予告・事後説明を示す貼り紙。マーカー本体の子にしない（縦伸びで文字が歪む）。
+            spot.BindNotice(MakeNotice(root, position + new Vector3(0f, 3.4f, 0f)));
             return spot;
         }
 

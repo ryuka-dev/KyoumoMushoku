@@ -1,8 +1,10 @@
 using System;
 using KyoumoMushoku.Core.Items;
+using KyoumoMushoku.Core.Randomness;
 using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.Police;
+using TMPro;
 using UnityEngine;
 
 namespace KyoumoMushoku.Gameplay.World
@@ -33,6 +35,9 @@ namespace KyoumoMushoku.Gameplay.World
         [SerializeField] Color _emptyTint = new Color(0.32f, 0.32f, 0.35f, 0.55f);
         [SerializeField] Color _boxTint = new Color(0.6f, 0.45f, 0.28f, 1f);
 
+        [Tooltip("保管庫イベントの予告・事後説明を世界の中で示すラベル（第十二・十四節）。無くても成立する。")]
+        [SerializeField] TMP_Text _notice;
+
         SpriteRenderer _renderer;
         IItemCatalog _catalog;
         Stash _stash;
@@ -42,6 +47,12 @@ namespace KyoumoMushoku.Gameplay.World
 
         /// <summary>ここに保管庫が置かれているか。診断・配線用。</summary>
         public bool HasStash => _stash != null;
+
+        /// <summary>保管点数（イベント抽選の量の入力）。空・未設置なら 0。</summary>
+        public int StashItemCount => _stash?.Count ?? 0;
+
+        /// <summary>保管庫が埋まっているマス数（イベント抽選の入力）。空・未設置なら 0。</summary>
+        public int StashUsedSlots => _stash?.UsedSlots ?? 0;
 
         /// <summary>設置済みの箱を開ける合図。<c>StashPanel</c> がこれを購読して開く。</summary>
         public event Action<PlayerContext, Stash> Opened;
@@ -129,6 +140,7 @@ namespace KyoumoMushoku.Gameplay.World
 
             _catalog = catalog;
             _stash = new Stash(catalog, _kind, _stashSpotId, StashTuning.CapacityFor(_kind));
+            ClearNotice(); // 置いたばかりの箱にはまだ予告が無い。
             ApplyVisual();
             return "段ボール箱を置いた。";
         }
@@ -160,6 +172,59 @@ namespace KyoumoMushoku.Gameplay.World
             var dropped = _stash.Restore(state);
             ApplyVisual();
             return dropped;
+        }
+
+        public void BindNotice(TMP_Text notice) => _notice = notice;
+
+        /// <summary>
+        /// 保管庫イベントの損失をこの保管庫に適用する（第十二節）。どの点を失うかは無作為で、失った点数を返す。
+        /// 保管庫（器）そのものは残る――失われるのは中身であって設置場所ではない。
+        /// </summary>
+        public int ApplyEventLoss(StashEventKind kind, IRng rng)
+        {
+            if (_stash == null)
+            {
+                return 0;
+            }
+
+            var lost = 0;
+            foreach (var index in StashEventRoll.SelectLost(_stash.Count, kind, rng))
+            {
+                if (_stash.TryWithdrawAt(index, out _))
+                {
+                    lost++;
+                }
+            }
+
+            return lost;
+        }
+
+        /// <summary>予告を世界の中に出す（第十二節・SAN を問わず必ず見える保証チャネル）。</summary>
+        public void ShowForecast(StashEventKind kind) => SetNotice(kind switch
+        {
+            StashEventKind.CityCleaning => "清掃予告の貼り紙：明日の朝、この辺りの清掃が入る",
+            StashEventKind.ScavengedByPeers => "荒らされた足跡がある……明日あたり誰かに漁られそうだ",
+            StashEventKind.PoliceRemoval => "昼間、警官がこの辺りを下見していた。明日、撤去されるかもしれない",
+            _ => string.Empty,
+        });
+
+        /// <summary>事後説明を世界の中に出す（第十四節・見えない変化を後から世界が語る）。</summary>
+        public void ShowAftermath(StashEventKind kind, int lost) => SetNotice(kind switch
+        {
+            StashEventKind.CityCleaning => $"清掃が入った（{lost}点を失った）",
+            StashEventKind.ScavengedByPeers => $"同業者に漁られた（{lost}点を失った）",
+            StashEventKind.PoliceRemoval => $"警察に撤去された（{lost}点を失い、警戒度が上がった）",
+            _ => string.Empty,
+        });
+
+        public void ClearNotice() => SetNotice(string.Empty);
+
+        void SetNotice(string text)
+        {
+            if (_notice != null)
+            {
+                _notice.text = text;
+            }
         }
 
         void ApplyVisual()

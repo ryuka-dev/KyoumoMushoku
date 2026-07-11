@@ -57,6 +57,11 @@ namespace KyoumoMushoku.Core.Persistence
                 UpgradeFrom4To5(save);
             }
 
+            if (save.Version == 5)
+            {
+                UpgradeFrom5To6(save);
+            }
+
             error = null;
             return true;
         }
@@ -96,6 +101,16 @@ namespace KyoumoMushoku.Core.Persistence
         {
             save.Stashes = new List<StashState>();
             save.Version = 5;
+        }
+
+        /// <summary>
+        /// 版 5 は保管庫イベントという概念を持たない。まだ何も予告されていない状態として引き上げる。
+        /// これは実際に版 5 が表していた世界と一致する（イベントはまだ存在しなかった）。
+        /// </summary>
+        static void UpgradeFrom5To6(SaveGame save)
+        {
+            save.PendingStashEvents = new List<PendingStashEvent>();
+            save.Version = 6;
         }
     }
 }
