@@ -93,6 +93,7 @@ namespace KyoumoMushoku.Editor.Greybox
 
             BuildParallaxLayers(white, spriteMaterial);
             BuildWorldEdges(white, spriteMaterial);
+            BuildUnderpassWalls(white, spriteMaterial);
 
             var player = BuildPlayer(white, spriteMaterial, catalog, tuning);
             BuildCamera(player.transform);
@@ -173,6 +174,29 @@ namespace KyoumoMushoku.Editor.Greybox
                 wall.transform.SetParent(root, false);
                 wall.transform.position = new Vector3(x, FirstDistrictLayout.SurfaceY + 10f, 0f);
                 wall.transform.localScale = new Vector3(1f, 24f, 1f);
+                wall.AddComponent<BoxCollider2D>();
+            }
+        }
+
+        static void BuildUnderpassWalls(Sprite white, Material material)
+        {
+            var root = new GameObject("UnderpassWalls").transform;
+
+            // 地下通路は左右に地面が続かない回廊であり、世界端の壁も届かない。封壁が無いと
+            // 端から虚空へ落ちる。世界端（BuildWorldEdges）と同じ作りで、通路の両口の外側を塞ぐ。
+            // 階段の口（x=100 西・x=150 東）は通路の内側にあるため、この壁には掛からない。
+            var underpass = FirstDistrictLayout.Areas.First(a => a.Name == "Underpass");
+
+            foreach (var (name, x) in new[]
+                     {
+                         ("LeftWall", underpass.XStart - 0.5f),
+                         ("RightWall", underpass.XStart + underpass.Width + 0.5f),
+                     })
+            {
+                var wall = MakeQuad(name, white, material, new Color(0.15f, 0.15f, 0.15f), sortingOrder: 1);
+                wall.transform.SetParent(root, false);
+                wall.transform.position = new Vector3(x, FirstDistrictLayout.UnderpassY + 2f, 0f);
+                wall.transform.localScale = new Vector3(1f, 12f, 1f);
                 wall.AddComponent<BoxCollider2D>();
             }
         }
