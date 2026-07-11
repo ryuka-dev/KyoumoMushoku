@@ -3,6 +3,7 @@ using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Persistence;
 using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Items;
+using KyoumoMushoku.Core.Progress;
 using KyoumoMushoku.Core.Randomness;
 using KyoumoMushoku.Core.Survival;
 using KyoumoMushoku.Core.Zones;
@@ -12,6 +13,7 @@ using KyoumoMushoku.Gameplay.Items;
 using KyoumoMushoku.Gameplay.Knacks;
 using KyoumoMushoku.Gameplay.Persistence;
 using KyoumoMushoku.Gameplay.Police;
+using KyoumoMushoku.Gameplay.Progress;
 using KyoumoMushoku.Gameplay.Shop;
 using KyoumoMushoku.Gameplay.Survival;
 using KyoumoMushoku.Gameplay.World;
@@ -39,6 +41,7 @@ namespace KyoumoMushoku.Gameplay.Session
         PlayerWallet _wallet;
         PlayerInventory _inventory;
         PlayerKnacks _knacks;
+        PlayerMilestones _milestones;
         PlayerCarry _carry;
         Hospital _hospital;
         ZoneAlertDirector _alerts;
@@ -71,6 +74,7 @@ namespace KyoumoMushoku.Gameplay.Session
                 _wallet = _player.GetComponent<PlayerWallet>();
                 _inventory = _player.GetComponent<PlayerInventory>();
                 _knacks = _player.GetComponent<PlayerKnacks>();
+                _milestones = _player.GetComponent<PlayerMilestones>();
                 _carry = _player.GetComponent<PlayerCarry>();
                 _playerBody = _player.GetComponent<Rigidbody2D>();
             }
@@ -140,6 +144,13 @@ namespace KyoumoMushoku.Gameplay.Session
 
             ApplySleepRecovery(spot);
 
+            // 泊まったという事実は日付が変わる前の出来事として数える（第八節）。
+            // 安宿＝金を払う就寝場所。初めての宿泊が段階目標になる。
+            if (!spot.IsFree)
+            {
+                _milestones?.RecordInnStay();
+            }
+
             // 日付の切り替わりは就寝の瞬間だけに起こる（第二節）。警戒度の減衰もここで行う。
             // 日付をポーリングしないのは、ロード時にも日付が変わって見え、二重に減衰するためである。
             _clock?.Clock?.BeginNextDay();
@@ -167,6 +178,13 @@ namespace KyoumoMushoku.Gameplay.Session
             if (_stashDirector != null && _clock != null && _clock.Clock != null)
             {
                 _stashDirector.BeginNextDay(_clock.Clock.Day);
+            }
+
+            // 新しい日を迎えたことを段階目標に申告する（第八節）。4日目の朝＝3日間生存の達成であり、
+            // 達成の通知（結算画面）はこの申告から発火する。セーブより前に記録し、達成済みで永続させる。
+            if (_clock != null && _clock.Clock != null)
+            {
+                _milestones?.RecordDayBegan(_clock.Clock.Day);
             }
 
             Save(spot.RespawnId);
@@ -277,6 +295,7 @@ namespace KyoumoMushoku.Gameplay.Session
             _clock?.RestoreState(save.Clock);
             _alerts?.RestoreState(save.ZoneAlerts);
             _knacks?.RestoreState(save.Knacks);
+            _milestones?.RestoreState(save.Milestones);
             _carry?.RestoreState(save.CarrySlot);
             RestoreStashes(save.Stashes);
             _stashDirector?.RestoreState(save.PendingStashEvents);
@@ -347,6 +366,7 @@ namespace KyoumoMushoku.Gameplay.Session
                 Inventory = _inventory != null ? _inventory.Inventory.CaptureState() : new Core.Items.InventoryState(),
                 ZoneAlerts = _alerts != null ? _alerts.CaptureState() : new ZoneAlertState(),
                 Knacks = _knacks != null ? _knacks.CaptureState() : new KnackState(),
+                Milestones = _milestones != null ? _milestones.CaptureState() : new MilestoneState(),
                 CarrySlot = _carry != null ? _carry.CaptureState() : new Core.Items.CarrySlotState(),
                 Stashes = CaptureStashes(),
                 PendingStashEvents = _stashDirector != null

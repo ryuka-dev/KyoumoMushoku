@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Police;
+using KyoumoMushoku.Core.Progress;
 using KyoumoMushoku.Core.Zones;
 
 namespace KyoumoMushoku.Core.Persistence
@@ -34,8 +35,8 @@ namespace KyoumoMushoku.Core.Persistence
             }
 
             if (save.Clock is null || save.Vitals is null || save.Inventory is null ||
-                save.ZoneAlerts is null || save.Knacks is null || save.CarrySlot is null ||
-                save.Stashes is null || save.PendingStashEvents is null)
+                save.ZoneAlerts is null || save.Knacks is null || save.Milestones is null ||
+                save.CarrySlot is null || save.Stashes is null || save.PendingStashEvents is null)
             {
                 error = "セーブデータの構造が壊れている。";
                 return false;
@@ -72,6 +73,11 @@ namespace KyoumoMushoku.Core.Persistence
             }
 
             if (!TryValidateKnacks(save.Knacks, out error))
+            {
+                return false;
+            }
+
+            if (!TryValidateMilestones(save.Milestones, out error))
             {
                 return false;
             }
@@ -162,6 +168,37 @@ namespace KyoumoMushoku.Core.Persistence
                 if (!seen.Add(stash.SpotId))
                 {
                     error = $"同じ設置場所の保管庫が二度現れる（{stash.SpotId}）。";
+                    return false;
+                }
+            }
+
+            error = null;
+            return true;
+        }
+
+        /// <summary>
+        /// 段階目標も外部入力である。未知の目標・重複は、黙って直さず拒む。
+        /// </summary>
+        static bool TryValidateMilestones(MilestoneState milestones, out string error)
+        {
+            if (milestones.Achieved is null)
+            {
+                error = "段階目標の構造が壊れている。";
+                return false;
+            }
+
+            var seen = new HashSet<MilestoneId>();
+            foreach (var id in milestones.Achieved)
+            {
+                if (!Enum.IsDefined(typeof(MilestoneId), id))
+                {
+                    error = $"達成済みの段階目標に未知のものが含まれる（{id}）。";
+                    return false;
+                }
+
+                if (!seen.Add(id))
+                {
+                    error = $"達成済みの段階目標に同じものが二度現れる（{id}）。";
                     return false;
                 }
             }

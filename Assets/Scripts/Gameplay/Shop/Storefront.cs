@@ -101,8 +101,17 @@ namespace KyoumoMushoku.Gameplay.Shop
                 return PurchaseResult.Unavailable;
             }
 
-            return StorePurchase.TryBuy(
+            var result = StorePurchase.TryBuy(
                 player.Wallet.Wallet, player.Inventory.Inventory, player.Inventory.Catalog, id, out bought);
+
+            // バックパック（容量拡張の装備）の購入は段階目標である（第八・十一節）。
+            // 取引を実際に成立させたこの場所が canonical な出来事の出所になる。
+            if (result == PurchaseResult.Bought && bought != null && bought.CapacityBonus > 0)
+            {
+                player.Milestones?.RecordBackpackPurchase();
+            }
+
+            return result;
         }
 
         public BuybackResult SellSalvage(PlayerContext player)

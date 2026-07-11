@@ -1,6 +1,7 @@
 using KyoumoMushoku.Gameplay.Economy;
 using KyoumoMushoku.Gameplay.Items;
 using KyoumoMushoku.Gameplay.Knacks;
+using KyoumoMushoku.Gameplay.Progress;
 using KyoumoMushoku.Gameplay.Survival;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace KyoumoMushoku.Gameplay.Interaction
     public sealed class PlayerContext
     {
         public PlayerContext(Transform transform, PlayerVitals vitals, PlayerInventory inventory, PlayerWallet wallet,
-            PlayerKnacks knacks, PlayerCarry carry)
+            PlayerKnacks knacks, PlayerCarry carry, PlayerMilestones milestones)
         {
             Transform = transform;
             Vitals = vitals;
@@ -22,6 +23,7 @@ namespace KyoumoMushoku.Gameplay.Interaction
             Wallet = wallet;
             Knacks = knacks;
             Carry = carry;
+            Milestones = milestones;
         }
 
         public Transform Transform { get; }
@@ -34,5 +36,8 @@ namespace KyoumoMushoku.Gameplay.Interaction
 
         /// <summary>背負いスロット（第十一節）。漁った段ボールの行き先。</summary>
         public PlayerCarry Carry { get; }
+
+        /// <summary>段階目標（第八節）。購入などの出来事を達成として申告するために使う。</summary>
+        public PlayerMilestones Milestones { get; }
     }
 }

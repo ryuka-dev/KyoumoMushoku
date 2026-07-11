@@ -4,6 +4,7 @@ using KyoumoMushoku.Gameplay.Economy;
 using KyoumoMushoku.Gameplay.Items;
 using KyoumoMushoku.Gameplay.Knacks;
 using KyoumoMushoku.Gameplay.Player;
+using KyoumoMushoku.Gameplay.Progress;
 using KyoumoMushoku.Gameplay.Survival;
 using UnityEngine;
 
@@ -62,7 +63,8 @@ namespace KyoumoMushoku.Gameplay.Interaction
                 GetComponent<PlayerInventory>(),
                 GetComponent<PlayerWallet>(),
                 GetComponent<PlayerKnacks>(),
-                GetComponent<PlayerCarry>());
+                GetComponent<PlayerCarry>(),
+                GetComponent<PlayerMilestones>());
         }
 
         void Update()

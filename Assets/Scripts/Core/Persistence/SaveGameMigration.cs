@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Police;
+using KyoumoMushoku.Core.Progress;
 
 namespace KyoumoMushoku.Core.Persistence
 {
@@ -62,6 +63,11 @@ namespace KyoumoMushoku.Core.Persistence
                 UpgradeFrom5To6(save);
             }
 
+            if (save.Version == 6)
+            {
+                UpgradeFrom6To7(save);
+            }
+
             error = null;
             return true;
         }
@@ -111,6 +117,16 @@ namespace KyoumoMushoku.Core.Persistence
         {
             save.PendingStashEvents = new List<PendingStashEvent>();
             save.Version = 6;
+        }
+
+        /// <summary>
+        /// 版 6 は段階目標という概念を持たない。まだ何も達成していない状態として引き上げる。
+        /// これは実際に版 6 が表していた世界と一致する（目標はまだ存在しなかった）。
+        /// </summary>
+        static void UpgradeFrom6To7(SaveGame save)
+        {
+            save.Milestones = new MilestoneState();
+            save.Version = 7;
         }
     }
 }

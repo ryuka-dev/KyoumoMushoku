@@ -4,6 +4,7 @@ using KyoumoMushoku.Core.DayCycle;
 using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Police;
+using KyoumoMushoku.Core.Progress;
 using KyoumoMushoku.Core.Survival;
 
 namespace KyoumoMushoku.Core.Persistence
@@ -24,9 +25,10 @@ namespace KyoumoMushoku.Core.Persistence
         /// 版 3：Phase 5a。習得したコツと触発カウンタを加えた。
         /// 版 4：Phase 5b-1。背負いスロット（段ボール）を加えた。
         /// 版 5：Phase 5b-2。拠点に置いた保管庫（段ボール箱）を加えた。
-        /// 版 6：Phase 5b-3。予告済みの保管庫イベントを加えた。古い版は <see cref="SaveGameMigration"/> が引き上げる。
+        /// 版 6：Phase 5b-3。予告済みの保管庫イベントを加えた。
+        /// 版 7：段階目標（第八節）。達成済みの目標を加えた。古い版は <see cref="SaveGameMigration"/> が引き上げる。
         /// </summary>
-        public const int CurrentVersion = 6;
+        public const int CurrentVersion = 7;
 
         public const int OldestSupportedVersion = 1;
 
@@ -47,6 +49,12 @@ namespace KyoumoMushoku.Core.Persistence
         /// 版 2 以前は誰もコツを知らなかった状態として引き上げる。
         /// </summary>
         public KnackState Knacks = new KnackState();
+
+        /// <summary>
+        /// 達成済みの段階目標（第八節）。達成した目標は失われないので日をまたいで残る。
+        /// 版 6 以前は目標という概念がまだ無かった状態として引き上げる。
+        /// </summary>
+        public MilestoneState Milestones = new MilestoneState();
 
         /// <summary>背負っている段ボール（第十一節）。担いだまま寝ることもあるため永続する。</summary>
         public CarrySlotState CarrySlot = new CarrySlotState();
