@@ -16,7 +16,7 @@ MonoBehaviour:
   _maxThirst: 100
   _maxHunger: 100
   _thirstDrainPerSecond: 0.15
-  _hungerDrainPerSecond: 0.09
+  _hungerDrainPerSecond: 0.13
   _sanityDrainPerSecond: 0.025
   _runDrainMultiplier: 1.6
   _lowHungerThreshold: 30

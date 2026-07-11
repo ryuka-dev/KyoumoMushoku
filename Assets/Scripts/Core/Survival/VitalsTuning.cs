@@ -20,8 +20,8 @@ namespace KyoumoMushoku.Core.Survival
         /// <summary>渇き。最も早く低下する。約11分でゼロ。</summary>
         public float ThirstDrainPerSecond = 0.15f;
 
-        /// <summary>空腹。中程度の速度。約18分でゼロ。</summary>
-        public float HungerDrainPerSecond = 0.09f;
+        /// <summary>空腹。中程度の速度。約13分でゼロ。1日（昼夕4〜8分）＋過夜ぶんで食料の確保を迫る。</summary>
+        public float HungerDrainPerSecond = 0.13f;
 
         /// <summary>SAN。最も緩やか。1ゲームデイでおよそ 10〜15 低下する。</summary>
         public float SanityDrainPerSecond = 0.025f;

@@ -25,7 +25,7 @@ namespace KyoumoMushoku.Core.Tests
             vitals.Advance(10f, running: false);
 
             Assert.AreEqual(98.5f, vitals.Thirst, 1e-3f);
-            Assert.AreEqual(99.1f, vitals.Hunger, 1e-3f);
+            Assert.AreEqual(98.7f, vitals.Hunger, 1e-3f);
             Assert.AreEqual(99.75f, vitals.Sanity, 1e-3f);
             Assert.AreEqual(100f, vitals.Hp, 1e-3f, "満たされているうちは HP は減らない。");
         }

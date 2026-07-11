@@ -17,7 +17,7 @@ namespace KyoumoMushoku.Gameplay.Survival
 
         [Header("毎秒の低下量")]
         [SerializeField] float _thirstDrainPerSecond = 0.15f;
-        [SerializeField] float _hungerDrainPerSecond = 0.09f;
+        [SerializeField] float _hungerDrainPerSecond = 0.13f;
         [SerializeField] float _sanityDrainPerSecond = 0.025f;
 
         [Header("走行と空腹")]
