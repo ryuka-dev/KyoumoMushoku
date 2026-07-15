@@ -42,6 +42,16 @@ namespace KyoumoMushoku.Gameplay.Rendering
 
         float _blend;
         bool _initialized;
+        Color _sky;
+
+        /// <summary>
+        /// 現在の空色。カメラの背景色そのものであり、<see cref="SkyFogPlane"/> が奥の層を
+        /// 溶かす先として読む。決めるのはここだけで、読み手は所有しない。
+        ///
+        /// まだ一度も時刻を読んでいない間（編集中、および再生の初回 Update 前）は昼の空を返す。
+        /// 既定値の黒を返すと、編集中の霧板が真っ黒に沈んで絵を確認できないためである。
+        /// </summary>
+        public Color SkyColor => _initialized ? _sky : _daySky;
 
         /// <summary>ビルダー（シーン生成の単一の所有者）だけが呼ぶ。</summary>
         public void Configure(GameClockDriver clock, Light2D global, Camera camera,
@@ -95,6 +105,7 @@ namespace KyoumoMushoku.Gameplay.Rendering
 
             _global.color = color;
             _global.intensity = intensity;
+            _sky = sky;
             if (_camera != null)
             {
                 _camera.backgroundColor = sky;
