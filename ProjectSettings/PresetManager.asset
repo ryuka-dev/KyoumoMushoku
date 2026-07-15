@@ -13,3 +13,6 @@ PresetManager:
     - m_Preset: {fileID: 2655988077585873504, guid: a120a9d337b77544686117b17756c0a8, type: 2}
       m_Filter: 
       m_Disabled: 0
+    - m_Preset: {fileID: 2655988077585873504, guid: 302d374918fd89b499df31058463369e, type: 2}
+      m_Filter: "glob:\"Assets/Art/Props_Street/\u5E8A/*\""
+      m_Disabled: 0
