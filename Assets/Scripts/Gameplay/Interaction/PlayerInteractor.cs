@@ -15,6 +15,11 @@ namespace KyoumoMushoku.Gameplay.Interaction
     /// インタラクトの入力（第五節の「調べる」）を、実際の相手の <see cref="IInteractable.Interact"/> に橋渡しする。
     ///
     /// 探索は物理レイヤ（Interactable）で絞り、無関係なコライダを走査しない。
+    ///
+    /// 「届く」の唯一のものさしは相手のコライダである。トランスフォームの原点は使わない——
+    /// 原点は絵の pivot の都合で足元にも中心にも置かれるため、原点で測ると「見た目は触れているのに
+    /// 届かない」が起きる。コライダで測れば、pivot をどこに置いても、Z へ何単位逃がしても
+    /// （2D 物理は Z を見ない）、見えている body に手が届く限り調べられる。
     /// </summary>
     public sealed class PlayerInteractor : MonoBehaviour
     {
@@ -27,8 +32,12 @@ namespace KyoumoMushoku.Gameplay.Interaction
         IPlayerInput _input;
 
         IChanneledInteractable _channeling;
+        Collider2D _channelCollider;
         float _channelSeconds;
         float _channelElapsed;
+
+        /// <summary>いまの対象を見つけたコライダ。届く距離を測る相手であり、原点の代わりに使う。</summary>
+        Collider2D _currentCollider;
 
         /// <summary>現在の対象。無ければ null。UI のプロンプトはここを観測する。</summary>
         public IInteractable Current { get; private set; }
@@ -108,12 +117,16 @@ namespace KyoumoMushoku.Gameplay.Interaction
 
             _channeling.CancelChannel(_context);
             _channeling = null;
+            _channelCollider = null;
             UpdateCurrent();
         }
 
         void BeginChannel(IChanneledInteractable target)
         {
             _channeling = target;
+
+            // 探索で当てたコライダをそのまま握る。以後の「まだ届いているか」はこれで測る。
+            _channelCollider = _currentCollider;
             _channelSeconds = Mathf.Max(0.01f, target.ChannelSeconds(_context));
             _channelElapsed = 0f;
         }
@@ -124,10 +137,11 @@ namespace KyoumoMushoku.Gameplay.Interaction
             var walkedOff = _input != null && Mathf.Abs(_input.Horizontal) > 0.01f;
             var target = _channeling as IInteractable;
 
-            if (walkedOff || target == null || !IsWithinReach(_channeling) || !target.CanInteract(_context))
+            if (walkedOff || target == null || !IsWithinReach() || !target.CanInteract(_context))
             {
                 _channeling.CancelChannel(_context);
                 _channeling = null;
+                _channelCollider = null;
                 UpdateCurrent();
                 return;
             }
@@ -140,6 +154,7 @@ namespace KyoumoMushoku.Gameplay.Interaction
 
             var message = _channeling.CompleteChannel(_context);
             _channeling = null;
+            _channelCollider = null;
             UpdateCurrent();
 
             if (!string.IsNullOrEmpty(message))
@@ -148,15 +163,20 @@ namespace KyoumoMushoku.Gameplay.Interaction
             }
         }
 
-        bool IsWithinReach(IChanneledInteractable target)
+        /// <summary>
+        /// 掴んでいる相手に、まだ手が届いているか。探索と同じものさし（相手のコライダの最寄り点）で測るため、
+        /// 「プロンプトは出るのに始めた途端に中断される」という食い違いが起きない。
+        /// 測る相手が無い（コライダを持たない相手・場に居ない相手）なら、距離を理由に中断はしない。
+        /// </summary>
+        bool IsWithinReach()
         {
-            if (target is Component component && component != null)
+            if (_channelCollider == null || !_channelCollider.isActiveAndEnabled)
             {
-                var sqr = ((Vector2)component.transform.position - (Vector2)transform.position).sqrMagnitude;
-                return sqr <= _radius * _radius;
+                return true;
             }
 
-            return true;
+            var origin = (Vector2)transform.position;
+            return (_channelCollider.ClosestPoint(origin) - origin).sqrMagnitude <= _radius * _radius;
         }
 
         void UpdateCurrent()
@@ -171,6 +191,7 @@ namespace KyoumoMushoku.Gameplay.Interaction
             var count = Physics2D.OverlapCircle(transform.position, _radius, filter, _hits);
 
             IInteractable nearest = null;
+            Collider2D nearestCollider = null;
             var nearestSqr = float.MaxValue;
             var origin = (Vector2)transform.position;
 
@@ -182,13 +203,18 @@ namespace KyoumoMushoku.Gameplay.Interaction
                     continue;
                 }
 
-                var sqr = ((Vector2)hit.transform.position - origin).sqrMagnitude;
+                // 近さも body で測る。原点で測ると、大きな相手（店先など）が原点の遠さだけで
+                // 目の前の小さな相手に負ける。
+                var sqr = (hit.ClosestPoint(origin) - origin).sqrMagnitude;
                 if (sqr < nearestSqr)
                 {
                     nearestSqr = sqr;
                     nearest = interactable;
+                    nearestCollider = hit;
                 }
             }
+
+            _currentCollider = nearestCollider;
 
             if (!ReferenceEquals(nearest, Current))
             {
