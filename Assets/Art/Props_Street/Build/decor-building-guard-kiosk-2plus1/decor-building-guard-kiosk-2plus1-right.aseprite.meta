@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 4a7e7109cc9b03b46a5d73366e057430
+guid: db62f0cb5f6a4fb459a2b5245c8cfa34
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -102,7 +102,7 @@ ScriptedImporter:
     generateIndividualEvents: 1
     generateSpriteAtlas: 1
   importFileNodeState: 1
-  platformSettingsDirtyTick: 639197587893295161
+  platformSettingsDirtyTick: 0
   textureAssetName: 
   singleSpriteImportData:
   - name: 
@@ -129,7 +129,7 @@ ScriptedImporter:
   animatedSpriteImportData:
   - name: streetlamp-public
     originalName: 
-    pivot: {x: 0.5, y: 0}
+    pivot: {x: 0.5, y: -0.08219178}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     customData: 
@@ -137,8 +137,8 @@ ScriptedImporter:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 91
-      height: 93
+      width: 138
+      height: 146
     spriteID: f1d7910136fc95f4fbb4c612ebdde769
     spriteBone: []
     spriteOutline: []
@@ -163,47 +163,23 @@ ScriptedImporter:
     layerType: 0
     blendMode: 0
     cells:
-    - name: concrete-wall-panel-stained
+    - name: decor-building-guard-kiosk-2plus1-right
       frameIndex: 0
       additiveSortOrder: 0
       cellRect:
-        x: 0
-        y: 0
-        width: 91
-        height: 93
+        x: 11
+        y: 12
+        width: 138
+        height: 146
       spriteId: f1d7910136fc95f4fbb4c612ebdde769
     linkedCells: []
     tileCells: []
     tileSetIndex: 0
     parentIndex: -1
   tileSets: []
-  platformSettings:
-  - name: DefaultTexturePlatform
-    overridden: 0
-    ignorePlatformSupport: 0
-    maxTextureSize: 16384
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 0
-    compressionQuality: 50
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    androidETC2FallbackOverride: 0
-  - name: Standalone
-    overridden: 0
-    ignorePlatformSupport: 0
-    maxTextureSize: 16384
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 0
-    compressionQuality: 50
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    androidETC2FallbackOverride: 0
+  platformSettings: []
   generatePhysicsShape: 0
   secondarySpriteTextures: []
   spritePackingTag: 
-  canvasSize: {x: 91, y: 93}
-  previousTextureSize: {x: 128, y: 128}
+  canvasSize: {x: 160, y: 180}
+  previousTextureSize: {x: 256, y: 256}
