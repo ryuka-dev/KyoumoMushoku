@@ -6,7 +6,8 @@
         "KyoumoMushoku.Gameplay",
         "Unity.TextMeshPro",
         "UnityEngine.UI",
-        "Unity.RenderPipelines.Universal.Runtime"
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Universal.2D.Runtime"
     ],
     "includePlatforms": [
         "Editor"

@@ -35,6 +35,30 @@ namespace KyoumoMushoku.Core.DayCycle
         public float SecondsUntilNight =>
             Math.Max(0f, _schedule.ForDay(_day).SecondsUntilNight - _elapsedInDay);
 
+        /// <summary>
+        /// 昼(0)から夜(1)への移行度。灯りの補間にだけ使う表現用の量であり、権威ではない。
+        /// 昼のあいだは 0、薄暮で 0→1 に滑らかに上がり、夜は 1。
+        /// </summary>
+        public float NightBlend01
+        {
+            get
+            {
+                var durations = _schedule.ForDay(_day);
+                if (_elapsedInDay <= durations.DaySeconds)
+                {
+                    return 0f;
+                }
+
+                if (_elapsedInDay >= durations.SecondsUntilNight)
+                {
+                    return 1f;
+                }
+
+                float span = durations.SecondsUntilNight - durations.DaySeconds;
+                return span <= 0f ? 1f : (_elapsedInDay - durations.DaySeconds) / span;
+            }
+        }
+
         public event Action<DayPhase> PhaseChanged;
         public event Action<int> DayBegan;
 

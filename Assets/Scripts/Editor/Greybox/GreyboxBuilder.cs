@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using KyoumoMushoku.Core.Foraging;
@@ -34,6 +35,14 @@ namespace KyoumoMushoku.Editor.Greybox
     /// 8つの区域はすべて同一シーンに置く。移動時間そのものがソフトクロックを進めるため、
     /// 区域の切り替えにロードや瞬間移動を挟むと、設計上の圧力が失われる。
     ///
+    /// 【シーンの卒業】灰箱の間はシーンがコードの産物であり、いつでも捨てて建て直せた。
+    /// しかし美術を置き始めた時点でその前提は終わる。美術は手と目で反復して decide するものであり、
+    /// 生成器に符号化できない。したがって本番シーン <see cref="ScenePath"/> は手が所有し、
+    /// ビルダーはここへ二度と書かない。ビルダーの出力は <see cref="GreyboxScenePath"/>（参照用の灰箱）に限る。
+    ///
+    /// この境界は「気をつけて押す」ではなく書き込み先そのもので担保する。
+    /// 本番シーンへ何かを足す必要が出たときは、実シーンを直接編集すること。
+    ///
     /// Phase 1 で水源・就寝場所・病院・状態の HUD・SAN の退色を、Phase 2 でゴミ箱3種を、
     /// Phase 3 で商業ゾーンを巡回する警官1名と警戒度の所有者を配線した。
     /// Phase 4 はコンビニ1軒（購入・バイト・廃品の買い取り）を加え、
@@ -41,7 +50,11 @@ namespace KyoumoMushoku.Editor.Greybox
     /// </summary>
     public static class GreyboxBuilder
     {
+        // 手で美術を置いていく本番シーン。ビルダーは決してここへ書かない（下記の「卒業」を参照）。
         const string ScenePath = "Assets/Scenes/FirstDistrict.unity";
+
+        // ビルダーの出力先。灰箱の参照用であり、実行のたびに中身は捨てて建て直される。
+        const string GreyboxScenePath = "Assets/Scenes/FirstDistrict_Greybox.unity";
         const string SchedulePath = "Assets/Config/DaySchedule.asset";
         const string ItemDatabasePath = "Assets/Config/ItemDatabase.asset";
         const string TrashCanLootPath = "Assets/Config/TrashCanLoot.asset";
@@ -50,6 +63,7 @@ namespace KyoumoMushoku.Editor.Greybox
         const string ShopTuningPath = "Assets/Config/ShopTuning.asset";
         const string WaterTuningPath = "Assets/Config/WaterTuning.asset";
         const string SpritePath = "Assets/Art/Greybox/White.png";
+        const string LitMaterialPath = "Assets/Settings/SpriteLit.mat";
         const string AreaPrefabFolder = "Assets/Prefabs/Areas";
 
         // 背景板は地面際の低い壁に留める。高くすると奥行きの層を覆い隠してしまう。
@@ -57,10 +71,21 @@ namespace KyoumoMushoku.Editor.Greybox
         const float GroundThickness = 2f;
         const float ZoneVolumeHeight = 12f;
 
-        [MenuItem("KyoumoMushoku/Build Greybox Scene")]
+        [MenuItem("KyoumoMushoku/Build Greybox Reference Scene")]
         public static void Build()
         {
+            // 開いているシーン（手で美術を置いた本番シーンかもしれない）の未保存分をまず守る。
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return;
+            }
+
+            if (!EditorUtility.DisplayDialog(
+                    "灰箱の参照シーンを生成する",
+                    $"生成先は {GreyboxScenePath}（灰箱の参照用）で、その中身は捨てて建て直される。\n\n" +
+                    $"手で美術を置いた {ScenePath} には触れない。\n\n" +
+                    "ただし今開いているシーンは閉じられ、生成した灰箱シーンに切り替わる。",
+                    "生成する", "やめる"))
             {
                 return;
             }
@@ -86,7 +111,10 @@ namespace KyoumoMushoku.Editor.Greybox
             var sleepTuning = AssetDatabase.LoadAssetAtPath<SleepTuningAsset>(SleepTuningPath);
             var shopTuning = AssetDatabase.LoadAssetAtPath<ShopTuningAsset>(ShopTuningPath);
             var waterTuning = AssetDatabase.LoadAssetAtPath<WaterTuningAsset>(WaterTuningPath);
-            var spriteMaterial = AssetDatabase.GetBuiltinExtraResource<Material>("Sprites-Default.mat");
+            // ワールドの色板は 2D 照明を受ける Lit 材質で描く。これにより Global Light2D と街灯の
+            // 明暗が乗る（Unlit のままでは常に全灯で、夜の圧力が絵に出ない）。将来の美術差し替え後も
+            // 同じ材質のままテクスチャに照明が乗る。
+            var spriteMaterial = EnsureLitMaterial();
 
             if (white == null || schedule == null || catalog == null || loot == null || tuning == null ||
                 sleepTuning == null || shopTuning == null || waterTuning == null || spriteMaterial == null)
@@ -108,7 +136,7 @@ namespace KyoumoMushoku.Editor.Greybox
             BuildUnderpassWalls(white, spriteMaterial);
 
             var player = BuildPlayer(white, spriteMaterial, catalog, tuning);
-            BuildCamera(player.transform);
+            var camera = BuildCamera(player.transform);
             BuildStairwells();
 
             // ゴミ箱は時計（昼夜・日替りのリポップ）に配線するため、システムを先に建てる。
@@ -118,6 +146,7 @@ namespace KyoumoMushoku.Editor.Greybox
             var stashSpots = BuildStash(white, spriteMaterial);
             var officer = BuildPolice(white, spriteMaterial);
             BuildSessionAndGrade(clock, player);
+            BuildLighting(clock, camera, white, spriteMaterial);
             BuildCanvas(player, clock, store, stashSpots);
 
             var hud = clock.gameObject.AddComponent<PhaseZeroHud>();
@@ -125,11 +154,12 @@ namespace KyoumoMushoku.Editor.Greybox
             hud.ConfigurePolice(clock.GetComponent<ZoneAlertDirector>(), officer);
 
             EnsureAssetFolder("Assets/Scenes");
-            EditorSceneManager.SaveScene(scene, ScenePath);
-            RegisterSceneInBuildSettings();
+            EditorSceneManager.SaveScene(scene, GreyboxScenePath);
 
+            // Build Settings には触れない。本番シーンが起動シーンであり、その登録は手が持つ。
             AssetDatabase.SaveAssets();
-            Debug.Log($"Phase 4 greybox built at {ScenePath}. A/D で歩く、Shift で走る、E で調べる／漁る、数字で飲食。");
+            Debug.Log($"灰箱の参照シーンを {GreyboxScenePath} に生成した（本番シーン {ScenePath} は無傷）。" +
+                      "A/D で歩く、Shift で走る、E で調べる／漁る、数字で飲食。");
             Debug.Log("コンビニ前（x=114）で E → 店パネル。数字で買う、S で廃品を売る（1日上限300円）、W でレジ打ち。" +
                       "レジ打ちは Space でタイミングを合わせる。SAN が下がると帯が狭まり報酬が暴落する。SAN20未満で価格が ??。");
             Debug.Log("ゴミ箱は E で漁る（探索時間あり・歩くと中断）。夜のコンビニ前は弁当が出る。使い切ると翌日まで空。");
@@ -283,7 +313,7 @@ namespace KyoumoMushoku.Editor.Greybox
             return player;
         }
 
-        static void BuildCamera(Transform target)
+        static Camera BuildCamera(Transform target)
         {
             var go = new GameObject("Main Camera") { tag = "MainCamera" };
             var camera = go.AddComponent<Camera>();
@@ -306,6 +336,7 @@ namespace KyoumoMushoku.Editor.Greybox
 
             go.transform.position = new Vector3(target.position.x, target.position.y + 2f, -distance);
             go.AddComponent<CameraFollow>().Configure(target);
+            return camera;
         }
 
         /// <summary>
@@ -538,6 +569,97 @@ namespace KyoumoMushoku.Editor.Greybox
             session.Configure(clock, player.transform);
 
             clock.gameObject.AddComponent<SanityColorGrade>().Configure(player.GetComponent<PlayerVitals>());
+        }
+
+        /// <summary>
+        /// 2D 照明を組む。夜の圧力を絵に出すための最大の梃子（重工業の曇天 → 薄暮 → 深夜）。
+        /// Global Light2D が環境光、街灯は夜にだけ灯る点光、地下通路は常時の薄明り。
+        /// 時刻への追従は <see cref="DayNightLight2D"/> が権威（時計）を読んで行い、絵の値だけを動かす。
+        /// </summary>
+        static void BuildLighting(GameClockDriver clock, Camera camera, Sprite white, Material material)
+        {
+            var root = new GameObject("Lighting").transform;
+
+            // 環境光（全域）。初期値は昼だが、実値は毎フレーム DayNightLight2D が上書きする。
+            var globalGo = new GameObject("Global Light 2D");
+            globalGo.transform.SetParent(root, false);
+            var global = globalGo.AddComponent<Light2D>();
+            global.lightType = Light2D.LightType.Global;
+            global.color = new Color(0.60f, 0.64f, 0.67f);
+            global.intensity = 0.92f;
+            ApplyAllSortingLayers(global);
+
+            // 街灯：街路に沿って等間隔。夜に向けて灯る（基準強度 × 移行度）。灯具そのものは
+            // 将来の美術がこの位置に置く。今は光だけ置き、昼は消灯なので絵に何も残らない。
+            float lampHeadY = FirstDistrictLayout.SurfaceY + 5.5f;
+            const float lampFullIntensity = 2.4f;
+            float[] lampXs = { 0f, 28f, 56f, 84f, 112f, 140f, 168f, 196f };
+            var lamps = new List<Light2D>();
+            var lampBase = new List<float>();
+            foreach (var x in lampXs)
+            {
+                var lampGo = new GameObject($"Streetlamp_{x:0}");
+                lampGo.transform.SetParent(root, false);
+                lampGo.transform.position = new Vector3(x, lampHeadY, 0f);
+                var lamp = lampGo.AddComponent<Light2D>();
+                lamp.lightType = Light2D.LightType.Point;
+                lamp.color = new Color(1f, 0.68f, 0.32f);
+                lamp.intensity = lampFullIntensity;
+                lamp.pointLightInnerRadius = 0.5f;
+                lamp.pointLightOuterRadius = 7f;
+                ApplyAllSortingLayers(lamp);
+                lamps.Add(lamp);
+                lampBase.Add(lampFullIntensity);
+            }
+
+            // 地下通路の常時灯り。地上の昼夜に関わらず点く（潜る場所を真っ暗にしない）。
+            var underGo = new GameObject("UnderpassLight");
+            underGo.transform.SetParent(root, false);
+            underGo.transform.position = new Vector3(120f, FirstDistrictLayout.UnderpassY + 4f, 0f);
+            var under = underGo.AddComponent<Light2D>();
+            under.lightType = Light2D.LightType.Point;
+            under.color = new Color(0.70f, 0.78f, 0.90f);
+            under.intensity = 1.6f;
+            under.pointLightInnerRadius = 2f;
+            under.pointLightOuterRadius = 34f;
+            ApplyAllSortingLayers(under);
+
+            // Bloom（街灯・コンビニの灯りをにじませる）。専用の物体に載せる。
+            var postGo = new GameObject("World Post");
+            postGo.transform.SetParent(root, false);
+            postGo.AddComponent<WorldBloom>();
+
+            var driver = clock.gameObject.AddComponent<DayNightLight2D>();
+            driver.Configure(clock, global, camera, lamps.ToArray(), lampBase.ToArray());
+        }
+
+        static Material EnsureLitMaterial()
+        {
+            var material = AssetDatabase.LoadAssetAtPath<Material>(LitMaterialPath);
+            if (material == null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default");
+                material = new Material(shader) { name = "SpriteLit" };
+                AssetDatabase.CreateAsset(material, LitMaterialPath);
+            }
+
+            return material;
+        }
+
+        // Light2D をコードで生成すると作用対象の sorting layer が空になり、何も照らさないことがある。
+        // 全 sorting layer を明示指定して取りこぼしを防ぐ。
+        static void ApplyAllSortingLayers(Light2D light)
+        {
+            var so = new SerializedObject(light);
+            var prop = so.FindProperty("m_ApplyToSortingLayers");
+            var layers = SortingLayer.layers;
+            prop.arraySize = layers.Length;
+            for (int i = 0; i < layers.Length; i++)
+            {
+                prop.GetArrayElementAtIndex(i).intValue = layers[i].id;
+            }
+
+            so.ApplyModifiedProperties();
         }
 
         /// <summary>
@@ -1022,16 +1144,5 @@ namespace KyoumoMushoku.Editor.Greybox
             }
         }
 
-        static void RegisterSceneInBuildSettings()
-        {
-            if (EditorBuildSettings.scenes.Any(s => s.path == ScenePath))
-            {
-                return;
-            }
-
-            EditorBuildSettings.scenes = EditorBuildSettings.scenes
-                .Prepend(new EditorBuildSettingsScene(ScenePath, enabled: true))
-                .ToArray();
-        }
     }
 }

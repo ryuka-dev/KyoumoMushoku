@@ -55,7 +55,17 @@
 - プレイテストで調整する平衡数値は `Assets/Config/*.asset`（ScriptableObject）に置く。Inspector・Play 中に可変。既存：`VitalsTuning`／`DaySchedule`／`ItemDatabase`／`TrashCanLoot`／`SleepTuning`／`ShopTuning`／`WaterTuning`。
 - 純粋 Core ロジックがコンパイル時に参照する構造的定数（SAN 閾値・警戒度規則・コツ・保管庫イベント）は、従来どおり per-domain の静的 `*Tuning` クラス。
 - `GreyboxBuilder` に生の数値字面量を直接書かない。builder は資産を読み、各コンポーネントを Configure するだけにする（位置・色・sorting などの構造値は除く）。
-- 落とし穴：`Ensure*Asset()` は存在しなければ生成するだけで、既存 `Assets/Config/*.asset` は再ビルドで上書きされず実行時の権威になる。コード既定値を変えたら、当該 `.asset` を削除して `KyoumoMushoku/Build Greybox Scene` で再生成する（Inspector で直接編集してもよい）。`VitalsTests` は `new VitalsTuning()` のコード既定値を検証し厳密値を直書きするため、掉率変更時は期待値の追随が要る。
+- 落とし穴：`Ensure*Asset()` は存在しなければ生成するだけで、既存 `Assets/Config/*.asset` は再ビルドで上書きされず実行時の権威になる。コード既定値を変えたら、当該 `.asset` を削除して `KyoumoMushoku/Build Greybox Reference Scene` で再生成する（Inspector で直接編集してもよい）。`VitalsTests` は `new VitalsTuning()` のコード既定値を検証し厳密値を直書きするため、掉率変更時は期待値の追随が要る。
+
+## シーンの所有権（2026-07-15・卒業済み）
+
+灰箱の間、シーンはコードの産物だった。いつでも捨てて `GreyboxBuilder` で建て直せた。**美術を置き始めた時点でこの前提は終わった。** 美術は手と目で反復して決めるものであり、生成器に符号化できない。
+
+- `Assets/Scenes/FirstDistrict.unity` は**手が所有する本番シーン**。通常どおり `Ctrl+S` で保存する。ビルダーはここへ二度と書かない。Build Settings の起動シーンでもあり、その登録も手が持つ。
+- `Assets/Scenes/FirstDistrict_Greybox.unity` は `KyoumoMushoku/Build Greybox Reference Scene` の出力で、**参照用**。実行のたびに捨てて建て直される。
+- この境界は「気をつけて押す」ではなく**書き込み先そのもの**で担保している。メニューは本番シーンに触れないので、誤爆で美術が消えることはない。
+- 本番シーンへ何かを足す必要が出たら、**実シーンを直接編集する**。「builder を直して再生成」という手は、もう使えない。
+- ビルダーは配線の記録として残す価値があるため退役させない（新規の灰箱を起こす・配線を読み返す用途）。
 
 ## 備考
 
