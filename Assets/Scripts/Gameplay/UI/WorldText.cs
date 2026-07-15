@@ -14,6 +14,7 @@ namespace KyoumoMushoku.Gameplay.UI
         public static string SleepCannotAfford(string label) => $"{label}（所持金が足りない）";
         public static string SleepCost(string label, int costYen) => $"{label}（{costYen}円）";
         public static string SleepWarned(string label) => $"{label}（苦情の貼り紙）";
+        public static string SleepTooEarly(string label) => $"{label}（夜になるまで眠れない）";
 
         // ── 就寝場所の貼り紙（敵対的建築・予告と事後説明／第五・十四節） ──
         public static string SleepNoticeRemoved => "撤去済み（苦情多数のため）";

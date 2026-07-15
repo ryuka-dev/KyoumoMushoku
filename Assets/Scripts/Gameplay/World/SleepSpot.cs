@@ -1,5 +1,7 @@
+using KyoumoMushoku.Core.DayCycle;
 using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Zones;
+using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.Police;
 using KyoumoMushoku.Gameplay.Session;
@@ -44,6 +46,9 @@ namespace KyoumoMushoku.Gameplay.World
         [SerializeField] Color _openTint = new Color(0.55f, 0.45f, 0.35f);
         [SerializeField] Color _warnedTint = new Color(0.62f, 0.5f, 0.28f);
         [SerializeField] Color _removedTint = new Color(0.3f, 0.3f, 0.3f);
+
+        [Tooltip("夜になったかを読む時計。就寝可否の権威はこちらにあり、就寝場所は観測するだけ。")]
+        [SerializeField] GameClockDriver _clock;
 
         GameSession _session;
         ZoneAlertDirector _alerts;
@@ -105,8 +110,23 @@ namespace KyoumoMushoku.Gameplay.World
         void Start()
         {
             _alerts = FindFirstObjectByType<ZoneAlertDirector>();
+
+            if (_clock == null)
+            {
+                _clock = FindFirstObjectByType<GameClockDriver>();
+            }
+
             RefreshState(force: true);
         }
+
+        /// <summary>
+        /// 夜が来たか。眠れるのは夜だけであり、昼はもちろん薄暮でもまだ寝られない（第二節）。
+        /// 時刻の権威は時計にあり、ここは観測するだけ。
+        ///
+        /// 時計が居ない場面（時計を持たない検証用の場面など）では時刻で拒まない。
+        /// 就寝という既存の振る舞いを、読めない情報を理由に塞がないための構えである。
+        /// </summary>
+        bool IsNight => _clock == null || _clock.Clock == null || _clock.Clock.Phase == DayPhase.Night;
 
         void Update()
         {
@@ -169,6 +189,12 @@ namespace KyoumoMushoku.Gameplay.World
                 return false;
             }
 
+            // 夜になるまでは、どの就寝場所でも寝られない。
+            if (!IsNight)
+            {
+                return false;
+            }
+
             return _costYen <= 0 || (player.Wallet != null && player.Wallet.Wallet.CanAfford(_costYen));
         }
 
@@ -177,6 +203,12 @@ namespace KyoumoMushoku.Gameplay.World
             if (_state == SleepSpotState.Removed)
             {
                 return WorldText.SleepRemoved(_label);
+            }
+
+            // 押しても何も起きない理由は、押す前に世界の言葉で告げる（第十四節・予告は事前に）。
+            if (!IsNight)
+            {
+                return WorldText.SleepTooEarly(_label);
             }
 
             if (_costYen > 0 && (player.Wallet == null || !player.Wallet.Wallet.CanAfford(_costYen)))
