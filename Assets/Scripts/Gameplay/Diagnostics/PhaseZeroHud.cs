@@ -5,6 +5,7 @@ using KyoumoMushoku.Gameplay.Player;
 using KyoumoMushoku.Gameplay.Police;
 using KyoumoMushoku.Gameplay.World;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace KyoumoMushoku.Gameplay.Diagnostics
 {
@@ -15,9 +16,13 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
     /// 警戒度と段階もここに出すが、これは開発用のプローブである。プレイヤーにとって
     /// 警戒度は見えない状態であり続けなければならない。それを世界の中で説明するのは
     /// 警官の台詞と先輩ホームレスの小言であって、この数字ではない（第十四節）。
+    ///
+    /// 既定では隠しておき、F1 で開閉する。開発用のプローブなので、通常のプレイ画面には出さない。
     /// </summary>
     public sealed class PhaseZeroHud : MonoBehaviour
     {
+        [Tooltip("開発用オーバーレイの表示。既定は非表示で、F1 で切り替える。")]
+        [SerializeField] bool _visible;
         [SerializeField] GameClockDriver _clock;
         [SerializeField] ZoneTracker _zones;
         [SerializeField] PlayerMotor _motor;
@@ -41,9 +46,18 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
             _officer = officer;
         }
 
+        void Update()
+        {
+            var keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.f1Key.wasPressedThisFrame)
+            {
+                _visible = !_visible;
+            }
+        }
+
         void OnGUI()
         {
-            if (_clock == null || _clock.Clock == null)
+            if (!_visible || _clock == null || _clock.Clock == null)
             {
                 return;
             }
