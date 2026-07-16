@@ -22,6 +22,12 @@ namespace KyoumoMushoku.Gameplay.UI
         [SerializeField] Image _sanityFill;
         [SerializeField] TMP_Text _statusText;
 
+        // 各ゲージが何かを左に添える固定ラベル。値は変わらないので Start で一度だけ入れる。
+        [SerializeField] TMP_Text _hpLabel;
+        [SerializeField] TMP_Text _thirstLabel;
+        [SerializeField] TMP_Text _hungerLabel;
+        [SerializeField] TMP_Text _sanityLabel;
+
         [SerializeField] PlayerVitals _vitals;
         [SerializeField] PlayerWallet _wallet;
         [SerializeField] GameClockDriver _clock;
@@ -42,6 +48,34 @@ namespace KyoumoMushoku.Gameplay.UI
             _hungerFill = hunger;
             _sanityFill = sanity;
             _statusText = status;
+        }
+
+        public void BindLabels(TMP_Text hp, TMP_Text thirst, TMP_Text hunger, TMP_Text sanity)
+        {
+            _hpLabel = hp;
+            _thirstLabel = thirst;
+            _hungerLabel = hunger;
+            _sanityLabel = sanity;
+            ApplyLabels();
+        }
+
+        void Start() => ApplyLabels();
+
+        // ゲージのラベルは固定。語の権威は HudText にあり、ここは添えるだけ（ローカライズの口子）。
+        void ApplyLabels()
+        {
+            SetLabel(_hpLabel, HudText.HpLabel);
+            SetLabel(_thirstLabel, HudText.ThirstLabel);
+            SetLabel(_hungerLabel, HudText.HungerLabel);
+            SetLabel(_sanityLabel, HudText.SanityLabel);
+        }
+
+        static void SetLabel(TMP_Text label, string text)
+        {
+            if (label != null)
+            {
+                label.text = text;
+            }
         }
 
         void Update()

@@ -17,6 +17,13 @@ namespace KyoumoMushoku.Gameplay.UI
         public static string Status(int day, string phase, int yen, string mood, string zone) =>
             $"{day}日目　{phase}　　所持金 {yen}円\n気分：{mood}　　現在地：{zone}";
 
+        // ── 状態ゲージのラベル（VitalsHud・各ゲージが何かを左に添える） ──
+        // 食品カード（FoodCardText）と同じ語を使い、同じものを別名で呼ばない。
+        public static string HpLabel => "HP";
+        public static string ThirstLabel => "喉";
+        public static string HungerLabel => "空腹";
+        public static string SanityLabel => "気分";
+
         // ── カバン一覧（InventoryView） ──────────────────────────
         public static string BagHeader(int usedSlots, int capacity) => $"カバン　{usedSlots}/{capacity}マス";
         public static string BagEmpty => "（空）";

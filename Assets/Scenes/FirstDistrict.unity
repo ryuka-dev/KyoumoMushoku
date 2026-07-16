@@ -20272,7 +20272,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: "\u7A7A\u8179"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   m_sharedMaterial: {fileID: -2753159355425245696, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
@@ -21449,7 +21449,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: "\u5589"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   m_sharedMaterial: {fileID: -2753159355425245696, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
@@ -25748,7 +25748,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: "\u6C17\u5206"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   m_sharedMaterial: {fileID: -2753159355425245696, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
@@ -29304,7 +29304,7 @@ Transform:
   m_GameObject: {fileID: 1098177842}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 120, y: -16, z: 0}
+  m_LocalPosition: {x: 125.06, y: -15.02, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -29576,6 +29576,10 @@ MonoBehaviour:
   _hungerFill: {fileID: 1566180641}
   _sanityFill: {fileID: 1454047172}
   _statusText: {fileID: 183245921}
+  _hpLabel: {fileID: 1517923931}
+  _thirstLabel: {fileID: 260467567}
+  _hungerLabel: {fileID: 108645615}
+  _sanityLabel: {fileID: 711721506}
   _vitals: {fileID: 545238811}
   _wallet: {fileID: 545238807}
   _clock: {fileID: 1840376640}
@@ -32828,7 +32832,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: HP
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   m_sharedMaterial: {fileID: -2753159355425245696, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
@@ -39584,6 +39588,14 @@ PrefabInstance:
     - target: {fileID: 6508665311809086194, guid: e30eb76070df8584b918278e91d77c73, type: 3}
       propertyPath: m_LocalPosition.z
       value: 10.57
+      objectReference: {fileID: 0}
+    - target: {fileID: 7034150277766885020, guid: e30eb76070df8584b918278e91d77c73, type: 3}
+      propertyPath: _boxTint.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7034150277766885020, guid: e30eb76070df8584b918278e91d77c73, type: 3}
+      propertyPath: _emptyTint.a
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7471802389841886688, guid: e30eb76070df8584b918278e91d77c73, type: 3}
       propertyPath: m_LocalScale.x
