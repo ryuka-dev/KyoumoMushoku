@@ -206,6 +206,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3932838628615043906}
   - component: {fileID: 2407010128061689561}
+  - component: {fileID: 3423623327067735138}
   m_Layer: 0
   m_Name: Streetlamp_112 (1)
   m_TagString: Untagged
@@ -280,6 +281,20 @@ MonoBehaviour:
   - {x: 0.5, y: -0.5, z: 0}
   - {x: 0.5, y: 0.5, z: 0}
   - {x: -0.5, y: 0.5, z: 0}
+--- !u!114 &3423623327067735138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1219234923286070058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2264836f372708040871ecd8840b5c53, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Rendering.Streetlamp
+  _light: {fileID: 2407010128061689561}
+  _baseIntensity: 2
 --- !u!1 &5146233207409180599
 GameObject:
   m_ObjectHideFlags: 0
@@ -381,6 +396,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5477047912887297233}
   - component: {fileID: 4515724356215839727}
+  - component: {fileID: 4468216203400522440}
   m_Layer: 0
   m_Name: Streetlamp_112
   m_TagString: Untagged
@@ -455,6 +471,20 @@ MonoBehaviour:
   - {x: 0.5, y: -0.5, z: 0}
   - {x: 0.5, y: 0.5, z: 0}
   - {x: -0.5, y: 0.5, z: 0}
+--- !u!114 &4468216203400522440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361014582146152451}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2264836f372708040871ecd8840b5c53, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Rendering.Streetlamp
+  _light: {fileID: 4515724356215839727}
+  _baseIntensity: 2
 --- !u!1 &5762532918659491738
 GameObject:
   m_ObjectHideFlags: 0

@@ -594,8 +594,6 @@ namespace KyoumoMushoku.Editor.Greybox
             float lampHeadY = FirstDistrictLayout.SurfaceY + 5.5f;
             const float lampFullIntensity = 2.4f;
             float[] lampXs = { 0f, 28f, 56f, 84f, 112f, 140f, 168f, 196f };
-            var lamps = new List<Light2D>();
-            var lampBase = new List<float>();
             foreach (var x in lampXs)
             {
                 var lampGo = new GameObject($"Streetlamp_{x:0}");
@@ -608,8 +606,9 @@ namespace KyoumoMushoku.Editor.Greybox
                 lamp.pointLightInnerRadius = 0.5f;
                 lamp.pointLightOuterRadius = 7f;
                 ApplyAllSortingLayers(lamp);
-                lamps.Add(lamp);
-                lampBase.Add(lampFullIntensity);
+
+                // 街灯は自分で名簿に載る。ここで駆動側へ配線を渡す必要はない。
+                lampGo.AddComponent<Streetlamp>().Configure(lamp, lampFullIntensity);
             }
 
             // 地下通路の常時灯り。地上の昼夜に関わらず点く（潜る場所を真っ暗にしない）。
@@ -630,7 +629,7 @@ namespace KyoumoMushoku.Editor.Greybox
             postGo.AddComponent<WorldBloom>();
 
             var driver = clock.gameObject.AddComponent<DayNightLight2D>();
-            driver.Configure(clock, global, camera, lamps.ToArray(), lampBase.ToArray());
+            driver.Configure(clock, global, camera);
         }
 
         static Material EnsureLitMaterial()

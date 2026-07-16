@@ -18,10 +18,6 @@ namespace KyoumoMushoku.Gameplay.Rendering
         [SerializeField] Light2D _global;
         [SerializeField] Camera _camera;
 
-        [Tooltip("夜にだけ灯る街灯。基準強度は _lampBaseIntensity に対応づく。")]
-        [SerializeField] Light2D[] _streetlamps;
-        [SerializeField] float[] _lampBaseIntensity;
-
         [Header("昼（曇天・重工業の空）")]
         [SerializeField] Color _dayColor = new Color(0.60f, 0.64f, 0.67f);
         [SerializeField] float _dayIntensity = 0.92f;
@@ -53,15 +49,15 @@ namespace KyoumoMushoku.Gameplay.Rendering
         /// </summary>
         public Color SkyColor => _initialized ? _sky : _daySky;
 
-        /// <summary>ビルダー（シーン生成の単一の所有者）だけが呼ぶ。</summary>
-        public void Configure(GameClockDriver clock, Light2D global, Camera camera,
-            Light2D[] streetlamps, float[] lampBaseIntensity)
+        /// <summary>
+        /// ビルダー（シーン生成の単一の所有者）だけが呼ぶ。
+        /// 街灯はここでは受け取らない。誰が街灯かは <see cref="Streetlamp"/> が自ら名乗る。
+        /// </summary>
+        public void Configure(GameClockDriver clock, Light2D global, Camera camera)
         {
             _clock = clock;
             _global = global;
             _camera = camera;
-            _streetlamps = streetlamps;
-            _lampBaseIntensity = lampBaseIntensity;
         }
 
         void OnEnable() => _initialized = false;
@@ -112,16 +108,12 @@ namespace KyoumoMushoku.Gameplay.Rendering
             }
 
             // 街灯は夜へ向けて灯る。基準強度に移行度を掛けるだけ（昼=0=消灯）。
-            if (_streetlamps != null && _lampBaseIntensity != null)
+            // 誰が街灯かは街灯自身が名乗るため、ここは名簿を読むだけで配線を持たない。
+            // 置かれたばかりの prefab も、その場で名簿に載っているので何もせずに灯る。
+            var lamps = Streetlamp.Active;
+            for (int i = 0; i < lamps.Count; i++)
             {
-                int count = Mathf.Min(_streetlamps.Length, _lampBaseIntensity.Length);
-                for (int i = 0; i < count; i++)
-                {
-                    if (_streetlamps[i] != null)
-                    {
-                        _streetlamps[i].intensity = _lampBaseIntensity[i] * _blend;
-                    }
-                }
+                lamps[i].ApplyBlend(_blend);
             }
         }
     }
