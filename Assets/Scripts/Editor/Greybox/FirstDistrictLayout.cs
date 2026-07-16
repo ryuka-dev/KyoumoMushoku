@@ -103,6 +103,11 @@ namespace KyoumoMushoku.Editor.Greybox
         public static readonly ParallaxLayer[] Layers =
         {
             new("Far", 30f, -30, 1.9f, 19f, 13f, 12f, 28f, new Color(0.17f, 0.19f, 0.26f)),
+
+            // Far と Mid の中間。奥行きを二段から三段にし、霧の濃さも段階を踏ませる。
+            // 各値は Far と Mid の中間を取る（霧板は本番シーンだけが持つため、ここには現れない）。
+            new("MidFar", 19f, -24, 1.7f, 16f, 11f, 9.5f, 22.5f, new Color(0.205f, 0.225f, 0.30f)),
+
             new("Mid", 12f, -20, 1.5f, 13f, 9f, 7f, 17f, new Color(0.24f, 0.26f, 0.34f)),
 
             // 前景はプレイヤーより手前に描かれ、視界を横切る。
