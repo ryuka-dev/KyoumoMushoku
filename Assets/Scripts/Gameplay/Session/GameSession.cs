@@ -52,6 +52,10 @@ namespace KyoumoMushoku.Gameplay.Session
         StashDirector _stashDirector;
         IRng _rng;
 
+        // 最後に紐づいた就寝場所の識別子。就寝でセーブするたび、ロードで復元するたびに更新する。
+        // 終了時オートセーブ（ポーズ画面）は位置の権威を持たないので、これを再利用して寝た場所を保つ。
+        string _lastSleepSpotId = string.Empty;
+
         public void Configure(GameClockDriver clock, Transform player) => (_clock, _player) = (clock, player);
 
         void Awake()
@@ -190,6 +194,7 @@ namespace KyoumoMushoku.Gameplay.Session
                 _milestones?.RecordDayBegan(_clock.Clock.Day);
             }
 
+            _lastSleepSpotId = spot.RespawnId;
             Save(spot.RespawnId);
         }
 
@@ -315,12 +320,20 @@ namespace KyoumoMushoku.Gameplay.Session
             RestoreStashes(save.Stashes);
             _stashDirector?.RestoreState(save.PendingStashEvents);
 
+            _lastSleepSpotId = save.SleepSpotId ?? string.Empty;
+
             if (!string.IsNullOrEmpty(save.SleepSpotId) &&
                 _respawnPoints.TryGetValue(save.SleepSpotId, out var point))
             {
                 TeleportTo(point.SpawnPosition);
             }
         }
+
+        /// <summary>
+        /// いま要求されたオートセーブ（終了時など）。就寝と同じ経路で現在状態を書き出すが、日付は進めない。
+        /// 位置は最後に紐づいた就寝場所へ結びつく（このセーブ機構は自由な座標を保存しない）。
+        /// </summary>
+        public void SaveNow() => Save(_lastSleepSpotId);
 
         /// <summary>置かれている保管庫をすべて集めてセーブへ束ねる。空の設置場所は載せない。</summary>
         List<StashState> CaptureStashes()
