@@ -38,5 +38,6 @@ namespace KyoumoMushoku.Gameplay.UI
         // ── インタラクトの促し（InteractionPrompt） ──────────────
         public static string Rummaging(string progressBar) => $"漁っている… {progressBar}　［動くと手を止める］";
         public static string Interactable(string description) => $"{description}　［E］";
+        public static string Discardable(string description) => $"{description}　［G］";
     }
 }

@@ -42,9 +42,17 @@ namespace KyoumoMushoku.Gameplay.UI
             }
 
             var description = current.Describe(_interactor.Context);
-            _text.text = current.CanInteract(_interactor.Context)
+            var line = current.CanInteract(_interactor.Context)
                 ? HudText.Interactable(description)
                 : description;
+
+            // 捨てる（G）は調べる（E）と独立した動詞。捨てられる場所では両方を並べて示す（第十四節・予告は事前に）。
+            if (current is IDiscardStation)
+            {
+                line += "\n" + HudText.Discardable(DiscardText.Prompt);
+            }
+
+            _text.text = line;
         }
 
         /// <summary>

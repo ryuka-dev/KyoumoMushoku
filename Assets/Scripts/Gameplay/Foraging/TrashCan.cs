@@ -24,9 +24,12 @@ namespace KyoumoMushoku.Gameplay.Foraging
     /// 漁りは <see cref="IChanneledInteractable"/> であり、完了までに探索時間を要する。途中で歩き出せば
     /// 中断し、そのときは何も消費しない。この「完了までの間」に警官の警告が載る（第五節）。
     /// 漁る姿は目立つため、<see cref="ISuspiciousAct"/> として注目度を供給する。
+    ///
+    /// 漁るのとは独立に、持ち物を捨てる場所でもある（<see cref="IDiscardStation"/>・G）。
+    /// 捨てるほうは無条件で、漁りの残量にも影響しない。
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
-    public sealed class TrashCan : MonoBehaviour, IChanneledInteractable, ISuspiciousAct
+    public sealed class TrashCan : MonoBehaviour, IChanneledInteractable, ISuspiciousAct, IDiscardStation
     {
         [SerializeField] TrashCanKind _kind = TrashCanKind.Park;
         [SerializeField] TrashCanLootAsset _loot;
