@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 13a4a8233fdd88143b749982d93ccef9
+guid: 86f5bcf28d67b3349818cadd5b71a121
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -34,7 +34,7 @@ ScriptedImporter:
     spriteMode: 2
     spriteExtrude: 1
     spriteMeshType: 1
-    alignment: 7
+    alignment: 0
     spritePivot: {x: 0.5, y: 0.5}
     spritePixelsToUnits: 100
     spriteBorder: {x: 0, y: 0, z: 0, w: 0}
@@ -76,7 +76,7 @@ ScriptedImporter:
     importHiddenLayers: 0
     layerImportMode: 1
     defaultPivotSpace: 0
-    defaultPivotAlignment: 7
+    defaultPivotAlignment: 0
     customPivotPosition: {x: 0.5, y: 0.5}
     mosaicPadding: 4
     spritePadding: 0
@@ -91,7 +91,7 @@ ScriptedImporter:
     importHiddenLayers: 0
     layerImportMode: 1
     defaultPivotSpace: 0
-    defaultPivotAlignment: 7
+    defaultPivotAlignment: 0
     customPivotPosition: {x: 0.5, y: 0.5}
     mosaicPadding: 4
     spritePadding: 0
@@ -129,7 +129,7 @@ ScriptedImporter:
   animatedSpriteImportData:
   - name: streetlamp-public
     originalName: 
-    pivot: {x: 0.5, y: 0}
+    pivot: {x: 0.5, y: 0.5}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     customData: 
@@ -137,8 +137,8 @@ ScriptedImporter:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 248
-      height: 100
+      width: 64
+      height: 64
     spriteID: f1d7910136fc95f4fbb4c612ebdde769
     spriteBone: []
     spriteOutline: []
@@ -163,14 +163,14 @@ ScriptedImporter:
     layerType: 0
     blendMode: 0
     cells:
-    - name: factory-background-sawtooth-textile-long
+    - name: commercial-district-crosswalk-asphalt-vertical
       frameIndex: 0
       additiveSortOrder: 0
       cellRect:
-        x: 4
+        x: 0
         y: 0
-        width: 248
-        height: 100
+        width: 64
+        height: 64
       spriteId: f1d7910136fc95f4fbb4c612ebdde769
     linkedCells: []
     tileCells: []
@@ -181,5 +181,5 @@ ScriptedImporter:
   generatePhysicsShape: 0
   secondarySpriteTextures: []
   spritePackingTag: 
-  canvasSize: {x: 256, y: 124}
-  previousTextureSize: {x: 256, y: 128}
+  canvasSize: {x: 64, y: 64}
+  previousTextureSize: {x: 128, y: 128}
