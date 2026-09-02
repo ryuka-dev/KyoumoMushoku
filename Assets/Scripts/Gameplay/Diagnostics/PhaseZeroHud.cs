@@ -32,6 +32,12 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
 
         GUIStyle _style;
 
+        // 密度の計測用（展示計画 第八節）。1日ぶんの「時計の秒」を「実時間の秒」で割った比を出す。
+        // 行動は実時間の何倍の速さで一日を焼くのか、という問いにこの比が直接答える。
+        // 読み取り専用であり、ゲームプレイには一切影響しない。
+        int _measuredDay = -1;
+        float _dayRealStart;
+
         public void Configure(GameClockDriver clock, ZoneTracker zones, PlayerMotor motor, Transform player)
         {
             _clock = clock;
@@ -53,6 +59,13 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
             {
                 _visible = !_visible;
             }
+
+            var clock = _clock != null ? _clock.Clock : null;
+            if (clock != null && clock.Day != _measuredDay)
+            {
+                _measuredDay = clock.Day;
+                _dayRealStart = Time.time;
+            }
         }
 
         void OnGUI()
@@ -69,6 +82,7 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
             {
                 $"Day {clock.Day}    Phase: {clock.Phase}    t {Mmss(clock.ElapsedInDay)}",
                 $"Night in {Mmss(clock.SecondsUntilNight)}",
+                MeasureLine(clock.ElapsedInDay),
                 $"Zone: {(_zones != null ? _zones.CurrentZone.ToString() : "-")}",
                 $"x {(_player != null ? _player.position.x : 0f):F1}    " +
                 $"y {(_player != null ? _player.position.y : 0f):F1}    " +
@@ -82,6 +96,21 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
             {
                 GUI.Label(new Rect(18f, 16f + 24f * i, 400f, 24f), lines[i], _style);
             }
+        }
+
+        /// <summary>
+        /// この日に費やした実時間と、時計/実時間の比。展示計画 第八節の計測に使う。
+        /// 一時停止中は Time.time が止まるので、ポーズ時間は数えない。
+        /// </summary>
+        string MeasureLine(float clockElapsedInDay)
+        {
+            var real = Mathf.Max(0f, Time.time - _dayRealStart);
+            if (real < 0.5f)
+            {
+                return $"Real {Mmss(real)}    ratio -";
+            }
+
+            return $"Real {Mmss(real)}    ratio x{clockElapsedInDay / real:F1}";
         }
 
         string AlertLine()
