@@ -63,6 +63,16 @@ namespace KyoumoMushoku.Gameplay.Interaction
         /// <summary>調べものの結果を世界の言葉で伝える（「パンが出た」「空っぽだった」）。UI のトーストが観測する。</summary>
         public event Action<string> ActionReported;
 
+        /// <summary>
+        /// 行動が実際に成立した瞬間に発火する。「プレイヤーが決断を1つ使った」の canonical な出所であり、
+        /// 密度の計測（<c>Diagnostics.DensityRecorder</c>）が観測する。
+        ///
+        /// 中断されたチャネルでは発火しない。中断は資源を消費せず、やり直せるので、決断ではないからである。
+        /// 相手の <see cref="IInteractable.Interact"/> より先に呼ぶ——就寝のように、行動そのものが日付を
+        /// 進めてしまう相手があり、あとで呼ぶと「どの日の行動か」がずれる。
+        /// </summary>
+        public event Action<IInteractable> Acted;
+
         void Awake()
         {
             _input = GetComponent<IPlayerInput>();
@@ -97,6 +107,7 @@ namespace KyoumoMushoku.Gameplay.Interaction
                 return;
             }
 
+            Acted?.Invoke(Current);
             Current.Interact(_context);
 
             // 相手が消えたり満杯が解消したりするため、同フレームで対象を取り直す。
@@ -152,6 +163,7 @@ namespace KyoumoMushoku.Gameplay.Interaction
                 return;
             }
 
+            Acted?.Invoke(target);
             var message = _channeling.CompleteChannel(_context);
             _channeling = null;
             _channelCollider = null;

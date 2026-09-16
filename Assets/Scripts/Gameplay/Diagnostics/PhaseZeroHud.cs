@@ -1,6 +1,7 @@
 using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.DayCycle;
+using KyoumoMushoku.Gameplay.Interaction;
 using KyoumoMushoku.Gameplay.Player;
 using KyoumoMushoku.Gameplay.Police;
 using KyoumoMushoku.Gameplay.World;
@@ -18,6 +19,9 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
     /// 警官の台詞と先輩ホームレスの小言であって、この数字ではない（第十四節）。
     ///
     /// 既定では隠しておき、F1 で開閉する。開発用のプローブなので、通常のプレイ画面には出さない。
+    ///
+    /// 密度の計測（<see cref="DensityRecorder"/>）の所有者でもある。記録は表示と独立に走り、
+    /// F2 でその場の報告を書き出す。終了時にも書き出す。
     /// </summary>
     public sealed class PhaseZeroHud : MonoBehaviour
     {
@@ -32,11 +36,15 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
 
         GUIStyle _style;
 
-        // 密度の計測用（展示計画 第八節）。1日ぶんの「時計の秒」を「実時間の秒」で割った比を出す。
-        // 行動は実時間の何倍の速さで一日を焼くのか、という問いにこの比が直接答える。
-        // 読み取り専用であり、ゲームプレイには一切影響しない。
-        int _measuredDay = -1;
-        float _dayRealStart;
+        // 密度の計測（作業計画 第四節 M1）。積み上げと報告の整形は DensityRecorder / DensityLog が持ち、
+        // ここはその所有者である。本番シーンは手の所有物になったのでビルダーが部品を足せない。既に
+        // シーンに居るこのオーバーレイが生成し、駆動し、捨てるのが、配線を増やさない唯一の道である。
+        //
+        // 記録はオーバーレイの表示とは独立に走る。F1 で隠していても数え続ける——計測のために
+        // 開発用の表示を出しっぱなしにしなければならない、というのでは遊びの手触りが変わってしまう。
+        readonly DensityRecorder _density = new DensityRecorder();
+
+        PlayerInteractor _interactor;
 
         public void Configure(GameClockDriver clock, ZoneTracker zones, PlayerMotor motor, Transform player)
         {
@@ -60,13 +68,32 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
                 _visible = !_visible;
             }
 
-            var clock = _clock != null ? _clock.Clock : null;
-            if (clock != null && clock.Day != _measuredDay)
+            // 行動の出所は一度だけ引く。毎フレーム GetComponent する理由はない（第7条）。
+            if (_interactor == null && _player != null)
             {
-                _measuredDay = clock.Day;
-                _dayRealStart = Time.time;
+                _interactor = _player.GetComponent<PlayerInteractor>();
+                _density.Bind(_interactor);
+            }
+
+            _density.Tick(_clock != null ? _clock.Clock : null);
+
+            if (keyboard != null && keyboard.f2Key.wasPressedThisFrame)
+            {
+                var path = _density.Dump();
+                if (path != null)
+                {
+                    Debug.Log($"{nameof(DensityRecorder)}: {path}");
+                }
             }
         }
+
+        /// <summary>
+        /// 一局を閉じる瞬間に報告を落とす。計測が手記だった頃に失われていたのは、たいてい
+        /// 「遊び終えて、書き留めるのを忘れた」ぶんである。終了は canonical な区切りなので、ここに置く。
+        /// </summary>
+        void OnApplicationQuit() => _density.Dump();
+
+        void OnDestroy() => _density.Dispose();
 
         void OnGUI()
         {
@@ -83,6 +110,7 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
                 $"Day {clock.Day}    Phase: {clock.Phase}    t {Mmss(clock.ElapsedInDay)}",
                 $"Night in {Mmss(clock.SecondsUntilNight)}",
                 MeasureLine(clock.ElapsedInDay),
+                _density.Log.OverlayLine(),
                 $"Zone: {(_zones != null ? _zones.CurrentZone.ToString() : "-")}",
                 $"x {(_player != null ? _player.position.x : 0f):F1}    " +
                 $"y {(_player != null ? _player.position.y : 0f):F1}    " +
@@ -99,12 +127,13 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
         }
 
         /// <summary>
-        /// この日に費やした実時間と、時計/実時間の比。展示計画 第八節の計測に使う。
+        /// この日に費やした実時間と、時計/実時間の比。作業計画 第七節の計測に使う。
         /// 一時停止中は Time.time が止まるので、ポーズ時間は数えない。
         /// </summary>
         string MeasureLine(float clockElapsedInDay)
         {
-            var real = Mathf.Max(0f, Time.time - _dayRealStart);
+            var today = _density.Log.Current;
+            var real = today != null ? today.RealSeconds : 0f;
             if (real < 0.5f)
             {
                 return $"Real {Mmss(real)}    ratio -";
