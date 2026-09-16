@@ -15,6 +15,7 @@ namespace KyoumoMushoku.Core.Diagnostics
         Shop,
         Sleep,
         Water,
+        Eat,
         Stash,
         Pickup,
         Hospital,
@@ -87,11 +88,11 @@ namespace KyoumoMushoku.Core.Diagnostics
     /// </summary>
     public sealed class DensityLog
     {
-        public const int KindCount = 9;
+        public const int KindCount = 10;
 
         static readonly string[] KindLabels =
         {
-            "漁り", "店", "就寝", "水", "保管庫", "拾う", "病院", "階段", "その他",
+            "漁り", "店", "就寝", "水", "飲食", "保管庫", "拾う", "病院", "階段", "その他",
         };
 
         readonly List<DensityDay> _days = new List<DensityDay>();
@@ -241,8 +242,11 @@ namespace KyoumoMushoku.Core.Diagnostics
             "読み方\n" +
             "  「行動が焼いた時計」＝ 時計 − 実時間。ソフトクロックは実時間と等倍で進むので、\n" +
             "  差は行動が追加で焼いた分である（バイト1シフト＝90秒、漁り1回＝15／18／22秒）。\n" +
-            "  ここが大きいほど、一日は歩かずに行動だけで溶けている。それが密度問題の正体であり、\n" +
-            "  正確な言い方は「内容が少ない」ではなく「一日に3〜5個の決断しか入らない」である。\n" +
+            "  ここが大きいほど、一日は歩かずに行動だけで溶けている。\n" +
+            "\n" +
+            "  行動数が少ないことは問題ではない（2026-09-16 の実測で判明）。問題は種類である。\n" +
+            "  行動数ではなく内訳を見ること。上位ふたつで全体の七割を超えていたら、それは\n" +
+            "  「同じ動作の反復で水増ししている」状態であり、出口の条件を満たさない。\n" +
             "\n" +
             "  この報告で切り分けたいのは次の二つ（Docs/作業計画.md 第七節）。\n" +
             "  ・DaySchedule を伸ばして長くなり、行動数も増えた → 時計が締まりすぎていた。5c は不要。\n" +
@@ -250,7 +254,7 @@ namespace KyoumoMushoku.Core.Diagnostics
             "\n" +
             "  数えていないもの：店の中の売買とバイトは「店」1回として数える。パネルを開いたあとの\n" +
             "  やりとりまでは数えていない。ただしバイトの+90秒は時計に載るので、\n" +
-            "  「行動が焼いた時計」の側には正しく出る。\n";
+            "  「行動が焼いた時計」の側には正しく出る。ゴミ箱への投棄（G）も数えていない。\n";
 
         static string Ratio(DensityDay day)
         {

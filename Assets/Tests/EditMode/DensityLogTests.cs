@@ -128,6 +128,36 @@ namespace KyoumoMushoku.Core.Tests
         }
 
         [Test]
+        public void Eat_IsCountedAsItsOwnKind()
+        {
+            // 飲食はカバンの中から起きるので PlayerInteractor を通らない。
+            // 命題①の中心の動詞なのに、最初の計測では一件も数えられていなかった。
+            var log = new DensityLog();
+            log.Observe(day: 1, clockElapsedInDay: 0f, realSeconds: 0f);
+            log.Record(ActKind.Eat, night: false, clockElapsedInDay: 20f);
+            log.Record(ActKind.Water, night: false, clockElapsedInDay: 25f);
+
+            Assert.AreEqual(1, log.TotalCount(ActKind.Eat));
+            Assert.AreEqual(1, log.TotalCount(ActKind.Water));
+            Assert.AreEqual(2, log.TotalActs);
+        }
+
+        [Test]
+        public void EveryKind_HasALabelInTheReport()
+        {
+            // KindCount とラベルの長さがずれると Format が落ちる。種別を足すときの守衛。
+            var log = new DensityLog();
+            log.Observe(day: 1, clockElapsedInDay: 0f, realSeconds: 0f);
+            foreach (ActKind kind in System.Enum.GetValues(typeof(ActKind)))
+            {
+                log.Record(kind, night: false, clockElapsedInDay: 1f);
+            }
+
+            Assert.AreEqual(DensityLog.KindCount, System.Enum.GetValues(typeof(ActKind)).Length);
+            Assert.DoesNotThrow(() => log.Format(new DateTime(2026, 9, 16, 12, 0, 0)));
+        }
+
+        [Test]
         public void OverlayLine_IsAscii()
         {
             // 開発用オーバーレイの既定フォントは ASCII しか持たない。

@@ -2,8 +2,10 @@ using System;
 using System.IO;
 using KyoumoMushoku.Core.DayCycle;
 using KyoumoMushoku.Core.Diagnostics;
+using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Gameplay.Foraging;
 using KyoumoMushoku.Gameplay.Interaction;
+using KyoumoMushoku.Gameplay.Items;
 using KyoumoMushoku.Gameplay.Shop;
 using KyoumoMushoku.Gameplay.World;
 using UnityEngine;
@@ -29,6 +31,7 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
         readonly DensityLog _log = new DensityLog();
 
         PlayerInteractor _interactor;
+        PlayerConsumer _consumer;
         GameClock _clock;
 
         public DensityLog Log => _log;
@@ -54,6 +57,30 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
             if (_interactor != null)
             {
                 _interactor.Acted += OnActed;
+            }
+        }
+
+        /// <summary>
+        /// 飲食を購読する。飲食はカバンの中から起きるので <see cref="PlayerInteractor"/> を通らない。
+        /// 命題①の中心の動詞なのに、最初の計測（2026-09-16）では一件も数えられていなかった。
+        /// </summary>
+        public void BindConsumer(PlayerConsumer consumer)
+        {
+            if (ReferenceEquals(_consumer, consumer))
+            {
+                return;
+            }
+
+            if (_consumer != null)
+            {
+                _consumer.Consumed -= OnConsumed;
+            }
+
+            _consumer = consumer;
+
+            if (_consumer != null)
+            {
+                _consumer.Consumed += OnConsumed;
             }
         }
 
@@ -90,16 +117,24 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
             return path;
         }
 
-        public void Dispose() => Bind(null);
+        public void Dispose()
+        {
+            Bind(null);
+            BindConsumer(null);
+        }
 
-        void OnActed(IInteractable target)
+        void OnActed(IInteractable target) => Record(Classify(target));
+
+        void OnConsumed(ItemDefinition definition) => Record(ActKind.Eat);
+
+        void Record(ActKind kind)
         {
             if (_clock == null)
             {
                 return;
             }
 
-            _log.Record(Classify(target), _clock.Phase == DayPhase.Night, _clock.ElapsedInDay);
+            _log.Record(kind, _clock.Phase == DayPhase.Night, _clock.ElapsedInDay);
         }
 
         /// <summary>

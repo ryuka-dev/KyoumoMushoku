@@ -2,6 +2,7 @@ using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Zones;
 using KyoumoMushoku.Gameplay.DayCycle;
 using KyoumoMushoku.Gameplay.Interaction;
+using KyoumoMushoku.Gameplay.Items;
 using KyoumoMushoku.Gameplay.Player;
 using KyoumoMushoku.Gameplay.Police;
 using KyoumoMushoku.Gameplay.World;
@@ -73,6 +74,7 @@ namespace KyoumoMushoku.Gameplay.Diagnostics
             {
                 _interactor = _player.GetComponent<PlayerInteractor>();
                 _density.Bind(_interactor);
+                _density.BindConsumer(_player.GetComponent<PlayerConsumer>());
             }
 
             _density.Tick(_clock != null ? _clock.Clock : null);
