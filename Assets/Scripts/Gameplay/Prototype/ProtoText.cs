@@ -7,7 +7,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
     public static class ProtoText
     {
         public static string Controls =>
-            "WASD 移動／Shift 走る／マウス 視点／左クリック 叩く・掴む・使う／数字キー 飲食／Esc カーソル";
+            "WASD 移動／Shift 走る／マウス 視点／左クリック 叩く・掴む・使う／数字キー 飲食／Q＋数字 捨てる／Esc カーソル";
 
         public static string Status(int day, string phase, int yen, string mood) =>
             $"{day}日目　{phase}\n所持金 {yen}円\n気分 {mood}";
@@ -15,7 +15,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string Opened => "ふたが開いた！";
         public static string Nothing => "……空っぽだった。";
         public static string Caught(string name) => $"{name}を掴んだ。";
-        public static string NoRoom(string name) => $"{name}はカバンに入らない。";
+        public static string NoRoom(string name) => $"{name}はカバンに入らない。（Q＋数字で捨てられる）";
+        public static string Discarded(string name) => $"{name}を捨てた。";
+        public static string DisposalBurst => "袋が破れた！";
         public static string Depleted => "もう何も出ない。";
 
         // ── 店 ───────────────────────────────────────────────
@@ -28,6 +30,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string ShopDoorPrompt => "コンビニ：入る";
         public static string ShopTitle => "コンビニ";
         public static string ShopGreeting => "……いらっしゃいませ。";
+        public static string ShopGreetingBeforeDisposal => "……いらっしゃいませ。（今夜も弁当、だいぶ余りそうだな）";
+        public static string ClerkMutterAtDusk => "店員「暗くなったら、裏に出しとくか……」";
+        public static string ClerkDropsDisposal => "店員「……廃棄、っと」";
         public static string ShopWallet(int yen, int used, int capacity) => $"所持金 {yen}円　カバン {used}/{capacity}";
         public static string ShopLeave => "店を出る［Esc］";
         public static string BackpackOwned(string name) => $"{name}：購入済み";

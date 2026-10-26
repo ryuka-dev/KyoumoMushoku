@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using KyoumoMushoku.Core.Foraging;
 using KyoumoMushoku.Core.Items;
@@ -57,6 +58,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
         int _hits;
         bool _opened;
         bool _drawnForNight;
+        bool _disposal;
+        float _spewInterval;
 
         /// <summary>ふたが開いたか、またはもう何も出ない。</summary>
         public bool IsOpened => _opened;
@@ -134,7 +137,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             ProtoNoise.Emit(transform.position, opening || empty ? 1f : Mathf.Lerp(0.8f, 0.4f, heaviness));
 
             // 珍しい物が入っているときだけ、叩くたびにふたの隙間から光が漏れる。
-            if (BestRarity() == ProtoRarity.Rare)
+            if (!_disposal && BestRarity() == ProtoRarity.Rare)
             {
                 LeakGlint();
             }
@@ -150,16 +153,36 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         public void Refill()
         {
+            StopAllCoroutines();
+            _disposal = false;
+            _spewInterval = 0f;
             _opened = false;
             _hits = 0;
             ResetLid();
             Draw();
         }
 
+        /// <summary>
+        /// 店員が廃棄の袋を入れた（<see cref="ProtoDisposal"/>）。中身を差し替え、ふたを閉じ直す。
+        /// 開けると一度に飛び出さず、<paramref name="spewInterval"/> 秒おきに噴き出し続ける（第 5 分の山場）。
+        /// 廃棄の品は産出テーブルの外なので、珍しさは付けない。
+        /// </summary>
+        public void LoadDisposal(IReadOnlyList<LootDraw> draws, float spewInterval)
+        {
+            StopAllCoroutines();
+            _contents.Clear();
+            _contents.AddRange(draws);
+            _disposal = true;
+            _spewInterval = Mathf.Max(0.05f, spewInterval);
+            _opened = false;
+            _hits = 0;
+            ResetLid();
+        }
+
         void OnTimeOfDayChanged()
         {
-            // 時間帯が変わればテーブルが変わる。開ける前なら引き直す（本編の TrashCan と同じ）。
-            if (!_opened && _hits == 0)
+            // 時間帯が変わればテーブルが変わる。開ける前なら引き直す（本編の TrashCan と同じ）。廃棄の袋は引き直さない。
+            if (!_opened && _hits == 0 && !_disposal)
             {
                 Draw();
             }
@@ -188,46 +211,26 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _audio.PlayOneShot(ProtoSounds.Pop, 1f);
             ThrowLid(direction);
 
-            var top = TopPoint() + Vector3.up * 0.1f;
             var toPlayer = -direction;
             toPlayer.y = 0f;
+            if (_disposal)
+            {
+                StartCoroutine(Spew(toPlayer, new List<LootDraw>(_contents)));
+                toast = ProtoText.DisposalBurst;
+                return;
+            }
+
             var anyItem = false;
             var anyRare = false;
             foreach (var draw in _contents)
             {
-                var velocity = Vector3.up * UnityEngine.Random.Range(6.5f, 9f)
-                    + toPlayer.normalized * UnityEngine.Random.Range(0.5f, 1.5f)
-                    + Vector3.ProjectOnPlane(UnityEngine.Random.insideUnitSphere, Vector3.up) * 1.6f;
-                if (!draw.HasItem)
+                if (draw.HasItem)
                 {
-                    SpawnDebris(top, velocity);
-                    continue;
+                    anyItem = true;
+                    anyRare |= RarityOf(draw.Item) == ProtoRarity.Rare;
                 }
 
-                anyItem = true;
-                var rarity = RarityOf(draw.Item);
-                anyRare |= rarity == ProtoRarity.Rare;
-                var name = draw.Item.Value;
-                var slots = 1;
-                var category = ItemCategory.Salvage;
-                if (_catalog != null && _catalog.TryGet(draw.Item, out var definition))
-                {
-                    name = definition.DisplayName;
-                    slots = definition.Slots;
-                    category = definition.Category;
-                }
-
-                if (rarity == ProtoRarity.Rare)
-                {
-                    name = ProtoText.WithRarity(name, ProtoText.Rare);
-                }
-                else if (rarity == ProtoRarity.Uncommon)
-                {
-                    name = ProtoText.WithRarity(name, ProtoText.Uncommon);
-                }
-
-                ProtoLoot.Spawn(new ItemInstance(draw.Item, draw.State), name, slots, rarity, ColorOf(category),
-                    _itemMaterial, _font, top, velocity, _lootLifetime);
+                Throw(draw, toPlayer);
             }
 
             if (anyRare)
@@ -236,6 +239,56 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             toast = anyItem ? ProtoText.Opened : ProtoText.Nothing;
+        }
+
+        /// <summary>廃棄の袋は破れたまま噴き出し続ける。噴くたびに少し鳴る（警官の耳にも届く）。</summary>
+        IEnumerator Spew(Vector3 toPlayer, List<LootDraw> draws)
+        {
+            foreach (var draw in draws)
+            {
+                Throw(draw, toPlayer);
+                _squash = 1f;
+                _audio.pitch = UnityEngine.Random.Range(0.9f, 1.2f);
+                _audio.PlayOneShot(ProtoSounds.Pop, 0.6f);
+                ProtoNoise.Emit(transform.position, 0.35f);
+                yield return new WaitForSeconds(_spewInterval);
+            }
+        }
+
+        void Throw(LootDraw draw, Vector3 toPlayer)
+        {
+            var top = TopPoint() + Vector3.up * 0.1f;
+            var velocity = Vector3.up * UnityEngine.Random.Range(6.5f, 9f)
+                + toPlayer.normalized * UnityEngine.Random.Range(0.5f, 1.5f)
+                + Vector3.ProjectOnPlane(UnityEngine.Random.insideUnitSphere, Vector3.up) * 1.6f;
+            if (!draw.HasItem)
+            {
+                SpawnDebris(top, velocity);
+                return;
+            }
+
+            var rarity = _disposal ? ProtoRarity.Common : RarityOf(draw.Item);
+            var name = draw.Item.Value;
+            var slots = 1;
+            var category = ItemCategory.Salvage;
+            if (_catalog != null && _catalog.TryGet(draw.Item, out var definition))
+            {
+                name = definition.DisplayName;
+                slots = definition.Slots;
+                category = definition.Category;
+            }
+
+            if (rarity == ProtoRarity.Rare)
+            {
+                name = ProtoText.WithRarity(name, ProtoText.Rare);
+            }
+            else if (rarity == ProtoRarity.Uncommon)
+            {
+                name = ProtoText.WithRarity(name, ProtoText.Uncommon);
+            }
+
+            ProtoLoot.Spawn(new ItemInstance(draw.Item, draw.State), name, slots, rarity, ColorOf(category),
+                _itemMaterial, _font, top, velocity, _lootLifetime);
         }
 
         void Update()

@@ -6,6 +6,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
 {
     /// <summary>
     /// 鞄の中の物を数字キー（1〜9）で飲み食いする。効果は本編と同じ Core の <see cref="Consumption"/>（腐った物は代償がある）。
+    /// Q を押しながら数字キーなら、その物を捨てる（鞄が一杯のとき、入れ替えるため）。
     /// 鞄の何番目かは HUD の一覧の番号と同じ。
     /// </summary>
     public sealed class ProtoEating : MonoBehaviour
@@ -14,6 +15,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField] ProtoVitals _vitals;
 
         InputAction[] _slots;
+        InputAction _discard;
 
         public void Configure(ProtoHands hands, ProtoVitals vitals)
         {
@@ -28,6 +30,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 _slots[i] = new InputAction("Eat" + (i + 1), InputActionType.Button, $"<Keyboard>/{i + 1}");
             }
+
+            _discard = new InputAction("Discard", InputActionType.Button, "<Keyboard>/q");
         }
 
         void OnEnable()
@@ -36,6 +40,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 slot.Enable();
             }
+
+            _discard.Enable();
         }
 
         void OnDisable()
@@ -44,6 +50,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 slot.Disable();
             }
+
+            _discard.Disable();
         }
 
         void OnDestroy()
@@ -52,6 +60,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 slot?.Dispose();
             }
+
+            _discard?.Dispose();
         }
 
         void Update()
@@ -65,9 +75,32 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 if (_slots[i].WasPressedThisFrame())
                 {
-                    Consume(i);
+                    if (_discard.IsPressed())
+                    {
+                        Discard(i);
+                    }
+                    else
+                    {
+                        Consume(i);
+                    }
+
                     return;
                 }
+            }
+        }
+
+        void Discard(int index)
+        {
+            var bag = _hands.Bag;
+            if (index >= bag.Count)
+            {
+                return;
+            }
+
+            var name = bag.TryGetDefinition(index, out var definition) ? definition.DisplayName : bag[index].Id;
+            if (bag.TryRemoveAt(index, out _))
+            {
+                _hands.Say(ProtoText.Discarded(name));
             }
         }
 

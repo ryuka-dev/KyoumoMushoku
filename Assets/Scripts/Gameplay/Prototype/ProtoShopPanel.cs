@@ -15,6 +15,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField] ProtoSession _session;
         [SerializeField] ItemDatabaseAsset _catalog;
         [SerializeField] Font _font;
+        [Tooltip("今夜の廃棄がまだなら、店員がそれをこぼす（山場の予告）。")]
+        [SerializeField] ProtoDisposal _disposal;
         [SerializeField] string[] _offerIds = { "water_bottle", "onigiri", "can_coffee", "backpack" };
 
         ProtoHands _hands;
@@ -27,8 +29,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         public bool IsOpen { get; private set; }
 
-        public void Configure(ProtoStore store, ProtoSession session, ItemDatabaseAsset catalog, Font font)
+        public void Configure(ProtoStore store, ProtoSession session, ItemDatabaseAsset catalog, Font font,
+            ProtoDisposal disposal)
         {
+            _disposal = disposal;
             _store = store;
             _session = session;
             _catalog = catalog;
@@ -60,7 +64,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             _hands = hands;
-            _clerkLine = ProtoText.ShopGreeting;
+            _clerkLine = _disposal != null && _disposal.PendingTonight
+                ? ProtoText.ShopGreetingBeforeDisposal
+                : ProtoText.ShopGreeting;
             IsOpen = true;
             return null;
         }
