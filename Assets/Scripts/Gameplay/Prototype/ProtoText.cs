@@ -13,6 +13,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             $"{day}日目　{phase}\n所持金 {yen}円\n気分 {mood}";
 
         public static string Opened => "ふたが開いた！";
+        public static string BagRipped => "袋が裂けた！";
         public static string Nothing => "……空っぽだった。";
         public static string Caught(string name) => $"{name}を掴んだ。";
         public static string NoRoom(string name) => $"{name}はカバンに入らない。（Q＋数字で捨てられる）";
@@ -57,6 +58,16 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string ContinueButton => "続ける";
         public static string RestartButton => "最初から";
         public static string QuitButton => "終わる";
+
+        // ── 自販機 ───────────────────────────────────────────
+        public static string VendingPrompt(string name, string price) => $"自販機：{name}を買う：{price}";
+        public static string VendingBought(string name) => $"ガコン。{name}が出てきた。";
+        public static string VendingCannotAfford => "小銭が足りない。";
+        public static string VendingBagFull => "カバンに入らない。";
+        public static string CoinSearchPrompt => "自販機の下：手を突っ込んで探る";
+        public static string CoinFound(int yen) => $"{yen}円玉が落ちていた。";
+        public static string CoinNone => "……何も無かった。";
+        public static string CoinAlreadySearched => "今日はもう探った。";
 
         // ── 警官 ─────────────────────────────────────────────
         public static string PoliceSays(string line) => $"警官「{line}」";

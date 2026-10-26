@@ -16,6 +16,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 中身は叩く前に確定している（本編の <c>TrashCan._nextDraw</c> と同じ考え方）。
     /// 叩いた時の揺れ・音・漏れる光は、その確定済みの中身から作る。再抽選しないので、反応は嘘をつかない。
     /// 抽選は本編と同じ Core の <see cref="LootTable"/> と <c>Assets/Config/TrashCanLoot.asset</c> を使う。
+    ///
+    /// ふたの無いゴミ袋にも使う（<c>_hasLid</c> を外し、一打で破れる少量の袋にする）。
     /// </summary>
     public sealed class ProtoTrashCan : MonoBehaviour
     {
@@ -31,6 +33,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         [Tooltip("ふたが開くまでに叩く回数。")]
         [SerializeField, Min(1)] int _hitsToOpen = 4;
+
+        [Tooltip("ふたがあるか。ゴミ袋なら外す（破れて中身が出る）。")]
+        [SerializeField] bool _hasLid = true;
 
         [Tooltip("飛び出した物が消えるまでの秒数。")]
         [SerializeField, Min(1f)] float _lootLifetime = 6f;
@@ -238,7 +243,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 _audio.PlayOneShot(ProtoSounds.Chime, 0.8f);
             }
 
-            toast = anyItem ? ProtoText.Opened : ProtoText.Nothing;
+            toast = anyItem ? (_hasLid ? ProtoText.Opened : ProtoText.BagRipped) : ProtoText.Nothing;
         }
 
         /// <summary>廃棄の袋は破れたまま噴き出し続ける。噴くたびに少し鳴る（警官の耳にも届く）。</summary>
@@ -375,6 +380,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>模型に「Lid」で始まる子があればそれをふたに使う。無ければ灰箱の板を作る。</summary>
         void FindOrBuildLid()
         {
+            if (!_hasLid)
+            {
+                return;
+            }
+
             foreach (var child in GetComponentsInChildren<Transform>(true))
             {
                 if (child != transform && child.name.StartsWith("Lid", System.StringComparison.Ordinal))
