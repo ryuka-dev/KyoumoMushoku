@@ -53,6 +53,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string RestartButton => "最初から";
         public static string QuitButton => "終わる";
 
+        // ── 警官 ─────────────────────────────────────────────
+        public static string PoliceSays(string line) => $"警官「{line}」";
+        public static string PoliceStatus(string stage) => $"警官：{stage}";
+
         // ── 珍しさ ───────────────────────────────────────────
         public static string Rare => "珍しい";
         public static string Uncommon => "やや珍しい";

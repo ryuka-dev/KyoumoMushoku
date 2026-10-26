@@ -1,4 +1,5 @@
 using System.Text;
+using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Gameplay.UI;
 using UnityEngine;
 
@@ -23,6 +24,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         GUIStyle _title;
         GUIStyle _button;
         Texture2D _white;
+        ProtoPolice[] _police = new ProtoPolice[0];
         readonly StringBuilder _text = new StringBuilder();
 
         public void Configure(ProtoHands hands, ProtoDayNight dayNight, ProtoVitals vitals, ProtoSession session, Font font)
@@ -33,6 +35,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _session = session;
             _font = font;
         }
+
+        void Start() => _police = FindObjectsByType<ProtoPolice>(FindObjectsSortMode.None);
 
         void OnDestroy()
         {
@@ -72,6 +76,24 @@ namespace KyoumoMushoku.Gameplay.Prototype
             DrawBar(new Rect(16f, 100f, 200f, 14f), HudText.HpLabel, vitals.HpFraction, new Color(0.85f, 0.3f, 0.3f));
             DrawBar(new Rect(16f, 122f, 200f, 14f), HudText.ThirstLabel, vitals.ThirstFraction, new Color(0.35f, 0.65f, 0.95f));
             DrawBar(new Rect(16f, 144f, 200f, 14f), HudText.HungerLabel, vitals.HungerFraction, new Color(0.95f, 0.7f, 0.3f));
+
+            // 一人称では警官が背後にいることもあるので、最も強い段階だけを一行で知らせる。
+            var stage = PoliceStage.Unaware;
+            foreach (var officer in _police)
+            {
+                if (officer != null && officer.Stage > stage)
+                {
+                    stage = officer.Stage;
+                }
+            }
+
+            if (stage != PoliceStage.Unaware)
+            {
+                var previous = GUI.contentColor;
+                GUI.contentColor = stage == PoliceStage.Pursuing ? new Color(1f, 0.45f, 0.4f) : new Color(1f, 0.85f, 0.4f);
+                GUI.Label(new Rect(240f, 98f, 300f, 28f), ProtoText.PoliceStatus(GameTextLabels.PoliceStage(stage)), _style);
+                GUI.contentColor = previous;
+            }
 
             // 鞄：番号は数字キーと同じ。食品の状態は SAN によって `??` になる（FoodCardText）。
             var bag = _hands.Bag;

@@ -111,6 +111,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 toast = ProtoText.Depleted;
                 _audio.pitch = 1.4f;
                 _audio.PlayOneShot(ProtoSounds.Clang, 0.3f);
+                ProtoNoise.Emit(transform.position, 0.3f);
                 return 0f;
             }
 
@@ -127,6 +128,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             _audio.pitch = empty ? UnityEngine.Random.Range(1.1f, 1.3f) : Mathf.Lerp(1.15f, 0.7f, heaviness);
             _audio.PlayOneShot(empty ? ProtoSounds.Clang : ProtoSounds.Thud, 0.9f);
+
+            // 叩く音は街に響き、警官の耳に届く。空の箱ほどうるさい（ふたが飛ぶ一打は最もうるさい）。
+            var opening = _hits >= _hitsToOpen;
+            ProtoNoise.Emit(transform.position, opening || empty ? 1f : Mathf.Lerp(0.8f, 0.4f, heaviness));
 
             // 珍しい物が入っているときだけ、叩くたびにふたの隙間から光が漏れる。
             if (BestRarity() == ProtoRarity.Rare)
