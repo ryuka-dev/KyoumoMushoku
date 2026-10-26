@@ -20,6 +20,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string Refilled => "ゴミ箱が元に戻った。";
         public static string Depleted => "もう何も出ない。";
 
+        public static string Money(int yen) => $"所持金 {yen}円";
+        public static string SellPrompt(int salvageYen, int remainingYen) =>
+            $"回収箱：廃品を売る（カバンの廃品 {salvageYen}円・本日あと {remainingYen}円）";
+        public static string BuyPrompt(string name, int priceYen, int extraSlots) =>
+            $"{name}を買う：{priceYen}円（カバン +{extraSlots}）";
+        public static string BackpackOwned(string name) => $"{name}：購入済み";
+
         public static string Rare => "珍しい";
         public static string Uncommon => "やや珍しい";
         public static string WithRarity(string name, string rarity) => $"{name}（{rarity}）";

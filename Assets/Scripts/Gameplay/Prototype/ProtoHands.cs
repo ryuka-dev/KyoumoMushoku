@@ -1,4 +1,5 @@
 using System.Collections;
+using KyoumoMushoku.Core.Economy;
 using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Gameplay.Items;
 using UnityEngine;
@@ -11,12 +12,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
     ///
     /// 左クリックの解釈：
     /// 1. 照準がまだ開いていないゴミ箱に当たっていれば、拳で叩く。
-    /// 2. そうでなく、照準の近くに宙の物があれば、手を開いて伸ばし、握って引き戻す（伸びる腕）。
-    /// 3. どちらでもなければ、空を打つ（開いた箱なら「もう何も出ない」）。
+    /// 2. そうでなく、照準が店の台（<see cref="ProtoCounter"/>）に当たっていれば、売る・買う。
+    /// 3. そうでなく、照準の近くに宙の物があれば、手を開いて伸ばし、握って引き戻す（伸びる腕）。
+    /// 4. どれでもなければ、空を打つ（開いた箱なら「もう何も出ない」）。
     ///
     /// 手は指を回さない。握り（拳）と開きの 2 つの模型を差し替える（前の版の「指の向きが逆」を繰り返さない）。
     /// 模型は第三者素材 FPS_Psx_Hands（CC0）から <c>Tools/Models/gen/hand_psx.py</c> が作る。原点は肘、前は +Z。
     /// 鞄は本編と同じ Core の <see cref="Inventory"/>（容量制）。入らない物は掴めない。
+    /// 試作ではプレイヤーの持ち物（鞄と所持金）をここが持つ。
     /// </summary>
     public sealed class ProtoHands : MonoBehaviour
     {
@@ -33,6 +36,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField] GameObject _openModel;
         [SerializeField] Material _armMaterial;
         [SerializeField, Min(1)] int _bagCapacity = Inventory.DefaultCapacity;
+        [Tooltip("始めの所持金（円）。本編の PlayerWallet の既定と同じ。")]
+        [SerializeField, Min(0)] int _startingYen = 500;
 
         [Header("手の構え（カメラ基準・原点は肘）")]
         [SerializeField] Vector3 _restPosition = new Vector3(0.20f, -0.26f, -0.10f);
@@ -73,6 +78,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
         Quaternion _reachFromRotation;
 
         public Inventory Bag { get; private set; }
+        public Wallet Wallet { get; private set; }
+
+        /// <summary>照準が店の台に合っているときの案内。無ければ null。</summary>
+        public string AimPrompt { get; private set; }
         public string Toast { get; private set; }
         public float ToastAge { get; private set; }
 
@@ -89,6 +98,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         void Awake()
         {
             Bag = new Inventory(_catalog, _bagCapacity);
+            Wallet = new Wallet(_startingYen);
             _use = new InputAction("Use", InputActionType.Button, "<Mouse>/leftButton");
             _refill = new InputAction("Refill", InputActionType.Button, "<Keyboard>/r");
             _audio = gameObject.AddComponent<AudioSource>();
@@ -119,6 +129,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
         void Update()
         {
             ToastAge += Time.unscaledDeltaTime;
+            var counter = AimedCounter();
+            AimPrompt = counter != null ? counter.Prompt(this) : null;
 
             if (_use.WasPressedThisFrame())
             {
@@ -160,6 +172,16 @@ namespace KyoumoMushoku.Gameplay.Prototype
             if (can != null && !can.IsOpened)
             {
                 Punch(can);
+                return;
+            }
+
+            var counter = hit.collider != null ? hit.collider.GetComponentInParent<ProtoCounter>() : null;
+            if (counter != null)
+            {
+                _punchT = 0f;
+                Say(counter.Use(this));
+                _audio.pitch = 1.2f;
+                _audio.PlayOneShot(ProtoSounds.Grab, 0.8f);
                 return;
             }
 
@@ -224,6 +246,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 Say(ProtoText.NoRoom(loot.DisplayName));
             }
+        }
+
+        ProtoCounter AimedCounter()
+        {
+            var ray = new Ray(_camera.transform.position, _camera.transform.forward);
+            return Physics.Raycast(ray, out var hit, _punchReach, ~0, QueryTriggerInteraction.Ignore)
+                ? hit.collider.GetComponentInParent<ProtoCounter>()
+                : null;
         }
 
         ProtoLoot FindGrabTarget()
