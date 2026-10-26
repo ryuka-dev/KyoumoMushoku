@@ -270,8 +270,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
             fist.name = "Fist";
             Destroy(fist.GetComponent<Collider>());
             fist.transform.SetParent(_camera.transform, false);
-            fist.transform.localScale = new Vector3(0.12f, 0.12f, 0.16f);
-            _fistRest = new Vector3(0.28f, -0.25f, 0.45f);
+            fist.transform.localScale = new Vector3(0.08f, 0.08f, 0.11f);
+            _fistRest = new Vector3(0.22f, -0.24f, 0.40f);
             fist.transform.localPosition = _fistRest;
             var material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             material.SetColor("_BaseColor", new Color(0.85f, 0.7f, 0.55f));

@@ -196,8 +196,9 @@ def convenience_store(x):
 km.clear_scene()
 km.build_palette_image(OUT + "/KM_Palette.png")
 km.palette_material()
-roots = [back_alley(-1.4), park(0.0), convenience_store(1.6)]
+roots = [back_alley(-1.8), park(0.0), convenience_store(2.0)]
 for root in roots:
+    km.scale_hierarchy(root, km.PROP_SCALE)
     x = root.location.x
     root.location.x = 0.0
     km.export_fbx([root], OUT + "/Props/" + root.name + ".fbx")

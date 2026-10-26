@@ -4,6 +4,9 @@
 - 平面陰影＋一枚の小さな調色板テクスチャ。全模型がこの一枚を共有し、UV は色の升目に落とす。
   色はここ（PALETTE）だけで管理する。色を変えたければ升目の色を変える。
 - 1 単位 = 1 メートル。原点は底面の中心。面数は道具 1 個あたり数百まで。
+- 比例（2026-10-26 決定）：建物・扉・人は実寸。**叩く・掴む道具は実寸の PROP_SCALE 倍**
+  （一人称では実寸の小物が小さく見え、下を向かないと叩けないため）。視点の高さは 1.55m、FOV 65。
+  形は実寸で書き、最後に scale_hierarchy(root, PROP_SCALE) を掛ける。
 - 生成スクリプトが源。.blend は生成物であって手で直さない（直すならスクリプトを直す）。
 """
 
@@ -31,6 +34,8 @@ PALETTE = {
     # 黒
     "black": ["#0e0f12", "#17191d", "#212429", "#2c3036", "#383d44"],
 }
+
+PROP_SCALE = 1.35  # 叩く・掴む道具の誇張倍率（上の「比例」）
 
 CELL = 4          # 一色あたりの升目（ピクセル）
 COLUMNS = 5       # 色階の段数
@@ -201,6 +206,15 @@ def recenter(obj, pivot):
     pivot = Vector(pivot)
     obj.data.transform(Matrix.Translation(-pivot))
     obj.location = obj.location + pivot
+
+
+def scale_hierarchy(root, factor):
+    """親の下の部品を、メッシュごと factor 倍する（変換に倍率を残さない。Unity 側の scale は 1 のまま）。"""
+    from mathutils import Matrix
+    for child in root.children_recursive:
+        if child.type == "MESH":
+            child.data.transform(Matrix.Scale(factor, 4))
+        child.location = child.location * factor
 
 
 def export_fbx(objects, path):

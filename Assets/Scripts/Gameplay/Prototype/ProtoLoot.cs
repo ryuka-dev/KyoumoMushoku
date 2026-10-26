@@ -47,7 +47,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = "Loot_" + item.Id;
-            var size = 0.18f + 0.07f * Mathf.Clamp(slots, 1, 4);
+            // 道具は実寸の 1.35 倍で作る約束（Tools/Models/kmlowpoly.py の PROP_SCALE）に合わせる。
+            var size = 0.24f + 0.09f * Mathf.Clamp(slots, 1, 4);
             go.transform.position = position;
             go.transform.localScale = Vector3.one * size;
 
