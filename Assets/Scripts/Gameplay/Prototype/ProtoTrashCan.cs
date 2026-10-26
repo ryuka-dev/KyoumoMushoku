@@ -47,6 +47,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         Vector3 _lidLocalPosition;
         Quaternion _lidLocalRotation;
         Vector3 _lidLocalScale;
+        Transform _lidParent;
         Collider _collider;
         Quaternion _restRotation;
         Vector3 _restScale;
@@ -316,9 +317,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>模型に「Lid」で始まる子があればそれをふたに使う。無ければ灰箱の板を作る。</summary>
         void FindOrBuildLid()
         {
-            foreach (Transform child in transform)
+            foreach (var child in GetComponentsInChildren<Transform>(true))
             {
-                if (child.name.StartsWith("Lid", System.StringComparison.Ordinal))
+                if (child != transform && child.name.StartsWith("Lid", System.StringComparison.Ordinal))
                 {
                     _lid = child;
                     break;
@@ -342,6 +343,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 _lid = lid.transform;
             }
 
+            _lidParent = _lid.parent;
             _lidLocalPosition = _lid.localPosition;
             _lidLocalRotation = _lid.localRotation;
             _lidLocalScale = _lid.localScale;
@@ -366,7 +368,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 Destroy(col);
             }
 
-            _lid.SetParent(transform, false);
+            _lid.SetParent(_lidParent, false);
             _lid.localPosition = _lidLocalPosition;
             _lid.localRotation = _lidLocalRotation;
             _lid.localScale = _lidLocalScale;

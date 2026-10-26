@@ -33,6 +33,13 @@ PALETTE = {
     "store_orange": ["#6b2a12", "#9a3f1a", "#c95a22", "#e67b33", "#f5a35a"],
     # 黒
     "black": ["#0e0f12", "#17191d", "#212429", "#2c3036", "#383d44"],
+    # ── 以下は追記のみ（既存の升目の位置を動かさないため、途中に挿入しない） ──
+    # 肌
+    "skin": ["#5a3a2a", "#7d5440", "#a0705a", "#c08e74", "#ddb196"],
+    # 主人公の上着（くたびれたオリーブ茶）
+    "jacket": ["#24261f", "#363a2c", "#4b503b", "#646a4d", "#80866a"],
+    # 指先の切れた毛糸の手袋
+    "knit": ["#1c1e24", "#2a2d35", "#3a3e48", "#4d525e", "#646a77"],
 }
 
 PROP_SCALE = 1.35  # 叩く・掴む道具の誇張倍率（上の「比例」）
@@ -196,8 +203,19 @@ def new_root(name, x=0.0):
     return root
 
 
-def parent_to(child, root):
-    child.parent = root
+def parent_to(child, root, keep_world=False):
+    """keep_world=True なら子の世界位置を保つ（関節のように親が原点以外にいるとき）。"""
+    if keep_world:
+        # 位置を変えた直後は matrix_world が古いままなので、先に更新する。
+        # matrix_parent_inverse は使わない：FBX の bake_space_transform が入れ子の逆行列を正しく変換せず、
+        # 深い部品（指）だけ Blender の軸のまま Unity に来る（2026-10-26）。局所変換を直接書く。
+        bpy.context.view_layer.update()
+        local = root.matrix_world.inverted() @ child.matrix_world
+        child.parent = root
+        child.matrix_parent_inverse.identity()
+        child.matrix_basis = local
+    else:
+        child.parent = root
 
 
 def recenter(obj, pivot):
@@ -220,10 +238,25 @@ def scale_hierarchy(root, factor):
 def export_fbx(objects, path):
     """Unity 向けに FBX を書き出す（Y 上・-Z 前・1 単位 1m）。子も一緒に選ぶ。"""
     bpy.ops.object.select_all(action="DESELECT")
+    # Blender の正面（-Y）はこのままだと Unity の -Z に来る。書き出しの間だけ親を 180° 回し、
+    # Unity では正面＝+Z（transform.forward）になるようにする（2026-10-26 実測）。
+    turned = []
     for obj in objects:
         obj.select_set(True)
         for child in obj.children_recursive:
             child.select_set(True)
+        turned.append((obj, obj.rotation_euler.z))
+        obj.rotation_euler.z += math.pi
+    bpy.context.view_layer.update()
+    try:
+        _export_selected(path)
+    finally:
+        for obj, z in turned:
+            obj.rotation_euler.z = z
+        bpy.context.view_layer.update()
+
+
+def _export_selected(path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     bpy.ops.export_scene.fbx(
         filepath=path,
@@ -232,7 +265,9 @@ def export_fbx(objects, path):
         axis_forward="-Z",
         axis_up="Y",
         mesh_smooth_type="FACE",
-        bake_space_transform=True,
+        # 軸の変換は Unity 側（ModelImporter.bakeAxisConversion）で行う。Blender の bake_space_transform は
+        # 入れ子の 2 段目以降を変換しない（指が Blender の軸のまま来た。2026-10-26）。
+        bake_space_transform=False,
         path_mode="STRIP",
         embed_textures=False,
     )

@@ -7,7 +7,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
     public static class ProtoText
     {
         public static string Controls =>
-            "WASD 移動／マウス 視点／左クリック 叩く／右クリック 掴む／N 昼夜／R ゴミ箱を戻す／Esc カーソル";
+            "WASD 移動／マウス 視点／左クリック 叩く・掴む／N 昼夜／R ゴミ箱を戻す／Esc カーソル";
 
         public static string Bag(int used, int capacity) => $"カバン {used}/{capacity}";
         public static string BagLine(string name) => $"・{name}";

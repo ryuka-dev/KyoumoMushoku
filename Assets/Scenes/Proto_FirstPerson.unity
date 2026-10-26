@@ -119,6 +119,68 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1001 &446825880
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1280696409}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.00000005338508
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.000000053385076
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.70710677
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+      propertyPath: m_Name
+      value: TrashCan_BackAlley
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+--- !u!4 &446825881 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+  m_PrefabInstance: {fileID: 446825880}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &658567151
 GameObject:
   m_ObjectHideFlags: 0
@@ -152,12 +214,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoHands
   _camera: {fileID: 1030371182}
   _catalog: {fileID: 11400000, guid: 38d317f46bb6b2246a2ed8da9251dab2, type: 2}
+  _handModel: {fileID: 919132149155446097, guid: fd2447b6a2691f946a8a52200564e0d1, type: 3}
+  _armMaterial: {fileID: 2100000, guid: 242efa828e01c824293c8ac7c19e268f, type: 2}
   _bagCapacity: 6
+  _rightRestPosition: {x: 0.19, y: -0.21, z: -0.06}
+  _rightRestEuler: {x: -12, y: -8, z: -70}
+  _leftRestPosition: {x: -0.18, y: -0.2, z: -0.05}
+  _leftRestEuler: {x: -13, y: 10, z: 70}
   _punchReach: 2.4
+  _punchDistance: 0.32
   _hitStopMax: 0.09
   _shakeMax: 0.06
   _grabReach: 14
   _grabConeDegrees: 10
+  _reachSeconds: 0.12
+  _retractSeconds: 0.2
 --- !u!4 &658567153
 Transform:
   m_ObjectHideFlags: 0
@@ -313,118 +384,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &895227689
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 2.5
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: -0.00000004371139
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-      propertyPath: m_Name
-      value: TrashCan_BackAlley
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 895227692}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 895227691}
-  m_SourcePrefab: {fileID: 100100000, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
---- !u!1 &895227690 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
-  m_PrefabInstance: {fileID: 895227689}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &895227691
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 895227690}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dbe4ea2399744d44c9138e07df70b4e8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoTrashCan
-  _kind: 2
-  _loot: {fileID: 11400000, guid: 7d3f134bfcd6e574e91c07cb3307506d, type: 2}
-  _catalog: {fileID: 11400000, guid: 38d317f46bb6b2246a2ed8da9251dab2, type: 2}
-  _dayNight: {fileID: 1497018777}
-  _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
-  _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
-  _drawsPerOpen: 3
-  _hitsToOpen: 4
-  _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
---- !u!65 &895227692
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 895227690}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.783, y: 0.999, z: 0.783}
-  m_Center: {x: 0, y: 0.4995, z: 0}
 --- !u!1 &1030371181
 GameObject:
   m_ObjectHideFlags: 0
@@ -562,13 +521,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 658567153}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1317271339
+--- !u!1001 &1118536867
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 0}
+    m_TransformParent: {fileID: 1179755140}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
       propertyPath: m_LocalPosition.x
@@ -580,23 +539,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.00000004371139
+      value: 0.00000005338508
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: 0.000000053385076
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 1
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0.70710677
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -617,26 +576,100 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1317271342}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1317271341}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
---- !u!1 &1317271340 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
-  m_PrefabInstance: {fileID: 1317271339}
+--- !u!4 &1118536868 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
+  m_PrefabInstance: {fileID: 1118536867}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1317271341
+--- !u!1001 &1121622877
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1480697975}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.00000005338508
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.000000053385076
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.70710677
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+      propertyPath: m_Name
+      value: TrashCan_Park
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+--- !u!4 &1121622878 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+  m_PrefabInstance: {fileID: 1121622877}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1179755137
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1179755140}
+  - component: {fileID: 1179755139}
+  - component: {fileID: 1179755138}
+  m_Layer: 0
+  m_Name: TrashCan_ConvenienceStore
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1179755138
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1317271340}
+  m_GameObject: {fileID: 1179755137}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dbe4ea2399744d44c9138e07df70b4e8, type: 3}
@@ -653,13 +686,13 @@ MonoBehaviour:
   _lootLifetime: 6
   _rareShare: 0.06
   _uncommonShare: 0.12
---- !u!65 &1317271342
+--- !u!65 &1179755139
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1317271340}
+  m_GameObject: {fileID: 1179755137}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -672,8 +705,180 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.215, y: 1.2825001, z: 0.64800024}
-  m_Center: {x: 0, y: 0.6412501, z: 0}
+  m_Size: {x: 1.215, y: 1.2825001, z: 0.648}
+  m_Center: {x: -1.0421607e-14, y: 0.6412501, z: 0.00000011920929}
+--- !u!4 &1179755140
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1179755137}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
+  m_LocalPosition: {x: 0, y: 0, z: 2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1118536868}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1280696406
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1280696409}
+  - component: {fileID: 1280696408}
+  - component: {fileID: 1280696407}
+  m_Layer: 0
+  m_Name: TrashCan_BackAlley
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1280696407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1280696406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbe4ea2399744d44c9138e07df70b4e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoTrashCan
+  _kind: 2
+  _loot: {fileID: 11400000, guid: 7d3f134bfcd6e574e91c07cb3307506d, type: 2}
+  _catalog: {fileID: 11400000, guid: 38d317f46bb6b2246a2ed8da9251dab2, type: 2}
+  _dayNight: {fileID: 1497018777}
+  _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
+  _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _drawsPerOpen: 3
+  _hitsToOpen: 4
+  _lootLifetime: 6
+  _rareShare: 0.06
+  _uncommonShare: 0.12
+--- !u!65 &1280696408
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1280696406}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.783, y: 0.9990001, z: 0.783}
+  m_Center: {x: 0, y: 0.4995, z: 0}
+--- !u!4 &1280696409
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1280696406}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
+  m_LocalPosition: {x: 2.5, y: 0, z: 2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 446825881}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1480697972
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1480697975}
+  - component: {fileID: 1480697974}
+  - component: {fileID: 1480697973}
+  m_Layer: 0
+  m_Name: TrashCan_Park
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1480697973
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1480697972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbe4ea2399744d44c9138e07df70b4e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoTrashCan
+  _kind: 0
+  _loot: {fileID: 11400000, guid: 7d3f134bfcd6e574e91c07cb3307506d, type: 2}
+  _catalog: {fileID: 11400000, guid: 38d317f46bb6b2246a2ed8da9251dab2, type: 2}
+  _dayNight: {fileID: 1497018777}
+  _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
+  _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _drawsPerOpen: 3
+  _hitsToOpen: 4
+  _lootLifetime: 6
+  _rareShare: 0.06
+  _uncommonShare: 0.12
+--- !u!65 &1480697974
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1480697972}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.783, y: 1.161, z: 0.67499995}
+  m_Center: {x: -1.0421607e-14, y: 0.5805, z: 0.00000011920929}
+--- !u!4 &1480697975
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1480697972}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
+  m_LocalPosition: {x: -2.5, y: 0, z: 2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1121622878}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1497018776
 GameObject:
   m_ObjectHideFlags: 0
@@ -836,118 +1041,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1585485211
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -2.5
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: -0.00000004371139
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-      propertyPath: m_Name
-      value: TrashCan_Park
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1585485214}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1585485213}
-  m_SourcePrefab: {fileID: 100100000, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
---- !u!1 &1585485212 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
-  m_PrefabInstance: {fileID: 1585485211}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1585485213
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1585485212}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dbe4ea2399744d44c9138e07df70b4e8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoTrashCan
-  _kind: 0
-  _loot: {fileID: 11400000, guid: 7d3f134bfcd6e574e91c07cb3307506d, type: 2}
-  _catalog: {fileID: 11400000, guid: 38d317f46bb6b2246a2ed8da9251dab2, type: 2}
-  _dayNight: {fileID: 1497018777}
-  _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
-  _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
-  _drawsPerOpen: 3
-  _hitsToOpen: 4
-  _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
---- !u!65 &1585485214
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1585485212}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.783, y: 1.161, z: 0.6750002}
-  m_Center: {x: 0, y: 0.5805, z: 0}
 --- !u!1 &2143933899
 GameObject:
   m_ObjectHideFlags: 0
@@ -1004,6 +1097,6 @@ SceneRoots:
   - {fileID: 1497018778}
   - {fileID: 658567153}
   - {fileID: 2143933901}
-  - {fileID: 1585485211}
-  - {fileID: 1317271339}
-  - {fileID: 895227689}
+  - {fileID: 1480697975}
+  - {fileID: 1179755140}
+  - {fileID: 1280696409}
