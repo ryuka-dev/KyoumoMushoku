@@ -50,6 +50,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField, Min(0f)] float _punchDistance = 0.30f;
         [SerializeField, Min(0f)] float _hitStopMax = 0.09f;
         [SerializeField, Min(0f)] float _shakeMax = 0.06f;
+        [Tooltip("これより短い間隔で叩き続けると、音は最も大きい（連打）。")]
+        [SerializeField, Min(0.01f)] float _mashInterval = 0.25f;
+        [Tooltip("これより間を空けて叩けば、音は最も小さい。")]
+        [SerializeField, Min(0.02f)] float _calmInterval = 0.9f;
+        [Tooltip("間を空けて叩いたときの音の大きさ（連打を 1 として）。")]
+        [SerializeField, Range(0f, 1f)] float _calmLoudness = 0.45f;
 
         [Header("掴む")]
         [SerializeField, Min(1f)] float _grabReach = 14f;
@@ -68,6 +74,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         float _punchT = 1f;
         float _shake;
         float _hitStopUntil;
+        float _lastPunchAt = -10f;
         bool _hitStopRunning;
 
         ProtoLoot _grabbing;
@@ -193,7 +200,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
-            var strength = can.Hit(_camera.transform.forward, out var toast);
+            // 連打するほどうるさい。叩く回数は同じなので、連打すれば早く開くが、警官に聞こえやすい。
+            var interval = Time.unscaledTime - _lastPunchAt;
+            _lastPunchAt = Time.unscaledTime;
+            var mash = 1f - Mathf.Clamp01((interval - _mashInterval) / Mathf.Max(0.01f, _calmInterval - _mashInterval));
+            var strength = can.Hit(_camera.transform.forward, Mathf.Lerp(_calmLoudness, 1f, mash), out var toast);
             if (toast != null)
             {
                 Say(toast);

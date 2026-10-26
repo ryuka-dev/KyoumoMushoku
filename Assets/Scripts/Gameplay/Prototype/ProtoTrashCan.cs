@@ -110,8 +110,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
         }
 
-        /// <summary>叩く。戻り値はヒットストップの強さ（0〜1）。開いた後は 0。</summary>
-        public float Hit(Vector3 direction, out string toast)
+        /// <summary>
+        /// 叩く。戻り値はヒットストップの強さ（0〜1）。開いた後は 0。
+        /// <paramref name="loudness"/> は叩き方の音の大きさ（連打で 1、間を空けると小さい）。箱の中身による響きに掛かる。
+        /// </summary>
+        public float Hit(Vector3 direction, float loudness, out string toast)
         {
             toast = null;
             if (_opened)
@@ -119,7 +122,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 toast = ProtoText.Depleted;
                 _audio.pitch = 1.4f;
                 _audio.PlayOneShot(ProtoSounds.Clang, 0.3f);
-                ProtoNoise.Emit(transform.position, 0.3f);
+                ProtoNoise.Emit(transform.position, 0.3f * loudness);
                 return 0f;
             }
 
@@ -139,7 +142,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             // 叩く音は街に響き、警官の耳に届く。空の箱ほどうるさい（ふたが飛ぶ一打は最もうるさい）。
             var opening = _hits >= _hitsToOpen;
-            ProtoNoise.Emit(transform.position, opening || empty ? 1f : Mathf.Lerp(0.8f, 0.4f, heaviness));
+            ProtoNoise.Emit(transform.position, loudness * (opening || empty ? 1f : Mathf.Lerp(0.8f, 0.4f, heaviness)));
 
             // 珍しい物が入っているときだけ、叩くたびにふたの隙間から光が漏れる。
             if (!_disposal && BestRarity() == ProtoRarity.Rare)

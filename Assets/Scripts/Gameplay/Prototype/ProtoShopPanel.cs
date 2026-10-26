@@ -1,3 +1,4 @@
+using KyoumoMushoku.Core.Survival;
 using KyoumoMushoku.Gameplay.Items;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -15,7 +16,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField] ProtoSession _session;
         [SerializeField] ItemDatabaseAsset _catalog;
         [SerializeField] Font _font;
-        [Tooltip("今夜の廃棄がまだなら、店員がそれをこぼす（山場の予告）。")]
+        [Tooltip("今夜の廃棄がまだなら、店員がそれをこぼす（山場の予告）。上機嫌（SAN 70 以上）のときだけ聞ける。")]
         [SerializeField] ProtoDisposal _disposal;
         [SerializeField] string[] _offerIds = { "water_bottle", "onigiri", "can_coffee", "backpack" };
 
@@ -64,7 +65,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             _hands = hands;
-            _clerkLine = _disposal != null && _disposal.PendingTonight
+            // 上機嫌の報酬は情報だけ（第三節）：機嫌よく生きていれば、街の人が教えてくれる。
+            // 夕方のぼやき（ProtoDisposal）は SAN に依らず届くので、予告が誰にも届かない夜は無い。
+            _clerkLine = _disposal != null && _disposal.PendingTonight && SanityScale.CanHearRumors(Sanity())
                 ? ProtoText.ShopGreetingBeforeDisposal
                 : ProtoText.ShopGreeting;
             IsOpen = true;

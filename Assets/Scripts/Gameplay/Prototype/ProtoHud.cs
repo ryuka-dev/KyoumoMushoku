@@ -142,16 +142,31 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var day = _dayNight != null && _dayNight.Clock != null ? _dayNight.Clock.Day : 1;
             var mood = GameTextLabels.SanityTier(vitals.SanityTier);
             var morning = _session.State == ProtoSession.SessionState.Morning;
+            var final = _session.State == ProtoSession.SessionState.Final;
+            var yen = _hands.Wallet != null ? _hands.Wallet.Yen : 0;
 
-            GUI.Label(new Rect(0f, h * 0.28f, w, 48f),
-                morning ? ProtoText.MorningTitle(day) : ProtoText.CollapsedTitle, _title);
-            GUI.Label(new Rect(0f, h * 0.28f + 60f, w, 120f),
-                morning
-                    ? ProtoText.MorningBody(_session.CaughtYesterday, _hands.Wallet != null ? _hands.Wallet.Yen : 0, mood)
-                    : ProtoText.CollapsedBody(day),
-                _center);
+            string title;
+            string body;
+            if (final)
+            {
+                title = ProtoText.FinalTitle(_session.FinalDay);
+                body = ProtoText.FinalBody(_session.FinalDay, _session.CaughtTotal, yen, _hands.Bag.Capacity, mood);
+            }
+            else if (morning)
+            {
+                title = ProtoText.MorningTitle(day);
+                body = ProtoText.MorningBody(_session.CaughtYesterday, yen, mood);
+            }
+            else
+            {
+                title = ProtoText.CollapsedTitle;
+                body = ProtoText.CollapsedBody(day);
+            }
 
-            var y = h * 0.28f + 200f;
+            GUI.Label(new Rect(0f, h * 0.24f, w, 48f), title, _title);
+            GUI.Label(new Rect(0f, h * 0.24f + 60f, w, 200f), body, _center);
+
+            var y = h * 0.24f + 280f;
             if (morning)
             {
                 if (GUI.Button(new Rect(w / 2f - 210f, y, 200f, 44f), ProtoText.ContinueButton, _button))

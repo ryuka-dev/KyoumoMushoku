@@ -7,7 +7,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// <summary>
     /// 一人称の切片の一局の流れ。寝て一晩を越すこと、朝の区切り、倒れたときの終わりを持つ。
     ///
-    /// 一局は「一日目の朝に始まり、寝て二日目の朝を迎えたら一区切り」。区切りで今日の結果を見せ、続けるか終えるかを選ばせる。
+    /// 毎朝、区切りで前の日の結果を見せ、続けるか終えるかを選ばせる（GameDesign 第十六節：一日ごとにやめられる）。
+    /// 切片は三日（<see cref="SliceTuningAsset.FinalDay"/>）。その夜に寝たら、翌朝に三日間の結算を見せて終える。
     /// 日付の変わり目は就寝の瞬間だけに起こる（第二節）。時計・店の帳簿・ゴミ箱の中身は、ここから一度に新しい一日へ進める。
     ///
     /// 倒れたら局を終える。本編の病院（搬送・医療費・SAN の代償）は切片には入れていない。
@@ -18,6 +19,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             Playing,
             Morning,
+            Final,
             Collapsed,
         }
 
@@ -26,6 +28,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField] ProtoStore _store;
         [SerializeField] ProtoHands _hands;
         [SerializeField] ProtoFirstPersonController _body;
+        [SerializeField] SliceTuningAsset _slice;
 
         public SessionState State { get; private set; }
 
@@ -34,9 +37,16 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>眠る前の一日に掴んだ物の数（朝の区切りで見せる）。</summary>
         public int CaughtYesterday { get; private set; }
 
+        /// <summary>この局でこれまでに掴んだ物の数（結算で見せる）。</summary>
+        public int CaughtTotal { get; private set; }
+
+        /// <summary>切片が終わる日。</summary>
+        public int FinalDay => _slice != null ? _slice.FinalDay : 3;
+
         public void Configure(ProtoVitals vitals, ProtoDayNight dayNight, ProtoStore store, ProtoHands hands,
-            ProtoFirstPersonController body)
+            ProtoFirstPersonController body, SliceTuningAsset slice)
         {
+            _slice = slice;
             _vitals = vitals;
             _dayNight = dayNight;
             _store = store;
@@ -92,9 +102,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
             if (_hands != null)
             {
                 CaughtYesterday = _hands.TakeCaughtCount();
+                CaughtTotal += CaughtYesterday;
             }
 
-            Enter(SessionState.Morning);
+            Enter(_dayNight.Clock.Day > FinalDay ? SessionState.Final : SessionState.Morning);
             return ProtoText.WokeUp;
         }
 

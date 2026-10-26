@@ -34,10 +34,15 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField] Light[] _nightLights = new Light[0];
 
         float[] _nightLightIntensity;
+        DaySchedule _days;
 
         bool _wasNight;
 
         public GameClock Clock { get; private set; }
+
+        /// <summary>今夜、日が暮れきってから何秒たったか。夜でなければ 0。</summary>
+        public float SecondsSinceNightfall =>
+            Clock != null && IsNight ? Clock.ElapsedInDay - _days.ForDay(Clock.Day).SecondsUntilNight : 0f;
 
         /// <summary>産出テーブルの夜版を使う時間帯か。夕方はまだ昼の扱い。</summary>
         public bool IsNight => Clock != null && Clock.Phase == DayPhase.Night;
@@ -55,10 +60,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         void Awake()
         {
-            var schedule = _schedule != null
+            _days = _schedule != null
                 ? _schedule.ToSchedule()
                 : new DaySchedule(new[] { new DayPhaseDurations(150f, 60f) });
-            Clock = new GameClock(schedule);
+            Clock = new GameClock(_days);
             Clock.PhaseChanged += OnPhaseChanged;
             Clock.DayBegan += OnDayBegan;
 
