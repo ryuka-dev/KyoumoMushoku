@@ -168,6 +168,15 @@ def box(bm, cx, cy, cz, sx, sy, sz):
     return result["verts"]
 
 
+def rounded_box(bm, cx, cy, cz, sx, sy, sz, chamfer):
+    """角を一段だけ面取りした箱（丸みのある塊。手・ミトン・袋など）。chamfer は面取り幅（m）。"""
+    verts = box(bm, cx, cy, cz, sx, sy, sz)
+    edges = list({e for v in verts for e in v.link_edges})
+    bmesh.ops.bevel(bm, geom=edges, offset=chamfer, offset_type="OFFSET",
+                    segments=1, profile=0.5, affect="EDGES", clamp_overlap=True)
+    return verts
+
+
 # ── 色を塗る（UV を升目へ） ─────────────────────────────
 
 def paint(obj, rule):

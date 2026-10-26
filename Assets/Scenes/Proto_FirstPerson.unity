@@ -214,13 +214,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoHands
   _camera: {fileID: 1030371182}
   _catalog: {fileID: 11400000, guid: 38d317f46bb6b2246a2ed8da9251dab2, type: 2}
-  _handModel: {fileID: 919132149155446097, guid: fd2447b6a2691f946a8a52200564e0d1, type: 3}
+  _fistModel: {fileID: 919132149155446097, guid: 356eefdd6aae47e4aa4973d5e29aa1c9, type: 3}
+  _openModel: {fileID: 919132149155446097, guid: 89eb415c8f7cdde408e660cce67a1af1, type: 3}
   _armMaterial: {fileID: 2100000, guid: 242efa828e01c824293c8ac7c19e268f, type: 2}
   _bagCapacity: 6
-  _rightRestPosition: {x: 0.19, y: -0.21, z: -0.06}
-  _rightRestEuler: {x: -12, y: -8, z: -70}
-  _leftRestPosition: {x: -0.18, y: -0.2, z: -0.05}
-  _leftRestEuler: {x: -13, y: 10, z: 70}
+  _restPosition: {x: 0.294, y: -0.287, z: 0.09}
+  _restEuler: {x: -22, y: -14, z: 0}
+  _palmDistance: 0.4
   _punchReach: 2.4
   _punchDistance: 0.32
   _hitStopMax: 0.09

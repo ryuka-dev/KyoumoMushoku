@@ -7,15 +7,16 @@ using UnityEngine.InputSystem;
 namespace KyoumoMushoku.Gameplay.Prototype
 {
     /// <summary>
-    /// 一人称の両手（試作）。操作は左クリック一つ（作者 2026-10-26：右で掴むのは直感に反する）。
+    /// 一人称の手（試作）。右手だけを見せる（作者 2026-10-26：両手は要らない）。操作は左クリック一つ。
     ///
     /// 左クリックの解釈：
-    /// 1. 照準がまだ開いていないゴミ箱に当たっていれば、右手で叩く。
-    /// 2. そうでなく、照準の近くに宙の物があれば、左手を伸ばして掴む（伸びる腕）。
-    /// 3. どちらでもなければ、右手で空を打つ（開いた箱なら「もう何も出ない」）。
+    /// 1. 照準がまだ開いていないゴミ箱に当たっていれば、拳で叩く。
+    /// 2. そうでなく、照準の近くに宙の物があれば、手を開いて伸ばし、握って引き戻す（伸びる腕）。
+    /// 3. どちらでもなければ、空を打つ（開いた箱なら「もう何も出ない」）。
     ///
+    /// 手は指を回さない。握り（拳）と開きの 2 つの模型を差し替える（前の版の「指の向きが逆」を繰り返さない）。
+    /// 模型は第三者素材 FPS_Psx_Hands（CC0）から <c>Tools/Models/gen/hand_psx.py</c> が作る。原点は肘、前は +Z。
     /// 鞄は本編と同じ Core の <see cref="Inventory"/>（容量制）。入らない物は掴めない。
-    /// 手の模型は <c>Tools/Models/gen/hands.py</c>。左手は右手の鏡像。
     /// </summary>
     public sealed class ProtoHands : MonoBehaviour
     {
@@ -28,19 +29,20 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         [SerializeField] Camera _camera;
         [SerializeField] ItemDatabaseAsset _catalog;
-        [SerializeField] GameObject _handModel;
+        [SerializeField] GameObject _fistModel;
+        [SerializeField] GameObject _openModel;
         [SerializeField] Material _armMaterial;
         [SerializeField, Min(1)] int _bagCapacity = Inventory.DefaultCapacity;
 
         [Header("手の構え（カメラ基準・原点は肘）")]
-        [SerializeField] Vector3 _rightRestPosition = new Vector3(0.17f, -0.30f, 0.02f);
-        [SerializeField] Vector3 _rightRestEuler = new Vector3(-6f, -7f, 0f);
-        [SerializeField] Vector3 _leftRestPosition = new Vector3(-0.19f, -0.34f, -0.02f);
-        [SerializeField] Vector3 _leftRestEuler = new Vector3(-2f, 9f, 0f);
+        [SerializeField] Vector3 _restPosition = new Vector3(0.20f, -0.26f, -0.10f);
+        [SerializeField] Vector3 _restEuler = new Vector3(-8f, -8f, -80f);
+        [Tooltip("肘から掌の中心まで（模型の寸法）。掴んだ物はここへ寄せる。")]
+        [SerializeField, Min(0.05f)] float _palmDistance = 0.38f;
 
         [Header("叩く")]
         [SerializeField, Min(0.5f)] float _punchReach = 2.4f;
-        [SerializeField, Min(0f)] float _punchDistance = 0.32f;
+        [SerializeField, Min(0f)] float _punchDistance = 0.30f;
         [SerializeField, Min(0f)] float _hitStopMax = 0.09f;
         [SerializeField, Min(0f)] float _shakeMax = 0.06f;
 
@@ -52,10 +54,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         InputAction _use;
         InputAction _refill;
-        Transform _right;
-        Transform _left;
-        ProtoViewHand _rightHand;
-        ProtoViewHand _leftHand;
+        Transform _hand;
+        GameObject _fist;
+        GameObject _open;
+        Transform _palm;
         LineRenderer _arm;
         AudioSource _audio;
         Vector3 _cameraRest;
@@ -68,17 +70,19 @@ namespace KyoumoMushoku.Gameplay.Prototype
         GrabPhase _phase;
         float _grabT;
         Vector3 _reachFrom;
-        Vector3 _reachTo;
+        Quaternion _reachFromRotation;
 
         public Inventory Bag { get; private set; }
         public string Toast { get; private set; }
         public float ToastAge { get; private set; }
 
-        public void Configure(Camera camera, ItemDatabaseAsset catalog, GameObject handModel, Material armMaterial)
+        public void Configure(Camera camera, ItemDatabaseAsset catalog, GameObject fistModel, GameObject openModel,
+            Material armMaterial)
         {
             _camera = camera;
             _catalog = catalog;
-            _handModel = handModel;
+            _fistModel = fistModel;
+            _openModel = openModel;
             _armMaterial = armMaterial;
         }
 
@@ -90,7 +94,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _audio = gameObject.AddComponent<AudioSource>();
             _audio.playOnAwake = false;
             _cameraRest = _camera.transform.localPosition;
-            BuildHands();
+            BuildHand();
         }
 
         void OnEnable()
@@ -134,14 +138,18 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         void LateUpdate()
         {
-            // 視点（ProtoFirstPersonController.Update）が動いた後に手を置く。左手は世界座標なので遅れると揺れる。
-            AnimateRight();
-            AnimateLeft();
+            // 視点（ProtoFirstPersonController.Update）が動いた後に手を置く。
+            AnimateHand();
             AnimateShake();
         }
 
         void Use()
         {
+            if (_phase != GrabPhase.None)
+            {
+                return;
+            }
+
             var ray = new Ray(_camera.transform.position, _camera.transform.forward);
             ProtoTrashCan can = null;
             if (Physics.Raycast(ray, out var hit, _punchReach, ~0, QueryTriggerInteraction.Ignore))
@@ -155,14 +163,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
-            if (_phase == GrabPhase.None)
+            var target = FindGrabTarget();
+            if (target != null)
             {
-                var target = FindGrabTarget();
-                if (target != null)
-                {
-                    Grab(target);
-                    return;
-                }
+                Grab(target);
+                return;
             }
 
             Punch(can);
@@ -202,8 +207,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _grabbing = target;
             _phase = GrabPhase.Reach;
             _grabT = 0f;
-            _reachFrom = _left.position;
-            _leftHand.SetCurl(0f);
+            _reachFrom = _hand.position;
+            _reachFromRotation = _hand.rotation;
+            SetOpen(true);
         }
 
         void OnArrived(ProtoLoot loot)
@@ -282,21 +288,22 @@ namespace KyoumoMushoku.Gameplay.Prototype
             ToastAge = 0f;
         }
 
-        void AnimateRight()
+        void SetOpen(bool open)
         {
-            _punchT = Mathf.Min(1f, _punchT + Time.unscaledDeltaTime / 0.16f);
-            // 前へ速く突いて、ゆっくり戻る。
-            var jab = _punchT < 0.3f ? _punchT / 0.3f : 1f - (_punchT - 0.3f) / 0.7f;
-            jab = Mathf.Clamp01(jab);
-            var rest = Quaternion.Euler(_rightRestEuler);
-            _right.localRotation = rest * Quaternion.Euler(-4f * jab, -6f * jab, 0f);
-            _right.localPosition = _rightRestPosition + new Vector3(-0.06f, 0.07f, _punchDistance) * jab;
+            _open.SetActive(open);
+            _fist.SetActive(!open);
         }
 
-        void AnimateLeft()
+        void AnimateHand()
         {
-            var anchor = _camera.transform.TransformPoint(_leftRestPosition);
-            var restRotation = _camera.transform.rotation * Quaternion.Euler(_leftRestEuler);
+            var camera = _camera.transform;
+
+            // 構え＋拳の突き（前へ速く、ゆっくり戻る）。
+            _punchT = Mathf.Min(1f, _punchT + Time.unscaledDeltaTime / 0.16f);
+            var jab = _punchT < 0.3f ? _punchT / 0.3f : 1f - (_punchT - 0.3f) / 0.7f;
+            jab = Mathf.Clamp01(jab);
+            var restPosition = camera.TransformPoint(_restPosition + new Vector3(-0.06f, 0.07f, _punchDistance) * jab);
+            var restRotation = camera.rotation * Quaternion.Euler(_restEuler) * Quaternion.Euler(-4f * jab, -6f * jab, 0f);
 
             switch (_phase)
             {
@@ -304,28 +311,27 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 {
                     if (_grabbing == null)
                     {
-                        _phase = GrabPhase.Retract;
-                        _grabT = 0f;
+                        BeginRetract();
                         break;
                     }
 
                     _grabT += Time.unscaledDeltaTime / _reachSeconds;
-                    var eased = 1f - (1f - Mathf.Clamp01(_grabT)) * (1f - Mathf.Clamp01(_grabT));
+                    var t = Mathf.Clamp01(_grabT);
+                    var eased = 1f - (1f - t) * (1f - t);
                     var target = _grabbing.transform.position;
-                    var toTarget = target - anchor;
-                    var direction = toTarget.sqrMagnitude > 1e-4f ? toTarget.normalized : _camera.transform.forward;
-                    // 肘の位置を動かして、掌が目標に届くようにする（掌は肘から 0.33m 前）。
-                    _reachTo = target - direction * 0.33f;
-                    _left.position = Vector3.Lerp(_reachFrom, _reachTo, eased);
-                    _left.rotation = Quaternion.LookRotation(direction, _camera.transform.up);
+                    var toTarget = target - restPosition;
+                    var direction = toTarget.sqrMagnitude > 1e-4f ? toTarget.normalized : camera.forward;
+                    // 肘を動かして、掌が目標に届くようにする。
+                    var elbow = target - direction * _palmDistance;
+                    _hand.position = Vector3.Lerp(_reachFrom, elbow, eased);
+                    _hand.rotation = Quaternion.Slerp(_reachFromRotation,
+                        Quaternion.LookRotation(direction, camera.up) * Quaternion.Euler(0f, 0f, _restEuler.z), eased);
                     if (_grabT >= 1f)
                     {
-                        _leftHand.SetCurl(1f);
-                        _grabbing.PullTo(_leftHand.Palm, OnArrived);
+                        SetOpen(false);
+                        _grabbing.PullTo(_palm, OnArrived);
                         _grabbing = null;
-                        _phase = GrabPhase.Retract;
-                        _grabT = 0f;
-                        _reachFrom = _left.position;
+                        BeginRetract();
                     }
 
                     break;
@@ -334,33 +340,40 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 case GrabPhase.Retract:
                 {
                     _grabT += Time.unscaledDeltaTime / _retractSeconds;
-                    var eased = Mathf.Clamp01(_grabT);
-                    eased *= eased;
-                    _left.position = Vector3.Lerp(_reachFrom, anchor, eased);
-                    _left.rotation = Quaternion.Slerp(_left.rotation, restRotation, eased);
+                    var t = Mathf.Clamp01(_grabT);
+                    var eased = t * t;
+                    _hand.position = Vector3.Lerp(_reachFrom, restPosition, eased);
+                    _hand.rotation = Quaternion.Slerp(_reachFromRotation, restRotation, eased);
                     if (_grabT >= 1f)
                     {
                         _phase = GrabPhase.None;
-                        _leftHand.SetCurl(0.35f);
                     }
 
                     break;
                 }
 
                 default:
-                    _left.position = anchor;
-                    _left.rotation = restRotation;
+                    _hand.position = restPosition;
+                    _hand.rotation = restRotation;
                     break;
             }
 
             // 伸びる腕：構えの位置から、いまの肘まで袖色の紐を張る。
-            var stretched = Vector3.Distance(anchor, _left.position) > 0.05f;
+            var stretched = Vector3.Distance(restPosition, _hand.position) > 0.08f;
             _arm.enabled = stretched;
             if (stretched)
             {
-                _arm.SetPosition(0, anchor);
-                _arm.SetPosition(1, _left.position);
+                _arm.SetPosition(0, restPosition);
+                _arm.SetPosition(1, _hand.position);
             }
+        }
+
+        void BeginRetract()
+        {
+            _phase = GrabPhase.Retract;
+            _grabT = 0f;
+            _reachFrom = _hand.position;
+            _reachFromRotation = _hand.rotation;
         }
 
         void AnimateShake()
@@ -369,32 +382,29 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _camera.transform.localPosition = _cameraRest + Random.insideUnitSphere * (_shakeMax * _shake * _shake);
         }
 
-        void BuildHands()
+        void BuildHand()
         {
-            // 模型の親は軸変換の回転（FBX 由来）を持つので、それを上書きしないよう空の容器の下に置く。
-            var right = new GameObject("RightHand");
-            right.transform.SetParent(_camera.transform, false);
-            Instantiate(_handModel, right.transform, false);
-            _right = right.transform;
-            _right.localPosition = _rightRestPosition;
-            _right.localRotation = Quaternion.Euler(_rightRestEuler);
-            _rightHand = right.AddComponent<ProtoViewHand>();
-            _rightHand.SnapCurl(1f);
+            // 模型の根は FBX の軸変換の回転を持つので、空の容器の下に置き、容器を動かす。
+            var hand = new GameObject("RightHand");
+            _hand = hand.transform;
+            _fist = Instantiate(_fistModel, _hand, false);
+            _open = Instantiate(_openModel, _hand, false);
+            foreach (var r in hand.GetComponentsInChildren<Renderer>(true))
+            {
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
 
-            // 左手は世界座標で動かす（伸びる腕が照準の先まで届くため）。鏡像は負の拡大で作る。
-            var left = new GameObject("LeftHand");
-            Instantiate(_handModel, left.transform, false);
-            _left = left.transform;
-            _left.localScale = new Vector3(-1f, 1f, 1f);
-            _leftHand = left.AddComponent<ProtoViewHand>();
-            _leftHand.SnapCurl(0.35f);
+            _palm = new GameObject("Palm").transform;
+            _palm.SetParent(_hand, false);
+            _palm.localPosition = new Vector3(0f, 0f, _palmDistance);
+            SetOpen(false);
 
             var armGo = new GameObject("RubberArm");
             armGo.transform.SetParent(transform, false);
             _arm = armGo.AddComponent<LineRenderer>();
             _arm.positionCount = 2;
-            _arm.startWidth = 0.10f;
-            _arm.endWidth = 0.08f;
+            _arm.startWidth = 0.07f;
+            _arm.endWidth = 0.06f;
             _arm.numCapVertices = 2;
             _arm.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _arm.sharedMaterial = _armMaterial;

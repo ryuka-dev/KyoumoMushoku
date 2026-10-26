@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: fd2447b6a2691f946a8a52200564e0d1
+guid: 89eb415c8f7cdde408e660cce67a1af1
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -7,8 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: KM_PaletteMat
-    second: {fileID: 2100000, guid: bd2b824313cb56547bc92aa35b048220, type: 2}
+      name: FPS_Arm.001
+    second: {fileID: 2100000, guid: 6f5de9807e50acb42821e46e49f0e8dc, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0
