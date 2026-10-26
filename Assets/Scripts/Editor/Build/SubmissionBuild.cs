@@ -8,7 +8,7 @@ namespace KyoumoMushoku.Editor.Build
     /// <summary>
     /// ゲームクリエイター甲子園 2026 に出す Windows 版を作る（作業計画 第一の二節 K5・K7）。
     ///
-    /// 提出するのは一人称の切片なので、起動シーンを Build Settings から取らず、ここで明示する。
+    /// 提出するのは一人称の切片（Slice_Chapter1）なので、起動シーンを Build Settings から取らず、ここで明示する。
     /// Build Settings の登録（起動シーンは 2D 版の FirstDistrict）は手が持つもので、触れない（CLAUDE.md シーンの所有権）。
     /// 出力は Builds/Submission/（.gitignore 済み）。実行ファイル名は KyoumoMushoku.exe。
     /// </summary>
@@ -16,7 +16,7 @@ namespace KyoumoMushoku.Editor.Build
     {
         static readonly string[] Scenes =
         {
-            "Assets/Scenes/Proto_FirstPerson.unity",
+            "Assets/Scenes/Slice_Chapter1.unity",
         };
 
         const string OutputDirectory = "Builds/Submission";
