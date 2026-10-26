@@ -45,6 +45,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         AudioSource _audio;
         Transform _lid;
         Vector3 _lidLocalPosition;
+        Quaternion _lidLocalRotation;
+        Vector3 _lidLocalScale;
+        Collider _collider;
         Quaternion _restRotation;
         Vector3 _restScale;
         Vector2 _tilt;
@@ -76,7 +79,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _audio.playOnAwake = false;
             _restRotation = transform.localRotation;
             _restScale = transform.localScale;
-            BuildLid();
+            _collider = GetComponent<Collider>();
+            FindOrBuildLid();
         }
 
         void OnEnable()
@@ -178,7 +182,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _audio.PlayOneShot(ProtoSounds.Pop, 1f);
             ThrowLid(direction);
 
-            var top = transform.position + Vector3.up * (transform.lossyScale.y * 0.6f);
+            var top = TopPoint() + Vector3.up * 0.1f;
             var toPlayer = -direction;
             toPlayer.y = 0f;
             var anyItem = false;
@@ -297,22 +301,50 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _ => new Color(0.9f, 0.85f, 0.4f),
         };
 
-        void BuildLid()
+        /// <summary>天面の中心（ふたの位置）。当たり判定の箱から求める。</summary>
+        Vector3 TopPoint()
         {
-            var lid = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            lid.name = "Lid";
-            Destroy(lid.GetComponent<Collider>());
-            lid.transform.SetParent(transform, false);
-            lid.transform.localScale = new Vector3(1.08f, 0.08f, 1.08f);
-            lid.transform.localPosition = new Vector3(0f, 0.54f, 0f);
-            var body = GetComponent<Renderer>();
-            if (body != null)
+            if (_collider != null)
             {
-                lid.GetComponent<Renderer>().sharedMaterial = body.sharedMaterial;
+                var b = _collider.bounds;
+                return new Vector3(b.center.x, b.max.y, b.center.z);
             }
 
-            _lid = lid.transform;
+            return transform.position + Vector3.up * (transform.lossyScale.y * 0.6f);
+        }
+
+        /// <summary>模型に「Lid」で始まる子があればそれをふたに使う。無ければ灰箱の板を作る。</summary>
+        void FindOrBuildLid()
+        {
+            foreach (Transform child in transform)
+            {
+                if (child.name.StartsWith("Lid", System.StringComparison.Ordinal))
+                {
+                    _lid = child;
+                    break;
+                }
+            }
+
+            if (_lid == null)
+            {
+                var lid = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                lid.name = "Lid";
+                Destroy(lid.GetComponent<Collider>());
+                lid.transform.SetParent(transform, false);
+                lid.transform.localScale = new Vector3(1.08f, 0.08f, 1.08f);
+                lid.transform.localPosition = new Vector3(0f, 0.54f, 0f);
+                var body = GetComponent<Renderer>();
+                if (body != null)
+                {
+                    lid.GetComponent<Renderer>().sharedMaterial = body.sharedMaterial;
+                }
+
+                _lid = lid.transform;
+            }
+
             _lidLocalPosition = _lid.localPosition;
+            _lidLocalRotation = _lid.localRotation;
+            _lidLocalScale = _lid.localScale;
         }
 
         void ResetLid()
@@ -336,8 +368,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             _lid.SetParent(transform, false);
             _lid.localPosition = _lidLocalPosition;
-            _lid.localRotation = Quaternion.identity;
-            _lid.localScale = new Vector3(1.08f, 0.08f, 1.08f);
+            _lid.localRotation = _lidLocalRotation;
+            _lid.localScale = _lidLocalScale;
         }
 
         void ThrowLid(Vector3 direction)
@@ -361,7 +393,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var spark = GameObject.CreatePrimitive(PrimitiveType.Cube);
             spark.name = "Glint";
             Destroy(spark.GetComponent<Collider>());
-            spark.transform.position = transform.position + Vector3.up * (transform.lossyScale.y * 0.55f)
+            spark.transform.position = TopPoint()
                 + Vector3.ProjectOnPlane(UnityEngine.Random.insideUnitSphere, Vector3.up) * 0.3f;
             spark.transform.localScale = Vector3.one * 0.05f;
             var material = new Material(_itemMaterial);

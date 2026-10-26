@@ -1,0 +1,224 @@
+"""低ポリゴン模型の共通部品（Blender 内で実行する）。
+
+方針（Docs/作業計画.md 第一の二節「美術」）：
+- 平面陰影＋一枚の小さな調色板テクスチャ。全模型がこの一枚を共有し、UV は色の升目に落とす。
+  色はここ（PALETTE）だけで管理する。色を変えたければ升目の色を変える。
+- 1 単位 = 1 メートル。原点は底面の中心。面数は道具 1 個あたり数百まで。
+- 生成スクリプトが源。.blend は生成物であって手で直さない（直すならスクリプトを直す）。
+"""
+
+import math
+import os
+
+import bmesh
+import bpy
+
+# ── 調色板 ─────────────────────────────────────────────
+# 一つの素材に一本の色階（暗→明）。暗部は青寄り、明部は黄寄り。格差は均等に。
+PALETTE = {
+    # ポリバケツの青
+    "poly_blue": ["#1d3557", "#28507f", "#3570a8", "#4a8cc4", "#74aedb"],
+    # 公園の金網・金属の緑
+    "park_green": ["#1f3a2c", "#2c5240", "#3d6b53", "#55876a", "#7aa887"],
+    # 鉄・灰
+    "steel": ["#2b2f36", "#40464f", "#5a616b", "#7a828c", "#a2a9b1"],
+    # 白いラベル・紙
+    "paper": ["#9a9488", "#bdb6a8", "#d8d2c3", "#ece7da", "#fbf8ef"],
+    # 汚れ・土
+    "grime": ["#2a241e", "#3d342a", "#54483a", "#6e5f4c", "#8c7a62"],
+    # コンビニの差し色（橙）
+    "store_orange": ["#6b2a12", "#9a3f1a", "#c95a22", "#e67b33", "#f5a35a"],
+    # 黒
+    "black": ["#0e0f12", "#17191d", "#212429", "#2c3036", "#383d44"],
+}
+
+CELL = 4          # 一色あたりの升目（ピクセル）
+COLUMNS = 5       # 色階の段数
+ROWS = 16         # 調色板の行数（素材の数の上限）
+TEX_W = CELL * COLUMNS * 2   # 2 列組
+TEX_H = CELL * ROWS
+
+
+def _hex(h):
+    h = h.lstrip("#")
+    return tuple(int(h[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
+
+
+def _cell_of(material, step):
+    names = list(PALETTE.keys())
+    index = names.index(material)
+    column_block = index % 2
+    row = index // 2
+    x = column_block * COLUMNS * CELL + step * CELL
+    y = row * CELL
+    return x, y
+
+
+def uv_of(material, step):
+    """その色の升目の中心の UV。"""
+    x, y = _cell_of(material, step)
+    u = (x + CELL / 2) / TEX_W
+    v = 1.0 - (y + CELL / 2) / TEX_H
+    return u, v
+
+
+def build_palette_image(path=None):
+    """調色板の画像を作り（あれば作り直し）、path が与えられれば PNG に保存する。"""
+    name = "KM_Palette"
+    image = bpy.data.images.get(name)
+    if image is None:
+        image = bpy.data.images.new(name, TEX_W, TEX_H, alpha=False)
+    pixels = [0.0] * (TEX_W * TEX_H * 4)
+    for material, ramp in PALETTE.items():
+        for step, hexcolor in enumerate(ramp):
+            r, g, b = _hex(hexcolor)
+            x0, y0 = _cell_of(material, step)
+            for dy in range(CELL):
+                for dx in range(CELL):
+                    px = x0 + dx
+                    py = TEX_H - 1 - (y0 + dy)   # Blender の画像は下から上
+                    i = (py * TEX_W + px) * 4
+                    pixels[i:i + 4] = [r, g, b, 1.0]
+    image.pixels = pixels
+    if path:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        image.filepath_raw = path
+        image.file_format = "PNG"
+        image.save()
+    return image
+
+
+def palette_material():
+    """全模型共有の材質。テクスチャは最近傍（升目がにじまない）。"""
+    name = "KM_PaletteMat"
+    mat = bpy.data.materials.get(name)
+    if mat is not None:
+        return mat
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
+    tex = nodes.new("ShaderNodeTexImage")
+    tex.image = build_palette_image()
+    tex.interpolation = "Closest"
+    mat.node_tree.links.new(tex.outputs[0], bsdf.inputs["Base Color"])
+    bsdf.inputs["Roughness"].default_value = 0.8
+    return mat
+
+
+# ── 形を作る ──────────────────────────────────────────
+
+def clear_scene():
+    for obj in list(bpy.data.objects):
+        bpy.data.objects.remove(obj, do_unlink=True)
+    for mesh in list(bpy.data.meshes):
+        if mesh.users == 0:
+            bpy.data.meshes.remove(mesh)
+
+
+def new_object(name, bm, collection=None):
+    mesh = bpy.data.meshes.new(name)
+    bm.to_mesh(mesh)
+    bm.free()
+    obj = bpy.data.objects.new(name, mesh)
+    (collection or bpy.context.scene.collection).objects.link(obj)
+    obj.data.materials.append(palette_material())
+    for poly in obj.data.polygons:
+        poly.use_smooth = False
+    return obj
+
+
+def frustum(bm, sides, r_bottom, r_top, z0, z1, rotate=0.0):
+    """側面だけの角錐台（上下は開いたまま）。戻り値は (下の輪, 上の輪) の頂点列。"""
+    bottom, top = [], []
+    for i in range(sides):
+        a = 2 * math.pi * i / sides + rotate
+        bottom.append(bm.verts.new((r_bottom * math.cos(a), r_bottom * math.sin(a), z0)))
+        top.append(bm.verts.new((r_top * math.cos(a), r_top * math.sin(a), z1)))
+    for i in range(sides):
+        j = (i + 1) % sides
+        bm.faces.new((bottom[i], bottom[j], top[j], top[i]))
+    return bottom, top
+
+
+def cap(bm, ring, flip=False):
+    face = bm.faces.new(list(reversed(ring)) if flip else ring)
+    return face
+
+
+def box(bm, cx, cy, cz, sx, sy, sz):
+    """中心 (cx,cy,cz)・寸法 (sx,sy,sz) の箱。"""
+    result = bmesh.ops.create_cube(bm, size=1.0)
+    for v in result["verts"]:
+        v.co.x = cx + v.co.x * sx
+        v.co.y = cy + v.co.y * sy
+        v.co.z = cz + v.co.z * sz
+    return result["verts"]
+
+
+# ── 色を塗る（UV を升目へ） ─────────────────────────────
+
+def paint(obj, rule):
+    """rule(face) -> (素材名, 段) を各面に適用する。"""
+    mesh = obj.data
+    if not mesh.uv_layers:
+        mesh.uv_layers.new(name="UVMap")
+    uv = mesh.uv_layers.active.data
+    for poly in mesh.polygons:
+        material, step = rule(poly)
+        u, v = uv_of(material, step)
+        for li in poly.loop_indices:
+            uv[li].uv = (u, v)
+
+
+def by_normal(material, top=4, side=2, bottom=0):
+    """法線で段を選ぶ：上面は明るく、側面は中間、下面は暗く。"""
+    def rule(poly):
+        nz = poly.normal.z
+        if nz > 0.5:
+            return material, top
+        if nz < -0.5:
+            return material, bottom
+        return material, side
+    return rule
+
+
+def new_root(name, x=0.0):
+    """部品をまとめる空の親。Unity では同名の GameObject になる。原点は底面の中心。"""
+    root = bpy.data.objects.new(name, None)
+    bpy.context.scene.collection.objects.link(root)
+    root.location.x = x
+    return root
+
+
+def parent_to(child, root):
+    child.parent = root
+
+
+def recenter(obj, pivot):
+    """メッシュを動かさずに原点を pivot（ローカル座標）へ移す。ふたのように飛ぶ部品は自身の中心を原点にする。"""
+    from mathutils import Matrix, Vector
+    pivot = Vector(pivot)
+    obj.data.transform(Matrix.Translation(-pivot))
+    obj.location = obj.location + pivot
+
+
+def export_fbx(objects, path):
+    """Unity 向けに FBX を書き出す（Y 上・-Z 前・1 単位 1m）。子も一緒に選ぶ。"""
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in objects:
+        obj.select_set(True)
+        for child in obj.children_recursive:
+            child.select_set(True)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    bpy.ops.export_scene.fbx(
+        filepath=path,
+        use_selection=True,
+        apply_scale_options="FBX_SCALE_UNITS",
+        axis_forward="-Z",
+        axis_up="Y",
+        mesh_smooth_type="FACE",
+        bake_space_transform=True,
+        path_mode="STRIP",
+        embed_textures=False,
+    )
