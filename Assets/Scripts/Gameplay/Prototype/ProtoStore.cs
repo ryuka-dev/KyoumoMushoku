@@ -1,6 +1,7 @@
 using KyoumoMushoku.Core.Economy;
 using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Shop;
+using KyoumoMushoku.Core.Survival;
 using KyoumoMushoku.Gameplay.Items;
 using KyoumoMushoku.Gameplay.Shop;
 using KyoumoMushoku.Gameplay.UI;
@@ -9,20 +10,18 @@ using UnityEngine;
 namespace KyoumoMushoku.Gameplay.Prototype
 {
     /// <summary>
-    /// 試作のコンビニ。廃品の買い取りとバックパックの販売だけを持つ（作業計画 第一の二節「鞄」）。
+    /// 試作のコンビニ。廃品の買い取りと、棚の品（水・食べ物・バックパック）の販売を持つ（作業計画 第一の二節「鞄」）。
     /// 鞄が一杯になったら売りに行く → 金 → バックパックで容量が増える、という輪を一人称で確かめる。
     ///
     /// 取引の規則は本編と同じ Core（<see cref="SalvageBuyback"/>・<see cref="StorePurchase"/>）と
     /// <c>Assets/Config/ShopTuning.asset</c> の買い取り上限を使う。店主の台詞も本編の <see cref="ShopText"/> を使う。
     /// この店が持つのは、その日の買い取り額の帳簿（<see cref="SalvageLedger"/>）だけ。金と鞄はプレイヤー（<see cref="ProtoHands"/>）が持つ。
-    /// 本編の就寝は無いので、昼夜の切り替えで夜から昼になったときを新しい一日とする。
+    /// 帳簿は就寝＝日付の変わり目で新しい一日になる（<see cref="BeginNextDay"/>。<see cref="ProtoSession"/> が呼ぶ）。
     /// </summary>
     public sealed class ProtoStore : MonoBehaviour
     {
         [SerializeField] ShopTuningAsset _tuning;
         [SerializeField] ItemDatabaseAsset _catalog;
-        [SerializeField] ProtoDayNight _dayNight;
-        [SerializeField] string _backpackId = "backpack";
 
         readonly SalvageLedger _ledger = new SalvageLedger();
 
@@ -30,36 +29,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         int DailyCap => _tuning != null ? _tuning.BuybackDailyCapYen : 0;
 
-        public void Configure(ShopTuningAsset tuning, ItemDatabaseAsset catalog, ProtoDayNight dayNight)
+        public void Configure(ShopTuningAsset tuning, ItemDatabaseAsset catalog)
         {
             _tuning = tuning;
             _catalog = catalog;
-            _dayNight = dayNight;
         }
 
-        void OnEnable()
-        {
-            if (_dayNight != null)
-            {
-                _dayNight.Changed += OnDayNightChanged;
-            }
-        }
-
-        void OnDisable()
-        {
-            if (_dayNight != null)
-            {
-                _dayNight.Changed -= OnDayNightChanged;
-            }
-        }
-
-        void OnDayNightChanged()
-        {
-            if (!_dayNight.IsNight)
-            {
-                _ledger.BeginNextDay();
-            }
-        }
+        /// <summary>新しい一日。店主の買い取り枠が戻る。就寝からのみ呼ぶ。</summary>
+        public void BeginNextDay() => _ledger.BeginNextDay();
 
         /// <summary>鞄の換金廃品を、今日の上限まで売る。返すのは店主の一言。</summary>
         public string Sell(Inventory bag, Wallet wallet)
@@ -80,10 +57,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 : ShopText.BuybackCapReached;
         }
 
-        /// <summary>バックパックを買う。返すのは店主の一言。</summary>
-        public string BuyBackpack(Inventory bag, Wallet wallet)
+        /// <summary>棚の品を一つ買う。返すのは店主の一言。</summary>
+        public string Buy(string itemId, Inventory bag, Wallet wallet)
         {
-            var result = StorePurchase.TryBuy(wallet, bag, _catalog, new ItemId(_backpackId), out var bought);
+            var result = StorePurchase.TryBuy(wallet, bag, _catalog, new ItemId(itemId), out var bought);
             switch (result)
             {
                 case PurchaseResult.Bought:
@@ -99,18 +76,29 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
         }
 
-        /// <summary>照準を合わせたときの案内。値段は品のデータから出す。</summary>
-        public string BackpackPrompt(Inventory bag)
+        /// <summary>
+        /// 照準を合わせたときの案内。値段は品のデータから出す。精神崩壊すると値札が読めない（第三節：価格 ??）。
+        /// 読めなくても買うことはできる。欠落は用いるが、操作は奪わない。
+        /// </summary>
+        public string BuyPrompt(string itemId, Inventory bag, float sanity)
         {
-            if (_catalog == null || !_catalog.TryGet(new ItemId(_backpackId), out var definition))
+            if (_catalog == null || !_catalog.TryGet(new ItemId(itemId), out var definition))
             {
                 return null;
+            }
+
+            var price = SanityScale.CanReadPrices(sanity)
+                ? ProtoText.Price(definition.BuyPriceYen)
+                : ShopText.OfferPriceUnreadable;
+            if (definition.CapacityBonus <= 0)
+            {
+                return ProtoText.BuyPrompt(definition.DisplayName, price);
             }
 
             var owned = bag != null && bag.Capacity >= Inventory.DefaultCapacity + definition.CapacityBonus;
             return owned
                 ? ProtoText.BackpackOwned(definition.DisplayName)
-                : ProtoText.BuyPrompt(definition.DisplayName, definition.BuyPriceYen, definition.CapacityBonus);
+                : ProtoText.BuyBackpackPrompt(definition.DisplayName, price, definition.CapacityBonus);
         }
 
         public string SellPrompt(Inventory bag) => ProtoText.SellPrompt(SalvageValue(bag), RemainingToday);

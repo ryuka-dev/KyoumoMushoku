@@ -12,7 +12,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
     ///
     /// 左クリックの解釈：
     /// 1. 照準がまだ開いていないゴミ箱に当たっていれば、拳で叩く。
-    /// 2. そうでなく、照準が店の台（<see cref="ProtoCounter"/>）に当たっていれば、売る・買う。
+    /// 2. そうでなく、照準が使える物（<see cref="IProtoUsable"/>：店の台・水道・寝床）に当たっていれば、それを使う。
     /// 3. そうでなく、照準の近くに宙の物があれば、手を開いて伸ばし、握って引き戻す（伸びる腕）。
     /// 4. どれでもなければ、空を打つ（開いた箱なら「もう何も出ない」）。
     ///
@@ -58,7 +58,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField, Min(0.02f)] float _retractSeconds = 0.2f;
 
         InputAction _use;
-        InputAction _refill;
         Transform _hand;
         GameObject _fist;
         GameObject _open;
@@ -78,10 +77,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
         Quaternion _reachFromRotation;
 
         public Inventory Bag { get; private set; }
+        public ProtoVitals Vitals { get; private set; }
         public Wallet Wallet { get; private set; }
 
-        /// <summary>照準が店の台に合っているときの案内。無ければ null。</summary>
+        /// <summary>照準が使える物に合っているときの案内。無ければ null。</summary>
         public string AimPrompt { get; private set; }
+
+        /// <summary>前に <see cref="TakeCaughtCount"/> してから掴んで鞄に入れた数。</summary>
+        int _caught;
         public string Toast { get; private set; }
         public float ToastAge { get; private set; }
 
@@ -99,8 +102,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             Bag = new Inventory(_catalog, _bagCapacity);
             Wallet = new Wallet(_startingYen);
+            Vitals = GetComponent<ProtoVitals>();
             _use = new InputAction("Use", InputActionType.Button, "<Mouse>/leftButton");
-            _refill = new InputAction("Refill", InputActionType.Button, "<Keyboard>/r");
             _audio = gameObject.AddComponent<AudioSource>();
             _audio.playOnAwake = false;
             _cameraRest = _camera.transform.localPosition;
@@ -110,41 +113,28 @@ namespace KyoumoMushoku.Gameplay.Prototype
         void OnEnable()
         {
             _use.Enable();
-            _refill.Enable();
         }
 
         void OnDisable()
         {
             _use.Disable();
-            _refill.Disable();
             Time.timeScale = 1f;
         }
 
         void OnDestroy()
         {
             _use?.Dispose();
-            _refill?.Dispose();
         }
 
         void Update()
         {
             ToastAge += Time.unscaledDeltaTime;
-            var counter = AimedCounter();
-            AimPrompt = counter != null ? counter.Prompt(this) : null;
+            var usable = AimedUsable();
+            AimPrompt = usable != null ? usable.Prompt(this) : null;
 
             if (_use.WasPressedThisFrame())
             {
                 Use();
-            }
-
-            if (_refill.WasPressedThisFrame())
-            {
-                foreach (var can in Object.FindObjectsByType<ProtoTrashCan>(FindObjectsSortMode.None))
-                {
-                    can.Refill();
-                }
-
-                Say(ProtoText.Refilled);
             }
         }
 
@@ -175,11 +165,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
-            var counter = hit.collider != null ? hit.collider.GetComponentInParent<ProtoCounter>() : null;
-            if (counter != null)
+            var usable = hit.collider != null ? hit.collider.GetComponentInParent<IProtoUsable>() : null;
+            if (usable != null)
             {
                 _punchT = 0f;
-                Say(counter.Use(this));
+                Say(usable.Use(this));
                 _audio.pitch = 1.2f;
                 _audio.PlayOneShot(ProtoSounds.Grab, 0.8f);
                 return;
@@ -238,6 +228,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             if (Bag.TryAdd(loot.Item))
             {
+                _caught++;
                 Say(ProtoText.Caught(loot.DisplayName));
                 _audio.pitch = loot.Rarity == ProtoRarity.Rare ? 1.4f : 1f;
                 _audio.PlayOneShot(ProtoSounds.Grab, 1f);
@@ -248,12 +239,20 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
         }
 
-        ProtoCounter AimedCounter()
+        IProtoUsable AimedUsable()
         {
             var ray = new Ray(_camera.transform.position, _camera.transform.forward);
             return Physics.Raycast(ray, out var hit, _punchReach, ~0, QueryTriggerInteraction.Ignore)
-                ? hit.collider.GetComponentInParent<ProtoCounter>()
+                ? hit.collider.GetComponentInParent<IProtoUsable>()
                 : null;
+        }
+
+        /// <summary>掴んだ数を受け取り、数え直す。<see cref="ProtoSession"/> が一日の区切りで呼ぶ。</summary>
+        public int TakeCaughtCount()
+        {
+            var count = _caught;
+            _caught = 0;
+            return count;
         }
 
         ProtoLoot FindGrabTarget()
@@ -312,7 +311,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _hitStopRunning = false;
         }
 
-        void Say(string text)
+        /// <summary>画面の一言。手の動作の結果のほか、飲食などほかの部品も使う。</summary>
+        public void Say(string text)
         {
             Toast = text;
             ToastAge = 0f;

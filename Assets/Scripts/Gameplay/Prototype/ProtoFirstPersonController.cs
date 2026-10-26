@@ -23,12 +23,17 @@ namespace KyoumoMushoku.Gameplay.Prototype
         InputAction _toggleCursor;
         float _pitch;
         float _verticalVelocity;
+        ProtoVitals _vitals;
+
+        /// <summary>走っているか（Shift を押して動いている）。渇き・空腹の消耗が増える。</summary>
+        public bool IsRunning { get; private set; }
 
         public void Configure(Transform head) => _head = head;
 
         void Awake()
         {
             _body = GetComponent<CharacterController>();
+            _vitals = GetComponent<ProtoVitals>();
 
             _move = new InputAction("Move", InputActionType.Value, expectedControlType: "Vector2");
             _move.AddCompositeBinding("2DVector")
@@ -88,7 +93,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             var input = _move.ReadValue<Vector2>();
-            var speed = _run.IsPressed() ? _runSpeed : _walkSpeed;
+            IsRunning = _run.IsPressed() && input.sqrMagnitude > 0.01f;
+            var speed = IsRunning ? _runSpeed : _walkSpeed;
+            // 渇きがゼロのあいだは足が重い（本編と同じ規則）。
+            if (_vitals != null && _vitals.Vitals != null)
+            {
+                speed *= _vitals.Vitals.SpeedMultiplier;
+            }
+
             var planar = (transform.right * input.x + transform.forward * input.y) * speed;
 
             _verticalVelocity = _body.isGrounded ? -1f : _verticalVelocity + _gravity * Time.deltaTime;
