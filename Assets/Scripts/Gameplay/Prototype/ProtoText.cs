@@ -22,5 +22,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         public static string Rare => "珍しい";
         public static string Uncommon => "やや珍しい";
+        public static string WithRarity(string name, string rarity) => $"{name}（{rarity}）";
     }
 }

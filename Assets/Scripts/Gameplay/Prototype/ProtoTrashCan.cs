@@ -214,11 +214,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
                 if (rarity == ProtoRarity.Rare)
                 {
-                    name = $"{name}（{ProtoText.Rare}）";
+                    name = ProtoText.WithRarity(name, ProtoText.Rare);
                 }
                 else if (rarity == ProtoRarity.Uncommon)
                 {
-                    name = $"{name}（{ProtoText.Uncommon}）";
+                    name = ProtoText.WithRarity(name, ProtoText.Uncommon);
                 }
 
                 ProtoLoot.Spawn(new ItemInstance(draw.Item, draw.State), name, slots, rarity, ColorOf(category),
