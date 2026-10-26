@@ -80,3 +80,8 @@ crashlytics-build.properties
 # Python
 __pycache__/
 *.pyc
+
+# Unity Asset Store の素材（標準 EULA により原本を公開配布できない）。
+# 一覧と入手先は Docs/素材台帳.md。ビルドには含まれる。
+/[Aa]ssets/ThirdParty/
+/[Aa]ssets/ThirdParty.meta
