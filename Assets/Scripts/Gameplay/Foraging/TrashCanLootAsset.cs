@@ -102,6 +102,40 @@ namespace KyoumoMushoku.Gameplay.Foraging
                 : new LootTable(Array.Empty<LootTable.Entry>(), emptyWeight: 1f, default);
         }
 
+        /// <summary>
+        /// 指定の種類・時間帯の1回の抽選で、その品が出る確率（空振りを含む全重みに対する割合）。
+        /// 希少度の項目は持たないので、珍しさはこの事実から導く（一人称試作・第二節）。
+        /// </summary>
+        public float ShareOf(TrashCanKind kind, bool night, ItemId item)
+        {
+            foreach (var kindTables in _kinds)
+            {
+                if (kindTables.kind != kind)
+                {
+                    continue;
+                }
+
+                var table = night ? kindTables.night : kindTables.day;
+                var total = table.emptyWeight;
+                var weight = 0f;
+                if (table.items != null)
+                {
+                    foreach (var candidate in table.items)
+                    {
+                        total += candidate.weight;
+                        if (new ItemId(candidate.id) == item)
+                        {
+                            weight += candidate.weight;
+                        }
+                    }
+                }
+
+                return total > 0f ? weight / total : 0f;
+            }
+
+            return 0f;
+        }
+
         void OnDisable() => _cache = null;
 
         void OnValidate() => _cache = null;
