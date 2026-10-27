@@ -105,7 +105,7 @@ MonoBehaviour:
   m_PrefilteringModeAdditionalLight: 4
   m_PrefilteringModeAdditionalLightShadows: 0
   m_PrefilterXRKeywords: 1
-  m_PrefilteringModeForwardPlus: 0
+  m_PrefilteringModeForwardPlus: 1
   m_PrefilteringModeDeferredRendering: 0
   m_PrefilteringModeScreenSpaceOcclusion: 0
   m_PrefilterDebugKeywords: 1

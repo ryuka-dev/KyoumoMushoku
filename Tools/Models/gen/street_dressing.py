@@ -592,6 +592,64 @@ def sidewalk_paver(x):
     return root
 
 
+# ── 側溝・ビールケース ─────────────────────────────────
+
+def gutter_cover(x):
+    """路地の端の側溝のコンクリート蓋 1m（幅 0.4m）。手を掛ける切り欠きが二つ。路面から 1cm 上。"""
+    root = km.new_root("GutterCover", x)
+
+    def slabs(bm):
+        for i in range(2):
+            km.box(bm, -0.25 + i * 0.5, 0.0, 0.01, 0.48, 0.4, 0.02)
+
+    part(root, "Slabs", slabs, shade("concrete", 2, 1, 0))
+    part(root, "Notches", lambda bm: [km.box(bm, -0.25 + i * 0.5, 0.17, 0.021, 0.08, 0.03, 0.002) for i in range(2)], const("black", 2))
+    return root
+
+
+def gutter_grate(x):
+    """側溝の鉄の格子蓋 0.5m（幅 0.4m）。格子は太さ 3.5cm（細いとちらつく）。"""
+    root = km.new_root("GutterGrate", x)
+
+    def frame(bm):
+        km.box(bm, 0.0, -0.185, 0.012, 0.5, 0.03, 0.024)
+        km.box(bm, 0.0, 0.185, 0.012, 0.5, 0.03, 0.024)
+        km.box(bm, -0.235, 0.0, 0.012, 0.03, 0.4, 0.024)
+        km.box(bm, 0.235, 0.0, 0.012, 0.03, 0.4, 0.024)
+
+    part(root, "Frame", frame, const("steel", 2))
+    part(root, "Bars", lambda bm: [km.box(bm, -0.16 + i * 0.08, 0.0, 0.011, 0.035, 0.34, 0.022) for i in range(5)], const("steel", 1))
+    part(root, "Hole", lambda bm: km.box(bm, 0.0, 0.0, 0.002, 0.42, 0.32, 0.004), const("black", 0))
+    return root
+
+
+def beer_crate(x):
+    """赤いプラスチックのビールケース（大瓶 20 本）。積んで使う。高さ 0.3m。"""
+    root = km.new_root("BeerCrate", x)
+    w, d, h = 0.47, 0.37, 0.3
+
+    def crate(bm):
+        km.box(bm, 0.0, 0.0, 0.02, w, d, 0.04)                  # 底
+        for sy in (-1, 1):
+            km.box(bm, 0.0, sy * (d / 2 - 0.015), h * 0.55, w, 0.03, h * 0.9)
+        for sx in (-1, 1):
+            km.box(bm, sx * (w / 2 - 0.015), 0.0, h * 0.55, 0.03, d - 0.06, h * 0.9)
+
+    part(root, "Crate", crate, shade("sign_red", 4, 3, 1))
+    part(root, "Handles", lambda bm: [km.box(bm, sx * (w / 2 + 0.002), 0.0, h * 0.82, 0.006, 0.12, 0.04) for sx in (-1, 1)], const("black", 2))
+
+    def bottles(bm):
+        for i in range(5):
+            for j in range(4):
+                verts = cylinder(bm, 6, 0.03, 0.03, 0.04, 0.28)
+                move(bm, verts, (-0.18 + i * 0.09, -0.135 + j * 0.09, 0.0))
+                verts = cylinder(bm, 6, 0.012, 0.012, 0.28, 0.34)
+                move(bm, verts, (-0.18 + i * 0.09, -0.135 + j * 0.09, 0.0))
+
+    part(root, "Bottles", bottles, shade("terracotta", 2, 1, 0))
+    return root
+
+
 # ── 組み立てと書き出し ─────────────────────────────────
 
 km.clear_scene()
@@ -615,6 +673,9 @@ roots = [
     curve_mirror(44.5),
     hokora(47.0),
     sidewalk_paver(50.0),
+    gutter_cover(53.0),
+    gutter_grate(55.0),
+    beer_crate(57.0),
 ]
 
 # Blender の中では見比べるために横へ並べてあるので、書き出す間だけ原点へ戻す（FBX の原点＝底面の中心）。
