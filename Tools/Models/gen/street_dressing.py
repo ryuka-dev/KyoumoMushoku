@@ -178,7 +178,7 @@ def block_wall(name, x, base_step, worn):
             offset = 0.2 if i % 2 else 0.0
             x = -1.0 + offset + 0.4
             while x < 1.0:
-                km.box(bm, x, 0.0, z, 0.02, 0.145, 0.18)
+                km.box(bm, x, 0.0, z, 0.02, 0.16, 0.18)  # 1cm 出す（2.5mm だと遠くで明滅する）
                 x += 0.4
 
     part(root, "Joints", joints, const("concrete", max(0, base_step - 1)))

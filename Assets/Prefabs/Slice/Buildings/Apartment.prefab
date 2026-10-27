@@ -74,8 +74,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.0200007, y: 2.5800004, z: 4.9000006}
-  m_Center: {x: -5.06, y: 1.4000002, z: -3.5500004}
+  m_Size: {x: 1.0250008, y: 3.8807633, z: 4.841107}
+  m_Center: {x: -5.0624995, y: 1.9060662, z: -3.5000005}
 --- !u!1001 &2841998803099744253
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -124,7 +124,7 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8333414334804796302, guid: bee025743150af244a2dec1875646932, type: 3}
+    - target: {fileID: -7107102176916141955, guid: bee025743150af244a2dec1875646932, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: a489a6c9186c9dc458074cb9b43f4940, type: 2}
@@ -132,6 +132,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Apartment
       objectReference: {fileID: 0}
+    - target: {fileID: 8755973491146711202, guid: bee025743150af244a2dec1875646932, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: fb9bbb7fff121614995b84826f6f4aa5, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
