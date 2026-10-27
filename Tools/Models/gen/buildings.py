@@ -153,6 +153,17 @@ class Facade:
             self.grilles.append((x, y - 0.14, z + h / 2, w, 0.03, 0.03))
             self.grilles.append((x, y - 0.14, z - h / 2, w, 0.03, 0.03))
 
+    def side_window(self, x_face, side, y, z, w, h):
+        """妻（横の壁）の小窓。x_face は壁の面、side は外向き（-1＝左の妻、+1＝右の妻）。"""
+        t = 0.08
+        xf = x_face + side * 0.04
+        self.frames.append((xf, y - w / 2 - t / 2, z, 0.08, t, h + 2 * t))
+        self.frames.append((xf, y + w / 2 + t / 2, z, 0.08, t, h + 2 * t))
+        self.frames.append((xf, y, z + h / 2 + t / 2, 0.08, w, t))
+        self.frames.append((xf, y, z - h / 2 - t / 2, 0.08, w, t))
+        self.dark.append((x_face + side * 0.03, y, z, 0.01, w + 0.02, h + 0.02))
+        self.hoods.append((x_face + side * 0.22, y, z + h / 2 + t + 0.12, 0.44, w + 0.4, 0.05))
+
     def pipe(self, x, top, y=0.0):
         self.pipes.append((x, y - 0.1, top / 2, 0.11, 0.11, top))
         self.pipes.append((x, y - 0.25, top - 0.05, 0.11, 0.3, 0.1))
@@ -379,6 +390,8 @@ def house(name, x, w, roof_material, wall_material, wall_step, balcony, boards=F
                                           km.box(bm, right_x + 0.55, -0.6, floor2 + 1.4, 0.5, 0.02, 0.66)), const("paper", 3))
     else:
         f.window(right_x, floor2 + 1.3, 1.3, 1.0)
+    for side in (-1, 1):
+        f.side_window(side * w / 2, side, d * 0.55, floor2 + 1.4, 0.8, 0.9)
     f.build()
     return root
 
@@ -484,6 +497,20 @@ def shop(name, x, w, floors, front, roof_kind, sign, wall_material, wall_step, l
             part(root, "Lattice", slats, const("wood_dark", 3))
         else:
             part(root, "ShopStall", lambda bm: km.box(bm, 0.0, y1 - 0.45, 0.45, inner - 1.2, 0.8, 0.9), shade("grime", 4, 3, 1))
+        def goods(bm):
+            n = max(2, int((inner - 1.4) / 0.45))
+            for i in range(n):
+                gx = -(inner - 1.4) / 2 + ((inner - 1.4)) * (i + 0.5) / n
+                km.box(bm, gx, y1 - 0.45, 0.9 + 0.07, 0.38, 0.32, 0.14)
+
+        def produce(bm):
+            n = max(2, int((inner - 1.4) / 0.45))
+            for i in range(n):
+                gx = -(inner - 1.4) / 2 + ((inner - 1.4)) * (i + 0.5) / n
+                km.box(bm, gx, y1 - 0.45, 0.9 + 0.17, 0.3, 0.24, 0.08)
+
+        part(root, "GoodsCrates", goods, shade("terracotta", 3, 2, 1))
+        part(root, "GoodsProduce", produce, lambda poly: (["park_green", "caution", "sign_red", "store_orange"][int(abs(poly.center.x) * 2.2) % 4], 3))
     else:
         def housing(bm):
             km.box(bm, 0.0, y1 - 0.18, FLOOR1 - 0.25, inner + 0.2, 0.36, 0.4)
@@ -499,7 +526,21 @@ def shop(name, x, w, floors, front, roof_kind, sign, wall_material, wall_step, l
             part(root, "ShutterSlats", slats, lambda p: ("steel", 3 if int(p.center.z / 0.2) % 2 == 0 else 2))
         else:
             f.dark.append((0.0, y1 - 0.01, 1.3, inner, 0.02, 2.5))
-            part(root, "ShopStall", lambda bm: km.box(bm, 0.0, y1 - 0.6, 0.4, inner - 0.6, 1.0, 0.8), shade("terracotta", 4, 3, 1))
+            part(root, "ShopStall", lambda bm: km.box(bm, 0.0, y1 - 0.6, 0.4, inner - 0.6, 1.0, 0.8), shade("wood_dark", 4, 3, 1))
+        def goods(bm):
+            n = max(2, int((inner - 0.8) / 0.45))
+            for i in range(n):
+                gx = -(inner - 0.8) / 2 + ((inner - 0.8)) * (i + 0.5) / n
+                km.box(bm, gx, y1 - 0.6, 0.8 + 0.07, 0.38, 0.32, 0.14)
+
+        def produce(bm):
+            n = max(2, int((inner - 0.8) / 0.45))
+            for i in range(n):
+                gx = -(inner - 0.8) / 2 + ((inner - 0.8)) * (i + 0.5) / n
+                km.box(bm, gx, y1 - 0.6, 0.8 + 0.17, 0.3, 0.24, 0.08)
+
+        part(root, "GoodsCrates", goods, shade("terracotta", 3, 2, 1))
+        part(root, "GoodsProduce", produce, lambda poly: (["park_green", "caution", "sign_red", "store_orange"][int(abs(poly.center.x) * 2.2) % 4], 3))
 
     # 下屋庇（または帳）と、その上の看板の帯。
     if tent:

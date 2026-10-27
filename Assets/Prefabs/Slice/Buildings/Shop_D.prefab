@@ -33,7 +33,7 @@ Transform:
   m_Children:
   - {fileID: 3593801480132872238}
   - {fileID: 1367919523488306843}
-  - {fileID: 9050703245479849646}
+  - {fileID: 4020673963864990915}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &7770224796815124430
@@ -175,7 +175,7 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!1 &9211925911917979616
+--- !u!1 &9091502139406750887
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -183,8 +183,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 9050703245479849646}
-  - component: {fileID: 8030339272206072940}
+  - component: {fileID: 4020673963864990915}
+  - component: {fileID: 5752270789730939071}
   m_Layer: 0
   m_Name: NightLight
   m_TagString: Untagged
@@ -192,13 +192,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &9050703245479849646
+--- !u!4 &4020673963864990915
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9211925911917979616}
+  m_GameObject: {fileID: 9091502139406750887}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.00000006341822, y: 1.9, z: 0.28500068}
@@ -207,13 +207,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7026706416841865555}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!108 &8030339272206072940
+--- !u!108 &5752270789730939071
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9211925911917979616}
+  m_GameObject: {fileID: 9091502139406750887}
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 2
