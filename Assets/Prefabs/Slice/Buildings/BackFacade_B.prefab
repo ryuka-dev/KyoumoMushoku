@@ -102,6 +102,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8282741423257479077, guid: 0ef201318a607224f870666b737f218f, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: a489a6c9186c9dc458074cb9b43f4940, type: 2}
+    - target: {fileID: 650883023625281539, guid: 0ef201318a607224f870666b737f218f, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 650883023625281539, guid: 0ef201318a607224f870666b737f218f, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: ea4595c8868ccc5458b24ff943585897, type: 2}
     - target: {fileID: 919132149155446097, guid: 0ef201318a607224f870666b737f218f, type: 3}
       propertyPath: m_Name
       value: BackFacade_B

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2556489062848531752}
   - component: {fileID: 9107381125119274069}
+  - component: {fileID: 8459990035513445375}
   m_Layer: 0
   m_Name: Shop_C
   m_TagString: Untagged
@@ -52,8 +53,29 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 6.5000014, y: 6.2000003, z: 9.000002}
-  m_Center: {x: 0.00000067948105, y: 3.1000001, z: -4.4999995}
+  m_Size: {x: 6.5000014, y: 3.3000004, z: 8.550001}
+  m_Center: {x: 0.00000071345517, y: 1.6500002, z: -4.725}
+--- !u!65 &8459990035513445375
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4488120409324040873}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 6.5000014, y: 2.9000003, z: 9.000001}
+  m_Center: {x: 0.00000067948105, y: 4.7500005, z: -4.4999995}
 --- !u!1001 &8912509630491355656
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -102,6 +124,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -4531175557362995815, guid: 795e7dbfbb31c86428fca09313023f76, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: a489a6c9186c9dc458074cb9b43f4940, type: 2}
     - target: {fileID: 919132149155446097, guid: 795e7dbfbb31c86428fca09313023f76, type: 3}
       propertyPath: m_Name
       value: Shop_C
