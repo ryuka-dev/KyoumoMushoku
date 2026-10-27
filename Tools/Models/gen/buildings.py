@@ -588,7 +588,7 @@ def shop(name, x, w, floors, front, roof_kind, sign, wall_material, wall_step, l
     return root
 
 
-def kanban(name, x, w, seed=0):
+def kanban(name, x, w, seed=0, front=("paper", 3), sign="sign_red"):
     """看板建築：奥の小屋根を隠す、屋根より高い平らな正面の壁。"""
     root = km.new_root(name, x)
     d, h = 8.0, 6.0
@@ -600,7 +600,7 @@ def kanban(name, x, w, seed=0):
     def false_front(bm):
         km.box(bm, 0.0, 0.15, (FLOOR1 + 0.3 + front_top) / 2, w, 0.3, front_top - FLOOR1 - 0.3)
 
-    part(root, "BodyFront", false_front, wall_rule("paper", 3))
+    part(root, "BodyFront", false_front, wall_rule(*front))
 
     def cornice(bm):
         km.box(bm, 0.0, -0.05, front_top - 0.1, w + 0.2, 0.3, 0.3)
@@ -611,7 +611,7 @@ def kanban(name, x, w, seed=0):
             km.box(bm, sx, -0.04, (FLOOR1 + 0.2 + front_top - 0.05) / 2, 0.3, 0.12, front_top - 0.05 - FLOOR1 - 0.2)
 
     part(root, "Cornice", cornice, shade("concrete", 4, 3, 1))
-    part(root, "SignBand", lambda bm: km.box(bm, 0.0, -0.08, 5.95, w - 1.0, 0.1, 0.8), shade("sign_red", 3, 3, 1))
+    part(root, "SignBand", lambda bm: km.box(bm, 0.0, -0.08, 5.95, w - 1.0, 0.1, 0.8), shade(sign, 3, 3, 1))
     part(root, "SignText", lambda bm: [km.box(bm, *b) for b in sign_text(0.0, 5.95, w - 1.6, 0.6, -0.14)], const("paper", 4))
     f = Facade(root, seed)
     f.window(0.0, 4.5, 2.2, 1.1)
@@ -634,11 +634,11 @@ def kanban(name, x, w, seed=0):
     return root
 
 
-def zakkyo(name, x, w, floors, sign_colors, seed=0):
+def zakkyo(name, x, w, floors, sign_colors, seed=0, wall=("concrete", 2)):
     root = km.new_root(name, x)
     d = 9.0
     h = 3.4 + 3.0 * (floors - 1)
-    body(root, "Body", -w / 2, w / 2, 0.0, d, 0.0, h, "concrete", 2)
+    body(root, "Body", -w / 2, w / 2, 0.0, d, 0.0, h, *wall)
     flat_roof(root, w, d, h, "concrete", parapet=0.8, things=True, seed=seed)
     part(root, "Floors", lambda bm: [km.box(bm, 0.0, -0.03, 3.4 + 3.0 * f_, w + 0.04, 0.06, 0.15) for f_ in range(floors - 1)], const("concrete", 1))
 
@@ -764,6 +764,15 @@ roots = [
     back_facade("BackFacade_A", 134.0, 7.5, "concrete", 2, 0),
     back_facade("BackFacade_B", 142.0, 6.2, "rust", 2, 1),
     back_facade("BackFacade_C", 150.0, 9.8, "siding", 2, 2),
+    # 色違い（同じ形が並んでも色まで同じにならないように。幅は元と同じ＝並べ替えずに差し替えられる）。
+    house("House_A2", 160.0, 7.0, "rust", "paper", 3, True, seed=11),
+    house("House_B2", 170.0, 6.0, "kawara", "siding", 2, False, seed=12),
+    house("House_C2", 179.0, 7.6, "steel", "concrete", 3, True, seed=13),
+    shop("Shop_A2", 190.0, 6.0, 2, "glass", "rust", "sign_red", "concrete", 3, lanterns=True, seed=14),
+    shop("Shop_C2", 199.0, 6.5, 2, "closed", "kawara", "indigo", "paper", 3, seed=15),
+    shop("Shop_D2", 208.0, 5.5, 2, "lattice", "rust", "caution", "siding", 3, lanterns=True, seed=16),
+    kanban("Kanban_A2", 217.0, 6.0, seed=17, front=("siding", 3), sign="indigo"),
+    zakkyo("Zakkyo_B2", 227.0, 8.0, 3, ["park_green", "sign_red"], seed=18, wall=("siding", 2)),
 ]
 
 # 見比べるために横へ並べてあるので、書き出す間だけ原点へ戻す。

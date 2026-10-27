@@ -527,6 +527,71 @@ def curve_mirror(x):
     return root
 
 
+# ── 路地の祠・歩道の敷石 ───────────────────────────────
+
+def hokora(x):
+    """路地の角の小さな祠。石の台・木の祠と瓦の小屋根・小さな赤い鳥居・賽銭箱。正面は -Y。"""
+    root = km.new_root("Hokora", x)
+
+    def base(bm):
+        km.box(bm, 0.0, 0.0, 0.15, 1.1, 0.9, 0.3)
+        km.box(bm, 0.0, 0.05, 0.45, 0.85, 0.7, 0.3)
+
+    part(root, "Base", base, shade("concrete", 3, 2, 1))
+
+    def shrine(bm):
+        km.box(bm, 0.0, 0.1, 0.9, 0.55, 0.45, 0.6)
+        km.box(bm, 0.0, -0.14, 0.85, 0.36, 0.02, 0.4)      # 扉
+
+    part(root, "Shrine", shrine, shade("wood_dark", 3, 2, 1))
+
+    def roof(bm):
+        for side in (-1, 1):
+            verts = km.box(bm, 0.0, 0.1 + side * 0.2, 1.29, 0.8, 0.46, 0.05)
+            rotate(bm, verts, "X", side * 28, center=(0.0, 0.1 + side * 0.2, 1.29))
+        km.box(bm, 0.0, 0.1, 1.4, 0.82, 0.08, 0.06)
+
+    part(root, "Roof", roof, shade("kawara", 3, 2, 0))
+
+    def torii(bm):
+        for sx in (-0.38, 0.38):
+            move(bm, cylinder(bm, 8, 0.035, 0.035, 0.0, 1.15), (sx, -0.75, 0.0))
+        km.box(bm, 0.0, -0.75, 1.2, 1.0, 0.07, 0.07)         # 笠木
+        km.box(bm, 0.0, -0.75, 1.0, 0.85, 0.05, 0.05)        # 貫
+
+    part(root, "Torii", torii, shade("sign_red", 3, 3, 1))
+
+    def box(bm):
+        # 賽銭箱は上の段の上、祠の正面に載せる（台に埋めない）。
+        km.box(bm, 0.0, -0.21, 0.72, 0.32, 0.16, 0.24)
+
+    part(root, "Offering", box, shade("wood_dark", 4, 3, 1))
+    part(root, "OfferingSlats", lambda bm: [km.box(bm, -0.105 + i * 0.07, -0.21, 0.845, 0.025, 0.12, 0.01) for i in range(4)], const("black", 2))
+    return root
+
+
+def sidewalk_paver(x):
+    """歩道の敷石 2m×2m の一枚。四×四の石を 2cm の目地で並べ、ところどころ色の違う石。"""
+    root = km.new_root("SidewalkPaver", x)
+    size, gap, n = 2.0, 0.02, 4
+    stone = (size - gap * n) / n
+
+    def stones(red):
+        def build(bm):
+            for i in range(n):
+                for j in range(n):
+                    is_red = (i * 3 + j * 5) % 7 == 0
+                    if is_red != red:
+                        continue
+                    km.box(bm, -size / 2 + gap / 2 + stone / 2 + i * (stone + gap),
+                           -size / 2 + gap / 2 + stone / 2 + j * (stone + gap), 0.0075, stone, stone, 0.015)
+        return build
+
+    part(root, "Stones", stones(False), shade("concrete", 3, 2, 1))
+    part(root, "StonesRed", stones(True), shade("terracotta", 2, 1, 0))
+    return root
+
+
 # ── 組み立てと書き出し ─────────────────────────────────
 
 km.clear_scene()
@@ -548,6 +613,8 @@ roots = [
     sign_stand(40.0),
     noren(42.0),
     curve_mirror(44.5),
+    hokora(47.0),
+    sidewalk_paver(50.0),
 ]
 
 # Blender の中では見比べるために横へ並べてあるので、書き出す間だけ原点へ戻す（FBX の原点＝底面の中心）。

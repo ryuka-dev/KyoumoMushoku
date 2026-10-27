@@ -34,7 +34,7 @@ Transform:
   m_Children:
   - {fileID: 7033640247998866235}
   - {fileID: 2164988799173884780}
-  - {fileID: 333492626692278583}
+  - {fileID: 2414574213370437927}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &313317353289314410
@@ -100,7 +100,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.2, y: 0.90000004, z: 0.8000008}
   m_Center: {x: -6.3948845e-15, y: 0.45, z: 0.00000005364418}
---- !u!1 &1751645545499961207
+--- !u!1 &3048513128766112167
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -108,8 +108,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 333492626692278583}
-  - component: {fileID: 998032640707356597}
+  - component: {fileID: 2164988799173884780}
+  - component: {fileID: 4942388870660943985}
   m_Layer: 0
   m_Name: NightLight
   m_TagString: Untagged
@@ -117,34 +117,34 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &333492626692278583
+--- !u!4 &2164988799173884780
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1751645545499961207}
+  m_GameObject: {fileID: 3048513128766112167}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.000000029444143, y: 1.9, z: 0.735001}
+  m_LocalPosition: {x: 0.000000015099547, y: 2.15, z: 0.35000026}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4666172349569378169}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!108 &998032640707356597
+--- !u!108 &4942388870660943985
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1751645545499961207}
+  m_GameObject: {fileID: 3048513128766112167}
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 2
-  m_Color: {r: 1, g: 0.78, b: 0.55, a: 1}
-  m_Intensity: 1.3
-  m_Range: 5.5
+  m_Color: {r: 1, g: 0.5, b: 0.25, a: 1}
+  m_Intensity: 1.6
+  m_Range: 4.5
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
@@ -197,7 +197,7 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!1 &3048513128766112167
+--- !u!1 &9212576607876856931
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -205,8 +205,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2164988799173884780}
-  - component: {fileID: 4942388870660943985}
+  - component: {fileID: 2414574213370437927}
+  - component: {fileID: 938118781806447208}
   m_Layer: 0
   m_Name: NightLight
   m_TagString: Untagged
@@ -214,34 +214,34 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2164988799173884780
+--- !u!4 &2414574213370437927
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3048513128766112167}
+  m_GameObject: {fileID: 9212576607876856931}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.000000015099547, y: 2.15, z: 0.35000026}
+  m_LocalPosition: {x: 0.000000029444143, y: 1.9, z: 0.735001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4666172349569378169}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!108 &4942388870660943985
+--- !u!108 &938118781806447208
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3048513128766112167}
+  m_GameObject: {fileID: 9212576607876856931}
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 2
-  m_Color: {r: 1, g: 0.5, b: 0.25, a: 1}
-  m_Intensity: 1.6
-  m_Range: 4.5
+  m_Color: {r: 1, g: 0.78, b: 0.55, a: 1}
+  m_Intensity: 1.3
+  m_Range: 5.5
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
