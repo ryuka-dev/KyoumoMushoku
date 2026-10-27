@@ -61,7 +61,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         IRng _rng;
         Phase _phase;
-        float _nightTimer;
         float _dropTimer;
         int _day;
         bool _muttered;
@@ -102,7 +101,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 // 新しい一日。今夜もまた出る。
                 _day = clock.Day;
                 _phase = Phase.Waiting;
-                _nightTimer = 0f;
                 _muttered = false;
             }
 
@@ -116,13 +114,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
                         Say(ProtoText.ClerkMutterAtDusk);
                     }
 
-                    if (clock.Phase == DayPhase.Night)
+                    // 夜からの経過は時計から読む。バイトのように時計がまとまって進んでも、廃棄の時刻がずれない。
+                    if (_dayNight.IsNight && _dayNight.SecondsSinceNightfall >= _delayAfterNightfall)
                     {
-                        _nightTimer += dt;
-                        if (_nightTimer >= _delayAfterNightfall)
-                        {
-                            StepOut();
-                        }
+                        StepOut();
                     }
 
                     break;

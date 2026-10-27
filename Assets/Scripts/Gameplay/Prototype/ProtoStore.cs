@@ -10,11 +10,12 @@ using UnityEngine;
 namespace KyoumoMushoku.Gameplay.Prototype
 {
     /// <summary>
-    /// 試作のコンビニ。廃品の買い取りと、棚の品（水・食べ物・バックパック）の販売を持つ（作業計画 第一の二節「鞄」）。
+    /// 試作のコンビニ。廃品の買い取りと、棚の品（水・食べ物・バックパック）の販売と、バイト（レジ打ち）の精算を持つ
+    /// （作業計画 第一の二節「鞄」、一人称試作 試遊・一局目の次の手 2）。
     /// 鞄が一杯になったら売りに行く → 金 → バックパックで容量が増える、という輪を一人称で確かめる。
     ///
-    /// 取引の規則は本編と同じ Core（<see cref="SalvageBuyback"/>・<see cref="StorePurchase"/>）と
-    /// <c>Assets/Config/ShopTuning.asset</c> の買い取り上限を使う。店主の台詞も本編の <see cref="ShopText"/> を使う。
+    /// 取引の規則は本編と同じ Core（<see cref="SalvageBuyback"/>・<see cref="StorePurchase"/>・<see cref="JobReward"/>）と
+    /// <c>Assets/Config/ShopTuning.asset</c> の買い取り上限・バイトの数値を使う（2D 版と共有。書き換えない）。店主の台詞も本編の <see cref="ShopText"/> を使う。
     /// この店が持つのは、その日の買い取り額の帳簿（<see cref="SalvageLedger"/>）だけ。金と鞄はプレイヤー（<see cref="ProtoHands"/>）が持つ。
     /// 帳簿は就寝＝日付の変わり目で新しい一日になる（<see cref="BeginNextDay"/>。<see cref="ProtoSession"/> が呼ぶ）。
     /// </summary>
@@ -22,6 +23,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
     {
         [SerializeField] ShopTuningAsset _tuning;
         [SerializeField] ItemDatabaseAsset _catalog;
+        [Tooltip("バイト1シフトで進める時計。")]
+        [SerializeField] ProtoDayNight _dayNight;
 
         readonly SalvageLedger _ledger = new SalvageLedger();
 
@@ -29,10 +32,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         int DailyCap => _tuning != null ? _tuning.BuybackDailyCapYen : 0;
 
-        public void Configure(ShopTuningAsset tuning, ItemDatabaseAsset catalog)
+        /// <summary>レジ打ち1シフトのラウンド数。</summary>
+        public int JobRounds => _tuning != null ? _tuning.JobRounds : 0;
+
+        public void Configure(ShopTuningAsset tuning, ItemDatabaseAsset catalog, ProtoDayNight dayNight)
         {
             _tuning = tuning;
             _catalog = catalog;
+            _dayNight = dayNight;
         }
 
         /// <summary>新しい一日。店主の買い取り枠が戻る。就寝からのみ呼ぶ。</summary>
@@ -55,6 +62,31 @@ namespace KyoumoMushoku.Gameplay.Prototype
             return result.SoldCount > 0
                 ? ShopText.SalvageSold(result.SoldCount, result.PaidYen, result.CapReached)
                 : ShopText.BuybackCapReached;
+        }
+
+        /// <summary>
+        /// バイト1シフトぶんの精算。規則は本編の Storefront.ApplyJobOutcome と同じ：報酬は出来（<paramref name="performance01"/>）と
+        /// SAN で決まり（<see cref="JobReward"/>）、SAN・渇き・空腹・時間の消費は出来によらず必ず起きる（働けば削られる）。
+        /// 店にいる間は時間が止まっているので、1シフトの時間は時計をまとまって進めて払う。途中でやめたらここに来ない＝何も消費しない。
+        /// 返すのは店主の一言。
+        /// </summary>
+        public string Work(float performance01, Vitals vitals, Wallet wallet)
+        {
+            if (_tuning == null || vitals == null || wallet == null)
+            {
+                return null;
+            }
+
+            var paid = JobReward.Payout(performance01, vitals.Sanity);
+            wallet.Add(paid);
+            vitals.Apply(new VitalsDelta { Sanity = -_tuning.JobSanityCost });
+            vitals.DrainTime(_tuning.JobShiftSeconds, _tuning.JobDrainMultiplier);
+            if (_dayNight != null)
+            {
+                _dayNight.Clock?.Advance(_tuning.JobShiftSeconds);
+            }
+
+            return ShopText.JobDone(paid);
         }
 
         /// <summary>棚の品を一つ買う。返すのは店主の一言。</summary>

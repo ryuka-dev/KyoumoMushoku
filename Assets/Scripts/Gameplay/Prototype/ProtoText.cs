@@ -37,6 +37,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string ShopWallet(int yen, int used, int capacity) => $"所持金 {yen}円　カバン {used}/{capacity}";
         public static string ShopLeave => "店を出る［Esc］";
         public static string BackpackOwned(string name) => $"{name}：購入済み";
+        public static string WorkPrompt => "はたらく：レジ打ち（気分と空腹を削る・時間が進む）";
+        public static string WorkControls => "左クリック／Space：打つ　　Esc：やめる（何も減らない）";
+        public static string WorkHit => "ピッ";
+        public static string WorkMiss => "……打ち損じた";
 
         // ── 水・飲食 ─────────────────────────────────────────
         public static string FaucetPrompt => "水道：水を飲む";

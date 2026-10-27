@@ -2395,6 +2395,7 @@ GameObject:
   m_Component:
   - component: {fileID: 372112299}
   - component: {fileID: 372112300}
+  - component: {fileID: 372112301}
   m_Layer: 0
   m_Name: Lamp
   m_TagString: Untagged
@@ -2482,6 +2483,35 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &372112301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 372112298}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &378095564
 GameObject:
   m_ObjectHideFlags: 0
@@ -2807,6 +2837,7 @@ MonoBehaviour:
   _store: {fileID: 1838021688}
   _session: {fileID: 383865369}
   _catalog: {fileID: 11400000, guid: b2da92ddbfa7c464489fc05d51344797, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _font: {fileID: 12800000, guid: d0983ab95d7883a4db4d07be8f61dbbc, type: 3}
   _disposal: {fileID: 1838021690}
   _offerIds:
@@ -11855,6 +11886,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoStore
   _tuning: {fileID: 11400000, guid: aea366e1207fb44419a9503e7a9c099e, type: 2}
   _catalog: {fileID: 11400000, guid: b2da92ddbfa7c464489fc05d51344797, type: 2}
+  _dayNight: {fileID: 1497018777}
 --- !u!4 &1838021689
 Transform:
   m_ObjectHideFlags: 0

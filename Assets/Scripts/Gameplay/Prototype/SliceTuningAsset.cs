@@ -26,6 +26,16 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("夜更かしによる SAN の減りの上限（/秒）。")]
         [SerializeField, Min(0f)] float _lateNightMaxDrainPerSecond = 0.4f;
 
+        [Header("バイト（レジ打ちのタイミングバー）")]
+        [Tooltip("カーソルが往復する速さ（毎秒、バーの幅に対する割合）。本編のレジ打ちと同じ 1.1 から。")]
+        [SerializeField, Min(0.1f)] float _jobCursorSpeed = 1.1f;
+
+        [Tooltip("命中帯の半幅（バーの幅に対する割合）。")]
+        [SerializeField, Range(0.01f, 0.5f)] float _jobHalfBand = 0.14f;
+
+        [Tooltip("精神崩壊（値札が読めない帯）での命中帯の半幅。手元が狂う（第三節）。")]
+        [SerializeField, Range(0.01f, 0.5f)] float _jobBrokenHalfBand = 0.06f;
+
         [Header("終わり")]
         [Tooltip("この日の夜に寝たら、翌朝に切片の結算を見せて終える。")]
         [SerializeField, Min(1)] int _finalDay = 3;
@@ -34,6 +44,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public float LateNightStartSeconds => _lateNightStartSeconds;
         public float LateNightRampPerSecond => _lateNightRampPerSecond;
         public float LateNightMaxDrainPerSecond => _lateNightMaxDrainPerSecond;
+        public float JobCursorSpeed => _jobCursorSpeed;
+        public float JobHalfBand => _jobHalfBand;
+        public float JobBrokenHalfBand => _jobBrokenHalfBand;
         public int FinalDay => _finalDay;
     }
 }
