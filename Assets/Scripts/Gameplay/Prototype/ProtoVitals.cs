@@ -7,7 +7,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
 {
     /// <summary>
     /// 一人称の切片で、4つの状態（HP・渇き・空腹・SAN）を持つ唯一の場所。規則は本編と同じ Core の <see cref="Vitals"/>、
-    /// 数値は <c>Assets/Config/VitalsTuning.asset</c>。他のコンポーネントはここを観測するか、<see cref="Vitals.Apply"/> を通す。
+    /// 数値は切片用に複製した <c>Assets/Config/VitalsTuning_Slice.asset</c>
+    /// （昼を縮めたぶん空腹の消耗を上げてある。2D 版の VitalsTuning は書き換えない）。他のコンポーネントはここを観測するか、<see cref="Vitals.Apply"/> を通す。
     ///
     /// 本編の <see cref="PlayerVitals"/> は 2D の移動（PlayerMotor）に結びついているので、一人称にはこれを置く。
     /// 一日目の朝の SAN は切片の数値（<see cref="SliceTuningAsset.StartingSanity"/>）。満タンからは始めない。

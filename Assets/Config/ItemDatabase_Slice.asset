@@ -132,7 +132,7 @@ MonoBehaviour:
     hp: 0
     thirst: 10
     hunger: 0
-    sanity: 12
+    sanity: 6
     rottenHp: 0
     rottenSanity: 0
     sellPriceYen: 0
@@ -146,7 +146,7 @@ MonoBehaviour:
     hp: -3
     thirst: 0
     hunger: 0
-    sanity: 10
+    sanity: 4
     rottenHp: 0
     rottenSanity: 0
     sellPriceYen: 0

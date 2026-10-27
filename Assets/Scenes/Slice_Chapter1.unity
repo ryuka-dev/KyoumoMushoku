@@ -4145,7 +4145,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45deae5eedbd3d145bc3c854dc648aea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoVitals
-  _tuning: {fileID: 11400000, guid: c9ed4457ea203d14ba0f066ce54cb9cb, type: 2}
+  _tuning: {fileID: 11400000, guid: abdcee62b407eb04e889201dd565cb1d, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
 --- !u!114 &658567157
 MonoBehaviour:

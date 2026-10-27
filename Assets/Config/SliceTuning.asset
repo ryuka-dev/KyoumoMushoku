@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SliceTuning
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.SliceTuningAsset
   _startingSanity: 60
-  _lateNightStartSeconds: 60
-  _lateNightRampPerSecond: 0.008
-  _lateNightMaxDrainPerSecond: 0.35
+  _lateNightStartSeconds: 20
+  _lateNightRampPerSecond: 0.015
+  _lateNightMaxDrainPerSecond: 0.4
   _finalDay: 3
