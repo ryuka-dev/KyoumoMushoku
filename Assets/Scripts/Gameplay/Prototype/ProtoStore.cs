@@ -16,8 +16,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
     ///
     /// 取引の規則は本編と同じ Core（<see cref="SalvageBuyback"/>・<see cref="StorePurchase"/>・<see cref="JobReward"/>）と
     /// <c>Assets/Config/ShopTuning.asset</c> の買い取り上限・バイトの数値を使う（2D 版と共有。書き換えない）。店主の台詞も本編の <see cref="ShopText"/> を使う。
-    /// この店が持つのは、その日の買い取り額の帳簿（<see cref="SalvageLedger"/>）だけ。金と鞄はプレイヤー（<see cref="ProtoHands"/>）が持つ。
-    /// 帳簿は就寝＝日付の変わり目で新しい一日になる（<see cref="BeginNextDay"/>。<see cref="ProtoSession"/> が呼ぶ）。
+    /// この店が持つのは、その日の買い取り額の帳簿（<see cref="SalvageLedger"/>）と、その日に入ったシフトの数だけ。
+    /// 金と鞄はプレイヤー（<see cref="ProtoHands"/>）が持つ。
+    /// どちらも就寝＝日付の変わり目で新しい一日になる（<see cref="BeginNextDay"/>。<see cref="ProtoSession"/> が呼ぶ）。
+    /// シフトの上限（1日に何回働けるか）は切片だけの規則で、<see cref="SliceTuningAsset.JobShiftsPerDay"/> に置く。
     /// </summary>
     public sealed class ProtoStore : MonoBehaviour
     {
@@ -25,8 +27,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField] ItemDatabaseAsset _catalog;
         [Tooltip("バイト1シフトで進める時計。")]
         [SerializeField] ProtoDayNight _dayNight;
+        [SerializeField] SliceTuningAsset _slice;
 
         readonly SalvageLedger _ledger = new SalvageLedger();
+        int _shiftsToday;
 
         public int RemainingToday => _ledger.RemainingToday(DailyCap);
 
@@ -35,15 +39,24 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>レジ打ち1シフトのラウンド数。</summary>
         public int JobRounds => _tuning != null ? _tuning.JobRounds : 0;
 
-        public void Configure(ShopTuningAsset tuning, ItemDatabaseAsset catalog, ProtoDayNight dayNight)
+        /// <summary>今日まだシフトに入れるか。</summary>
+        public bool CanWorkToday => _shiftsToday < (_slice != null ? _slice.JobShiftsPerDay : 1);
+
+        public void Configure(ShopTuningAsset tuning, ItemDatabaseAsset catalog, ProtoDayNight dayNight,
+            SliceTuningAsset slice)
         {
             _tuning = tuning;
             _catalog = catalog;
             _dayNight = dayNight;
+            _slice = slice;
         }
 
-        /// <summary>新しい一日。店主の買い取り枠が戻る。就寝からのみ呼ぶ。</summary>
-        public void BeginNextDay() => _ledger.BeginNextDay();
+        /// <summary>新しい一日。店主の買い取り枠とシフトが戻る。就寝からのみ呼ぶ。</summary>
+        public void BeginNextDay()
+        {
+            _ledger.BeginNextDay();
+            _shiftsToday = 0;
+        }
 
         /// <summary>鞄の換金廃品を、今日の上限まで売る。返すのは店主の一言。</summary>
         public string Sell(Inventory bag, Wallet wallet)
@@ -72,11 +85,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// </summary>
         public string Work(float performance01, Vitals vitals, Wallet wallet)
         {
-            if (_tuning == null || vitals == null || wallet == null)
+            if (_tuning == null || vitals == null || wallet == null || !CanWorkToday)
             {
                 return null;
             }
 
+            _shiftsToday++;
             var paid = JobReward.Payout(performance01, vitals.Sanity);
             wallet.Add(paid);
             vitals.Apply(new VitalsDelta { Sanity = -_tuning.JobSanityCost });

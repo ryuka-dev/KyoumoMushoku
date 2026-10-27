@@ -11887,6 +11887,7 @@ MonoBehaviour:
   _tuning: {fileID: 11400000, guid: aea366e1207fb44419a9503e7a9c099e, type: 2}
   _catalog: {fileID: 11400000, guid: b2da92ddbfa7c464489fc05d51344797, type: 2}
   _dayNight: {fileID: 1497018777}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
 --- !u!4 &1838021689
 Transform:
   m_ObjectHideFlags: 0
@@ -11925,19 +11926,8 @@ MonoBehaviour:
   _doorPoint: {x: 3, y: 0.02, z: 6.3}
   _binPoint: {x: 3.9, y: 0.02, z: 5.3}
   _delayAfterNightfall: 25
-  _items:
-  - bento
-  - onigiri
-  - bread
-  - onigiri
-  - bento
-  - bread
-  - onigiri
-  - bento
-  - onigiri
-  - bread
-  - onigiri
-  _staleChance: 0.6
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _catalog: {fileID: 11400000, guid: b2da92ddbfa7c464489fc05d51344797, type: 2}
   _spewInterval: 0.45
   _clerkSpeed: 1.4
   _dropSeconds: 2

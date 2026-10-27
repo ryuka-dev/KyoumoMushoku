@@ -3,6 +3,8 @@ using KyoumoMushoku.Core.DayCycle;
 using KyoumoMushoku.Core.Foraging;
 using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Randomness;
+using KyoumoMushoku.Gameplay.Foraging;
+using KyoumoMushoku.Gameplay.Items;
 using UnityEngine;
 
 namespace KyoumoMushoku.Gameplay.Prototype
@@ -13,9 +15,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// そのゴミ箱を開けると、中身は一度に出ず、噴き出し続ける（<see cref="ProtoTrashCan.LoadDisposal"/>）。
     /// 鞄に入りきらない量なので、何を掴み、何を捨てて入れ替えるかが問われる。噴くたびに鳴るので、警官の耳にも届く。
     ///
+    /// 毎晩は出ない。出るかどうかは日付が変わった時点で決まる（<see cref="SliceTuningAsset.DisposalChance"/>）。
+    /// 中身は店の物なら何でも混じり、品ごとの出やすさ（＝珍しさ）は <see cref="SliceTuningAsset.DisposalTable"/> が決める。
+    ///
     /// 予告は世界の中で、事前に行う（第十四節）：夕方、店の近くにいると店員のぼやきが聞こえる。昼の間に店に入れば、
-    /// 店員が今夜の廃棄が多いことをこぼす（<see cref="ProtoShopPanel"/>）。
-    /// 一晩に一度。日付が変わるとまた待つ。
+    /// 店員が今夜の廃棄の多い少ないをこぼす（<see cref="ProtoShopPanel"/>）。出ない夜は、出ないと言う（嘘をつかない）。
+    /// 一晩に一度。日付が変わるとまた決め直す。
     /// </summary>
     public sealed class ProtoDisposal : MonoBehaviour
     {
@@ -41,14 +46,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("夜になってから店員が出てくるまでの秒数。")]
         [SerializeField, Min(0f)] float _delayAfterNightfall = 25f;
 
-        [Header("中身")]
-        [SerializeField] string[] _items =
-        {
-            "bento", "onigiri", "bread", "onigiri", "bento", "bread", "onigiri", "bento", "onigiri", "bread", "onigiri",
-        };
-
-        [Tooltip("期限切れなので、多くは傷んでいる。残りは新鮮。腐った物は出さない（出したての廃棄）。")]
-        [SerializeField, Range(0f, 1f)] float _staleChance = 0.6f;
+        [Header("中身（確率・回数・品の表は SliceTuning）")]
+        [SerializeField] SliceTuningAsset _slice;
+        [SerializeField] ItemDatabaseAsset _catalog;
 
         [Tooltip("噴き出す間隔（秒）。")]
         [SerializeField, Min(0.05f)] float _spewInterval = 0.45f;
@@ -63,14 +63,20 @@ namespace KyoumoMushoku.Gameplay.Prototype
         Phase _phase;
         float _dropTimer;
         int _day;
+        bool _comingTonight;
         bool _muttered;
 
         /// <summary>今夜の廃棄がまだ出ていない（昼・夕方の店員の口ぶりに使う）。</summary>
-        public bool PendingTonight => _phase == Phase.Waiting;
+        public bool PendingTonight => _comingTonight && _phase == Phase.Waiting;
+
+        /// <summary>今夜は廃棄が出ないと決まっている。</summary>
+        public bool NoneTonight => !_comingTonight;
 
         public void Configure(ProtoDayNight dayNight, ProtoTrashCan bin, ProtoHands player, Transform clerk,
-            Vector3 doorPoint, Vector3 binPoint)
+            Vector3 doorPoint, Vector3 binPoint, SliceTuningAsset slice, ItemDatabaseAsset catalog)
         {
+            _slice = slice;
+            _catalog = catalog;
             _dayNight = dayNight;
             _bin = bin;
             _player = player;
@@ -98,22 +104,23 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             if (clock.Day != _day)
             {
-                // 新しい一日。今夜もまた出る。
+                // 新しい一日。今夜出るかどうかを、ここで先に決める（予告が嘘にならないように）。
                 _day = clock.Day;
-                _phase = Phase.Waiting;
+                _comingTonight = _slice == null || _rng.NextDouble() < _slice.DisposalChance;
+                _phase = _comingTonight ? Phase.Waiting : Phase.Done;
                 _muttered = false;
+            }
+
+            if (clock.Phase == DayPhase.Dusk && !_muttered && PlayerWithin(_earshot))
+            {
+                _muttered = true;
+                Say(_comingTonight ? ProtoText.ClerkMutterAtDusk : ProtoText.ClerkMutterNoDisposal);
             }
 
             var dt = Time.deltaTime;
             switch (_phase)
             {
                 case Phase.Waiting:
-                    if (clock.Phase == DayPhase.Dusk && !_muttered && PlayerWithin(_earshot))
-                    {
-                        _muttered = true;
-                        Say(ProtoText.ClerkMutterAtDusk);
-                    }
-
                     // 夜からの経過は時計から読む。バイトのように時計がまとまって進んでも、廃棄の時刻がずれない。
                     if (_dayNight.IsNight && _dayNight.SecondsSinceNightfall >= _delayAfterNightfall)
                     {
@@ -127,7 +134,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                     {
                         _phase = Phase.Dropping;
                         _dropTimer = _dropSeconds;
-                        _bin.LoadDisposal(Bags(), _spewInterval);
+                        _bin.LoadDisposal(Bags(), _spewInterval, ShareOf);
                         if (PlayerWithin(_earshot))
                         {
                             Say(ProtoText.ClerkDropsDisposal);
@@ -190,15 +197,25 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         List<LootDraw> Bags()
         {
-            var draws = new List<LootDraw>(_items.Length);
-            foreach (var id in _items)
+            var count = _slice != null ? _slice.DisposalDraws : 0;
+            var draws = new List<LootDraw>(count);
+            if (_slice == null)
             {
-                var state = _rng.NextDouble() < _staleChance ? FoodState.Stale : FoodState.Fresh;
-                draws.Add(LootDraw.Of(new ItemId(id), state));
+                return draws;
+            }
+
+            // 毎晩組み直す（Play 中に SliceTuning を変えても次の廃棄から効く）。
+            var table = TrashCanLootAsset.Build(_slice.DisposalTable);
+            for (var i = 0; i < count; i++)
+            {
+                draws.Add(table.Draw(_rng, _catalog));
             }
 
             return draws;
         }
+
+        /// <summary>廃棄の1回の抽選で、その品が出る確率。ゴミ箱は珍しさをこれで決める。</summary>
+        float ShareOf(ItemId item) => _slice != null ? TrashCanLootAsset.ShareOf(_slice.DisposalTable, item) : 1f;
 
         /// <summary>店員（出ていなければ入口）の声が届く所にいるか。</summary>
         bool PlayerWithin(float distance)

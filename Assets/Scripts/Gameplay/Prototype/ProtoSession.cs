@@ -94,11 +94,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             _dayNight.BeginNextDay();
             _store?.BeginNextDay();
-            foreach (var can in FindObjectsByType<ProtoTrashCan>(FindObjectsSortMode.None))
-            {
-                can.Refill();
-            }
-
+            // ゴミ箱の補充は各ゴミ箱が日付の変わり目を読んで自分で行う（ProtoTrashCan）。
             if (_hands != null)
             {
                 CaughtYesterday = _hands.TakeCaughtCount();

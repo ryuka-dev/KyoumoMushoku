@@ -32,12 +32,15 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string ShopTitle => "コンビニ";
         public static string ShopGreeting => "……いらっしゃいませ。";
         public static string ShopGreetingBeforeDisposal => "……いらっしゃいませ。（今夜も弁当、だいぶ余りそうだな）";
+        public static string ShopGreetingNoDisposal => "……いらっしゃいませ。（今日はよく売れたな。廃棄はほとんど無いか）";
         public static string ClerkMutterAtDusk => "店員「暗くなったら、裏に出しとくか……」";
+        public static string ClerkMutterNoDisposal => "店員「今日は廃棄、ほとんど出ないな……」";
         public static string ClerkDropsDisposal => "店員「……廃棄、っと」";
         public static string ShopWallet(int yen, int used, int capacity) => $"所持金 {yen}円　カバン {used}/{capacity}";
         public static string ShopLeave => "店を出る［Esc］";
         public static string BackpackOwned(string name) => $"{name}：購入済み";
         public static string WorkPrompt => "はたらく：レジ打ち（気分と空腹を削る・時間が進む）";
+        public static string WorkDoneToday => "はたらく：今日のシフトはもう終わった";
         public static string WorkControls => "左クリック／Space：打つ　　Esc：やめる（何も減らない）";
         public static string WorkHit => "ピッ";
         public static string WorkMiss => "……打ち損じた";

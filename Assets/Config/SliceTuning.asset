@@ -16,4 +16,38 @@ MonoBehaviour:
   _lateNightStartSeconds: 20
   _lateNightRampPerSecond: 0.015
   _lateNightMaxDrainPerSecond: 0.4
+  _jobShiftsPerDay: 1
+  _jobCursorSpeed: 1.1
+  _jobHalfBand: 0.14
+  _jobBrokenHalfBand: 0.06
+  _disposalChance: 0.5
+  _disposalDraws: 8
+  _disposalTable:
+    emptyWeight: 6
+    items:
+    - id: bento
+      weight: 14
+    - id: onigiri
+      weight: 14
+    - id: bread
+      weight: 14
+    - id: can_aluminum
+      weight: 12
+    - id: water_bottle
+      weight: 10
+    - id: half_bottle
+      weight: 8
+    - id: bottle_empty
+      weight: 8
+    - id: can_coffee
+      weight: 6
+    - id: cigarette
+      weight: 4
+    - id: umbrella_broken
+      weight: 3
+    - id: cardboard
+      weight: 3
+    freshWeight: 4
+    staleWeight: 6
+    rottenWeight: 0
   _finalDay: 3

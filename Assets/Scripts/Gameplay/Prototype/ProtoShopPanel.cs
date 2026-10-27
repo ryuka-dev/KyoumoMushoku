@@ -104,11 +104,20 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             _hands = hands;
-            // 上機嫌の報酬は情報だけ（第三節）：機嫌よく生きていれば、街の人が教えてくれる。
+            // 上機嫌の報酬は情報だけ（第三節）：機嫌よく生きていれば、今夜の廃棄があるか無いかを街の人が教えてくれる。
             // 夕方のぼやき（ProtoDisposal）は SAN に依らず届くので、予告が誰にも届かない夜は無い。
-            _clerkLine = _disposal != null && _disposal.PendingTonight && SanityScale.CanHearRumors(Sanity())
-                ? ProtoText.ShopGreetingBeforeDisposal
-                : ProtoText.ShopGreeting;
+            _clerkLine = ProtoText.ShopGreeting;
+            if (_disposal != null && SanityScale.CanHearRumors(Sanity()))
+            {
+                if (_disposal.PendingTonight)
+                {
+                    _clerkLine = ProtoText.ShopGreetingBeforeDisposal;
+                }
+                else if (_disposal.NoneTonight)
+                {
+                    _clerkLine = ProtoText.ShopGreetingNoDisposal;
+                }
+            }
             _mode = Mode.Menu;
             IsOpen = true;
             return null;
@@ -144,7 +153,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         void StartWork()
         {
-            if (_store == null || _store.JobRounds <= 0)
+            if (_store == null || _store.JobRounds <= 0 || !_store.CanWorkToday)
             {
                 return;
             }
@@ -280,10 +289,16 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             y += 56f;
-            if (GUI.Button(new Rect(panel.x + 32f, y, panel.width - 64f, 40f), ProtoText.WorkPrompt, _button))
+            var canWork = _store.CanWorkToday;
+            var wasEnabled = GUI.enabled;
+            GUI.enabled = canWork;
+            if (GUI.Button(new Rect(panel.x + 32f, y, panel.width - 64f, 40f),
+                    canWork ? ProtoText.WorkPrompt : ProtoText.WorkDoneToday, _button))
             {
                 StartWork();
             }
+
+            GUI.enabled = wasEnabled;
 
             GUI.Label(new Rect(panel.x + 32f, panel.yMax - 112f, panel.width - 64f, 40f), _clerkLine, _style);
             if (GUI.Button(new Rect(panel.x + panel.width / 2f - 100f, panel.yMax - 60f, 200f, 40f), ProtoText.ShopLeave, _button))

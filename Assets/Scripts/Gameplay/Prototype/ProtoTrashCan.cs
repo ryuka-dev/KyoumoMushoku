@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using KyoumoMushoku.Core.Foraging;
@@ -18,6 +19,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 抽選は本編と同じ Core の <see cref="LootTable"/> と <c>Assets/Config/TrashCanLoot.asset</c> を使う。
     ///
     /// ふたの無いゴミ袋にも使う（<c>_hasLid</c> を外し、一打で破れる少量の袋にする）。
+    ///
+    /// 中身が戻るのは本編と同じ二つの契機：日付が変わったとき（就寝）と、夜になったとき（<see cref="ForageRefillTracker"/>）。
+    /// 開けた箱も、開けていない箱も、その時点の時間帯のテーブルで引き直す。
     /// </summary>
     public sealed class ProtoTrashCan : MonoBehaviour
     {
@@ -47,7 +51,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField, Range(0f, 1f)] float _uncommonShare = 0.12f;
 
         readonly List<LootDraw> _contents = new List<LootDraw>();
+        readonly ForageRefillTracker _refill = new ForageRefillTracker();
         IRng _rng;
+        Func<ItemId, float> _disposalShare;
         AudioSource _audio;
         Transform _lid;
         Vector3 _lidLocalPosition;
@@ -92,23 +98,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             FindOrBuildLid();
         }
 
-        void OnEnable()
-        {
-            if (_dayNight != null)
-            {
-                _dayNight.Changed += OnTimeOfDayChanged;
-            }
-
-            Refill();
-        }
-
-        void OnDisable()
-        {
-            if (_dayNight != null)
-            {
-                _dayNight.Changed -= OnTimeOfDayChanged;
-            }
-        }
+        void OnEnable() => Refill();
 
         /// <summary>
         /// 叩く。戻り値はヒットストップの強さ（0〜1）。開いた後は 0。
@@ -144,8 +134,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var opening = _hits >= _hitsToOpen;
             ProtoNoise.Emit(transform.position, loudness * (opening || empty ? 1f : Mathf.Lerp(0.8f, 0.4f, heaviness)));
 
-            // 珍しい物が入っているときだけ、叩くたびにふたの隙間から光が漏れる。
-            if (!_disposal && BestRarity() == ProtoRarity.Rare)
+            // 珍しい物が入っているときだけ、叩くたびにふたの隙間から光が漏れる（廃棄の袋も同じ）。
+            if (BestRarity() == ProtoRarity.Rare)
             {
                 LeakGlint();
             }
@@ -163,6 +153,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             StopAllCoroutines();
             _disposal = false;
+            _disposalShare = null;
             _spewInterval = 0f;
             _opened = false;
             _hits = 0;
@@ -173,28 +164,26 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>
         /// 店員が廃棄の袋を入れた（<see cref="ProtoDisposal"/>）。中身を差し替え、ふたを閉じ直す。
         /// 開けると一度に飛び出さず、<paramref name="spewInterval"/> 秒おきに噴き出し続ける（第 5 分の山場）。
-        /// 廃棄の品は産出テーブルの外なので、珍しさは付けない。
+        /// 珍しさは廃棄の表での出やすさ（<paramref name="shareOf"/>）から、ゴミ箱と同じ境で決める。
         /// </summary>
-        public void LoadDisposal(IReadOnlyList<LootDraw> draws, float spewInterval)
+        public void LoadDisposal(IReadOnlyList<LootDraw> draws, float spewInterval, Func<ItemId, float> shareOf)
         {
+            // 夜になった補充が、同じフレームで後から廃棄を上書きしないよう、先に契機を読んで済ませておく。
+            ObserveRefill();
             StopAllCoroutines();
             _contents.Clear();
             _contents.AddRange(draws);
             _disposal = true;
+            _disposalShare = shareOf;
             _spewInterval = Mathf.Max(0.05f, spewInterval);
             _opened = false;
             _hits = 0;
             ResetLid();
         }
 
-        void OnTimeOfDayChanged()
-        {
-            // 時間帯が変わればテーブルが変わる。開ける前なら引き直す（本編の TrashCan と同じ）。廃棄の袋は引き直さない。
-            if (!_opened && _hits == 0 && !_disposal)
-            {
-                Draw();
-            }
-        }
+        /// <summary>補充の契機（日付の変わり目・夜への切り替わり）を読む。契機なら true。</summary>
+        bool ObserveRefill() =>
+            _dayNight != null && _dayNight.Clock != null && _refill.Observe(_dayNight.Clock.Day, _dayNight.IsNight);
 
         void Draw()
         {
@@ -255,6 +244,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
             foreach (var draw in draws)
             {
                 Throw(draw, toPlayer);
+                if (draw.HasItem && RarityOf(draw.Item) == ProtoRarity.Rare)
+                {
+                    _audio.PlayOneShot(ProtoSounds.Chime, 0.8f);
+                }
+
                 _squash = 1f;
                 _audio.pitch = UnityEngine.Random.Range(0.9f, 1.2f);
                 _audio.PlayOneShot(ProtoSounds.Pop, 0.6f);
@@ -275,7 +269,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
-            var rarity = _disposal ? ProtoRarity.Common : RarityOf(draw.Item);
+            var rarity = RarityOf(draw.Item);
             var name = draw.Item.Value;
             var slots = 1;
             var category = ItemCategory.Salvage;
@@ -301,6 +295,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         void Update()
         {
+            if (ObserveRefill())
+            {
+                Refill();
+            }
+
             // 揺れはばねで戻す。ヒットストップ中（timeScale 0）は止まって見えるのが正しい。
             var dt = Time.deltaTime;
             _tiltVelocity += -_tilt * (140f * dt) - _tiltVelocity * (9f * dt);
@@ -349,7 +348,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         ProtoRarity RarityOf(ItemId item)
         {
-            var share = _loot != null ? _loot.ShareOf(_kind, _drawnForNight, item) : 1f;
+            var share = _disposal && _disposalShare != null
+                ? _disposalShare(item)
+                : _loot != null ? _loot.ShareOf(_kind, _drawnForNight, item) : 1f;
             if (share <= _rareShare)
             {
                 return ProtoRarity.Rare;

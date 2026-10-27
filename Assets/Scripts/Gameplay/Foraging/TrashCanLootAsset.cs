@@ -115,25 +115,30 @@ namespace KyoumoMushoku.Gameplay.Foraging
                     continue;
                 }
 
-                var table = night ? kindTables.night : kindTables.day;
-                var total = table.emptyWeight;
-                var weight = 0f;
-                if (table.items != null)
-                {
-                    foreach (var candidate in table.items)
-                    {
-                        total += candidate.weight;
-                        if (new ItemId(candidate.id) == item)
-                        {
-                            weight += candidate.weight;
-                        }
-                    }
-                }
-
-                return total > 0f ? weight / total : 0f;
+                return ShareOf(night ? kindTables.night : kindTables.day, item);
             }
 
             return 0f;
+        }
+
+        /// <summary>1つのテーブルの1回の抽選で、その品が出る確率（空振りを含む全重みに対する割合）。</summary>
+        public static float ShareOf(Table table, ItemId item)
+        {
+            var total = table.emptyWeight;
+            var weight = 0f;
+            if (table.items != null)
+            {
+                foreach (var candidate in table.items)
+                {
+                    total += candidate.weight;
+                    if (new ItemId(candidate.id) == item)
+                    {
+                        weight += candidate.weight;
+                    }
+                }
+            }
+
+            return total > 0f ? weight / total : 0f;
         }
 
         void OnDisable() => _cache = null;
@@ -155,7 +160,8 @@ namespace KyoumoMushoku.Gameplay.Foraging
             }
         }
 
-        static LootTable Build(Table table)
+        /// <summary>データのテーブルを Core の抽選表にする。ゴミ箱以外の産出（切片の廃棄など）も同じ形で書ける。</summary>
+        public static LootTable Build(Table table)
         {
             var entries = new List<LootTable.Entry>();
             if (table.items != null)
