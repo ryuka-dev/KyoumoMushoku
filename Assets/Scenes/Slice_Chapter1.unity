@@ -3153,7 +3153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoTrashCan
   _kind: 0
-  _loot: {fileID: 11400000, guid: 7d3f134bfcd6e574e91c07cb3307506d, type: 2}
+  _loot: {fileID: 11400000, guid: da5c9ee0cb4f667459ad3097c474dabe, type: 2}
   _catalog: {fileID: 11400000, guid: b2da92ddbfa7c464489fc05d51344797, type: 2}
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
@@ -3404,7 +3404,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoTrashCan
   _kind: 2
-  _loot: {fileID: 11400000, guid: 7d3f134bfcd6e574e91c07cb3307506d, type: 2}
+  _loot: {fileID: 11400000, guid: da5c9ee0cb4f667459ad3097c474dabe, type: 2}
   _catalog: {fileID: 11400000, guid: b2da92ddbfa7c464489fc05d51344797, type: 2}
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
@@ -5296,7 +5296,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoTrashCan
   _kind: 1
-  _loot: {fileID: 11400000, guid: 7d3f134bfcd6e574e91c07cb3307506d, type: 2}
+  _loot: {fileID: 11400000, guid: da5c9ee0cb4f667459ad3097c474dabe, type: 2}
   _catalog: {fileID: 11400000, guid: b2da92ddbfa7c464489fc05d51344797, type: 2}
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
@@ -6228,7 +6228,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoTrashCan
   _kind: 2
-  _loot: {fileID: 11400000, guid: 7d3f134bfcd6e574e91c07cb3307506d, type: 2}
+  _loot: {fileID: 11400000, guid: da5c9ee0cb4f667459ad3097c474dabe, type: 2}
   _catalog: {fileID: 11400000, guid: b2da92ddbfa7c464489fc05d51344797, type: 2}
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
@@ -8070,7 +8070,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoTrashCan
   _kind: 1
-  _loot: {fileID: 11400000, guid: 7d3f134bfcd6e574e91c07cb3307506d, type: 2}
+  _loot: {fileID: 11400000, guid: da5c9ee0cb4f667459ad3097c474dabe, type: 2}
   _catalog: {fileID: 11400000, guid: b2da92ddbfa7c464489fc05d51344797, type: 2}
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
@@ -8688,7 +8688,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoTrashCan
   _kind: 2
-  _loot: {fileID: 11400000, guid: 7d3f134bfcd6e574e91c07cb3307506d, type: 2}
+  _loot: {fileID: 11400000, guid: da5c9ee0cb4f667459ad3097c474dabe, type: 2}
   _catalog: {fileID: 11400000, guid: b2da92ddbfa7c464489fc05d51344797, type: 2}
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
@@ -9728,7 +9728,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoTrashCan
   _kind: 2
-  _loot: {fileID: 11400000, guid: 7d3f134bfcd6e574e91c07cb3307506d, type: 2}
+  _loot: {fileID: 11400000, guid: da5c9ee0cb4f667459ad3097c474dabe, type: 2}
   _catalog: {fileID: 11400000, guid: b2da92ddbfa7c464489fc05d51344797, type: 2}
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
@@ -9927,7 +9927,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoTrashCan
   _kind: 0
-  _loot: {fileID: 11400000, guid: 7d3f134bfcd6e574e91c07cb3307506d, type: 2}
+  _loot: {fileID: 11400000, guid: da5c9ee0cb4f667459ad3097c474dabe, type: 2}
   _catalog: {fileID: 11400000, guid: b2da92ddbfa7c464489fc05d51344797, type: 2}
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
@@ -13264,7 +13264,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoTrashCan
   _kind: 0
-  _loot: {fileID: 11400000, guid: 7d3f134bfcd6e574e91c07cb3307506d, type: 2}
+  _loot: {fileID: 11400000, guid: da5c9ee0cb4f667459ad3097c474dabe, type: 2}
   _catalog: {fileID: 11400000, guid: b2da92ddbfa7c464489fc05d51344797, type: 2}
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}

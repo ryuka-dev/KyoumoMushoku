@@ -16,7 +16,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
     ///
     /// 中身は叩く前に確定している（本編の <c>TrashCan._nextDraw</c> と同じ考え方）。
     /// 叩いた時の揺れ・音・漏れる光は、その確定済みの中身から作る。再抽選しないので、反応は嘘をつかない。
-    /// 抽選は本編と同じ Core の <see cref="LootTable"/> と <c>Assets/Config/TrashCanLoot.asset</c> を使う。
+    /// 抽選は本編と同じ Core の <see cref="LootTable"/>。表は切片用に複製した <c>Assets/Config/TrashCanLoot_Slice.asset</c>（タバコを減らしてある）。
     ///
     /// ふたの無いゴミ袋にも使う（<c>_hasLid</c> を外し、一打で破れる少量の袋にする）。
     ///
