@@ -34,7 +34,7 @@ Transform:
   m_Children:
   - {fileID: 7033640247998866235}
   - {fileID: 2164988799173884780}
-  - {fileID: 2293419076190804277}
+  - {fileID: 333492626692278583}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &313317353289314410
@@ -100,7 +100,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.2, y: 0.90000004, z: 0.8000008}
   m_Center: {x: -6.3948845e-15, y: 0.45, z: 0.00000005364418}
---- !u!1 &2100888975716013531
+--- !u!1 &1751645545499961207
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -108,8 +108,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2293419076190804277}
-  - component: {fileID: 1020640380755263383}
+  - component: {fileID: 333492626692278583}
+  - component: {fileID: 998032640707356597}
   m_Layer: 0
   m_Name: NightLight
   m_TagString: Untagged
@@ -117,13 +117,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2293419076190804277
+--- !u!4 &333492626692278583
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2100888975716013531}
+  m_GameObject: {fileID: 1751645545499961207}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.000000029444143, y: 1.9, z: 0.735001}
@@ -132,13 +132,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4666172349569378169}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!108 &1020640380755263383
+--- !u!108 &998032640707356597
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2100888975716013531}
+  m_GameObject: {fileID: 1751645545499961207}
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 2

@@ -142,7 +142,7 @@ class Facade:
             color.append((x + w / 2 - b / 2, yc, z, b, 0.008, h))
         elif curtain == "blind":
             down = h * (0.25 + (k % 3) * 0.12)
-            self.curtains[0].append((x, yc, z + h / 2 - down / 2, w, 0.008, down))
+            self.curtains[0].append((x, yc, z + h / 2 - down / 2 - 0.01, w - 0.02, 0.008, down))
         if hood:
             self.hoods.append((x, y - 0.22, z + h / 2 + t + 0.12, w + 0.4, 0.44, 0.05))
         if grille:
@@ -153,7 +153,7 @@ class Facade:
             self.grilles.append((x, y - 0.14, z + h / 2, w, 0.03, 0.03))
             self.grilles.append((x, y - 0.14, z - h / 2, w, 0.03, 0.03))
 
-    def side_window(self, x_face, side, y, z, w, h):
+    def side_window(self, x_face, side, y, z, w, h, hood=True):
         """妻（横の壁）の小窓。x_face は壁の面、side は外向き（-1＝左の妻、+1＝右の妻）。"""
         t = 0.08
         xf = x_face + side * 0.04
@@ -162,13 +162,14 @@ class Facade:
         self.frames.append((xf, y, z + h / 2 + t / 2, 0.08, w, t))
         self.frames.append((xf, y, z - h / 2 - t / 2, 0.08, w, t))
         self.dark.append((x_face + side * 0.03, y, z, 0.01, w + 0.02, h + 0.02))
-        self.hoods.append((x_face + side * 0.22, y, z + h / 2 + t + 0.12, 0.44, w + 0.4, 0.05))
+        if hood:
+            self.hoods.append((x_face + side * 0.22, y, z + h / 2 + t + 0.12, 0.44, w + 0.4, 0.05))
 
     def pipe(self, x, top, y=0.0):
         self.pipes.append((x, y - 0.1, top / 2, 0.11, 0.11, top))
         self.pipes.append((x, y - 0.25, top - 0.05, 0.11, 0.3, 0.1))
 
-    def ac(self, x, z, y=0.0):
+    def ac(self, x, z, y=0.0, pipe_side=1):
         """室外機。地面ならコンクリートの小さな台に、壁の高い所なら二本の腕金に載せる。宙に浮かせない。
         冷媒の配管は本体の横から出て壁へ入る。"""
         self.acs.append((x, y - 0.2, z, 0.75, 0.28, 0.55))
@@ -180,8 +181,8 @@ class Facade:
             for sx in (-0.28, 0.28):
                 self.brackets.append((x + sx, y - 0.22, bottom - 0.025, 0.04, 0.44, 0.05))
                 self.brackets.append((x + sx, y - 0.02, bottom - 0.2, 0.05, 0.04, 0.4))
-        self.pipes.append((x + 0.43, y - 0.12, z, 0.1, 0.06, 0.06))
-        self.pipes.append((x + 0.46, y - 0.05, z + 0.3, 0.06, 0.06, 0.6))
+        self.pipes.append((x + pipe_side * 0.43, y - 0.13, z - 0.1, 0.1, 0.06, 0.06))
+        self.pipes.append((x + pipe_side * 0.47, y - 0.065, z - 0.1, 0.06, 0.13, 0.06))
 
     def meter(self, x, z, y=0.0):
         """電気メーター。上へ電線の管が伸びる（ただの白い四角に見せない）。"""
@@ -231,10 +232,10 @@ class Facade:
             part(self.root, "LanternCaps", caps, const("black", 2))
 
 
-def gable_roof(root, w, d, h, rise, eave, material, wall_material, wall_step):
-    """平入りの切妻。棟は X 方向（通りに平行）。"""
+def gable_roof(root, w, d, h, rise, eave, material, wall_material, wall_step, y_from=0.0):
+    """平入りの切妻。棟は X 方向（通りに平行）。y_from は屋根の手前の端（看板建築では正面の壁の後ろ）。"""
     x0, x1 = -w / 2 - eave, w / 2 + eave
-    y0, y1, ym = -eave, d + eave, d / 2
+    y0, y1, ym = y_from - eave, y_from + d + eave, y_from + d / 2
     z0, zr = h - eave * rise / (d / 2), h + rise
 
     def roof(bm):
@@ -251,8 +252,8 @@ def gable_roof(root, w, d, h, rise, eave, material, wall_material, wall_step):
     part(root, "Roof", roof, roof_rule)
 
     def gables(bm):
-        tri(bm, (-w / 2, 0, h), (-w / 2, ym, h + rise), (-w / 2, d, h))
-        tri(bm, (w / 2, d, h), (w / 2, ym, h + rise), (w / 2, 0, h))
+        tri(bm, (-w / 2, y_from, h), (-w / 2, ym, h + rise), (-w / 2, y_from + d, h))
+        tri(bm, (w / 2, y_from + d, h), (w / 2, ym, h + rise), (w / 2, y_from, h))
 
     part(root, "Gables", gables, const(wall_material, max(0, wall_step - 1)))
 
@@ -337,7 +338,7 @@ def house(name, x, w, roof_material, wall_material, wall_step, balcony, boards=F
 
     def door_grid(bm):
         for i in range(6):
-            km.box(bm, door_x - 0.62 + i * 0.25, -0.09, 1.05, 0.04, 0.02, 1.8)
+            km.box(bm, door_x - 0.6 + i * 0.24, -0.095, 1.06, 0.04, 0.02, 1.76)
         km.box(bm, door_x, -0.09, 1.3, 1.4, 0.02, 0.04)
 
     part(root, "DoorGrid", door_grid, const("wood_dark", 1))
@@ -426,10 +427,10 @@ def apartment(x, seed=3):
         top = 2.875
         n = 14
         rise, run = top / n, (y_bottom - y_top) / n
-        for i in range(n):
+        for i in range(n - 1):
             km.box(bm, sxc, y_bottom - run * (i + 0.5), rise * (i + 1) - 0.025, stair_w - 0.1, run + 0.02, 0.05)
-        for sx in (sx0 + 0.04, sx1 - 0.04):
-            beam(bm, (sx, y_bottom, 0.0), (sx, y_top, top), 0.08)
+        for sx in (sx0 + 0.06, sx1 - 0.06):
+            beam(bm, (sx, y_bottom, 0.0), (sx, y_top, top - 0.01), 0.08)
         beam(bm, (sx1, y_bottom, 0.95), (sx1, y_top, top + 0.95), 0.05)
         for i in range(5):
             t = (i + 0.5) / 5
@@ -520,8 +521,8 @@ def shop(name, x, w, floors, front, roof_kind, sign, wall_material, wall_step, l
         part(root, "ShutterHousing", housing, shade("steel", 3, 1, 0))
         if front == "closed":
             def slats(bm):
-                for i in range(13):
-                    km.box(bm, 0.0, y1 - 0.05 - 0.01 * (i % 2), 0.1 + i * 0.2, inner, 0.04, 0.2)
+                for i in range(12):
+                    km.box(bm, 0.0, y1 - 0.05 - 0.01 * (i % 2), 0.1 + i * 0.2, inner - 0.02, 0.04, 0.2)
 
             part(root, "ShutterSlats", slats, lambda p: ("steel", 3 if int(p.center.z / 0.2) % 2 == 0 else 2))
         else:
@@ -574,9 +575,15 @@ def shop(name, x, w, floors, front, roof_kind, sign, wall_material, wall_step, l
         f.window(-w / 4, z, min(1.5, w / 2 - 0.9), 1.0)
         f.window(w / 4, z, min(1.5, w / 2 - 0.9), 1.0)
         if w > 6.4:
-            f.ac(w / 2 - 0.55 if fl % 2 == 0 else -w / 2 + 0.75, z - 1.0)
+            right = fl % 2 == 0
+            # 冷媒管は窓と反対の側（建物の端の側）から壁へ入れる。
+            f.ac(w / 2 - 0.55 if right else -(w / 2 - 0.55), z, pipe_side=1 if right else -1)
     f.pipe(-w / 2 + 0.12, h)
-    f.meter(-inner / 2 + 0.2, 1.7, y=y1)
+    f.meter(-w / 2 + 0.14, 1.7, y=0.0)
+    # 妻の小窓（並びの端に来たときに横の壁が真っ白にならないように。隣と 5cm しか空かないので庇は付けない）。
+    for fl in range(floors - 1):
+        for side in (-1, 1):
+            f.side_window(side * w / 2, side, d * 0.45, FLOOR1 + 0.3 + 2.9 * fl + 1.55, 0.8, 0.9, hood=False)
     f.build()
     return root
 
@@ -588,7 +595,7 @@ def kanban(name, x, w, seed=0):
     front_top = 7.6
     body(root, "BodyLow", -w / 2, w / 2, RECESS, d, 0.0, FLOOR1 + 0.3, "siding", 1)
     body(root, "BodyUp", -w / 2, w / 2, 0.3, d, FLOOR1 + 0.3, h, "siding", 2)
-    gable_roof(root, w - 0.4, d - 0.3, h, 1.0, 0.1, "rust", "siding", 2)
+    gable_roof(root, w - 0.4, d - 0.75, h, 1.0, 0.1, "rust", "siding", 2, y_from=0.55)
 
     def false_front(bm):
         km.box(bm, 0.0, 0.15, (FLOOR1 + 0.3 + front_top) / 2, w, 0.3, front_top - FLOOR1 - 0.3)
@@ -596,12 +603,12 @@ def kanban(name, x, w, seed=0):
     part(root, "BodyFront", false_front, wall_rule("paper", 3))
 
     def cornice(bm):
-        km.box(bm, 0.0, -0.05, front_top - 0.15, w + 0.2, 0.3, 0.3)
+        km.box(bm, 0.0, -0.05, front_top - 0.1, w + 0.2, 0.3, 0.3)
         km.box(bm, 0.0, -0.02, front_top - 0.5, w + 0.05, 0.24, 0.12)
         for i in range(int(w / 0.6)):
             km.box(bm, -w / 2 + 0.3 + i * 0.6, -0.06, front_top - 0.38, 0.22, 0.1, 0.12)
         for sx in (-w / 2 + 0.25, w / 2 - 0.25):
-            km.box(bm, sx, -0.04, (FLOOR1 + 0.3 + front_top) / 2, 0.3, 0.12, front_top - FLOOR1 - 0.3)
+            km.box(bm, sx, -0.04, (FLOOR1 + 0.2 + front_top - 0.05) / 2, 0.3, 0.12, front_top - 0.05 - FLOOR1 - 0.2)
 
     part(root, "Cornice", cornice, shade("concrete", 4, 3, 1))
     part(root, "SignBand", lambda bm: km.box(bm, 0.0, -0.08, 5.95, w - 1.0, 0.1, 0.8), shade("sign_red", 3, 3, 1))
@@ -611,7 +618,7 @@ def kanban(name, x, w, seed=0):
     # 一階：黒い腰壁と格子の店先、板張りの庇。
     part(root, "Base", lambda bm: km.box(bm, 0.0, RECESS - 0.05, 0.45, w - 0.5, 0.1, 0.9), const("black", 2))
     part(root, "ShopFrame", lambda bm: [km.box(bm, -w / 2 + 0.3 + i * (w - 0.6) / 4, RECESS - 0.06, 1.9, 0.08, 0.1, 2.0) for i in range(5)], const("wood_dark", 1))
-    f.lit_dim.append((0.0, RECESS - 0.03, 1.95, w - 0.7, 0.01, 1.9))
+    f.lit_dim.append((0.0, RECESS - 0.03, 1.93, w - 0.7, 0.01, 1.86))
 
     def canopy(bm):
         for i in range(5):
@@ -621,6 +628,8 @@ def kanban(name, x, w, seed=0):
     f.lantern(-w / 2 + 0.7, 2.3, y=RECESS)
     f.pipe(w / 2 - 0.1, front_top - 0.3)
     f.meter(w / 2 - 0.6, 1.6, y=RECESS)
+    for side in (-1, 1):
+        f.side_window(side * w / 2, side, d * 0.5, FLOOR1 + 1.6, 0.8, 0.9, hood=False)
     f.build()
     return root
 
@@ -645,6 +654,9 @@ def zakkyo(name, x, w, floors, sign_colors, seed=0):
         z = 3.4 + 3.0 * fl + 1.5
         f.window(0.5, z, w - 2.8, 1.2, hood=False, panes=max(2, int((w - 2.8) / 1.1)), curtain="blind")
     f.pipe(-w / 2 + 0.1, h)
+    for fl in range(floors - 1):
+        for side in (-1, 1):
+            f.side_window(side * w / 2, side, d * 0.5, 3.4 + 3.0 * fl + 1.5, 0.8, 0.9, hood=False)
     f.build(frame=("steel", 2))
 
     for fl in range(floors - 1):
@@ -687,7 +699,7 @@ def back_facade(name, x, h, material, step, variant):
     w, d = 6.0, 0.3
     part(root, "Body", lambda bm: km.box(bm, 0.0, d / 2, h / 2, w, d, h), wall_rule(material, step))
     part(root, "Coping", lambda bm: km.box(bm, 0.0, d / 2 - 0.05, h + 0.06, w + 0.04, d + 0.12, 0.12), const("concrete", 3))
-    part(root, "Band", lambda bm: [km.box(bm, 0.0, -0.02, z, w, 0.06, 0.12) for z in (3.1, 6.1) if z < h - 0.5], const(material, max(0, step - 1)))
+    part(root, "Band", lambda bm: [km.box(bm, 0.0, -0.02, z, w - 0.04, 0.06, 0.12) for z in (3.1, 6.1) if z < h - 0.5], const(material, max(0, step - 1)))
 
     door_x = -1.6 if variant != 1 else 1.4
     part(root, "BackDoor", lambda bm: (km.box(bm, door_x, -0.04, 1.0, 0.9, 0.08, 2.0),
@@ -714,7 +726,7 @@ def back_facade(name, x, h, material, step, variant):
     f.meter(door_x + 1.15, 1.5)
     f.ac(2.0, 0.35)
     if h > 6:
-        f.ac(-2.2, 3.6)
+        f.ac(-2.2, 3.6, pipe_side=-1)
     f.build(frame=("steel", 2))
 
     # 換気口：枠の中に羽根（ただの黒い四角に見せない）。台所の換気扇の位置＝一階の窓の上。
@@ -726,7 +738,7 @@ def back_facade(name, x, h, material, step, variant):
             km.box(bm, vent_x, -0.075, vent_z - 0.15 + i * 0.1, 0.36, 0.03, 0.04)
 
     part(root, "Vent", vent, const("steel", 3))
-    part(root, "VentHole", lambda bm: km.box(bm, vent_x, -0.065, vent_z, 0.34, 0.01, 0.34), const("black", 1))
+    part(root, "VentHole", lambda bm: km.box(bm, vent_x, -0.065, vent_z, 0.34, 0.01, 0.31), const("black", 1))
     return root
 
 

@@ -172,13 +172,13 @@ def block_wall(name, x, base_step, worn):
     def joints(bm):
         for i in range(courses + 1):
             z = 0.3 + 0.2 * i
-            km.box(bm, 0.0, 0.0, z, 2.0, 0.12, 0.03)
+            km.box(bm, 0.0, 0.0, z, 1.98, 0.12, 0.03)
         for i in range(courses):
             z = 0.3 + 0.2 * i + 0.1
             offset = 0.2 if i % 2 else 0.0
             x = -1.0 + offset + 0.4
             while x < 1.0:
-                km.box(bm, x, 0.0, z, 0.02, 0.16, 0.18)  # 1cm 出す（2.5mm だと遠くで明滅する）
+                km.box(bm, x, 0.0, z, 0.02, 0.16, 0.17)  # 1cm 出す（2.5mm だと遠くで明滅する）
                 x += 0.4
 
     part(root, "Joints", joints, const("concrete", max(0, base_step - 1)))
@@ -380,7 +380,7 @@ def bicycle(x):
     def parts(bm):
         km.box(bm, -0.27, 0.0, 0.87, 0.24, 0.12, 0.05)          # サドル
         beam(bm, (0.38, -0.25, 0.98), (0.38, 0.25, 0.98), 0.03)  # ハンドル
-        beam(bm, (0.38, 0, 0.82), (0.38, 0, 0.98), 0.035)
+        beam(bm, (0.38, 0, 0.82), (0.38, 0, 0.98), 0.028)
         km.box(bm, 0.62, 0.0, 0.88, 0.3, 0.34, 0.03)            # かごの底
         km.box(bm, 0.62, 0.17, 0.98, 0.3, 0.01, 0.2)
         km.box(bm, 0.62, -0.17, 0.98, 0.3, 0.01, 0.2)
