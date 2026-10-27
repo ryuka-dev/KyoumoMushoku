@@ -10,7 +10,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 昼の長さは <c>Assets/Config/DaySchedule.asset</c>。夜に上限は無く、寝るまで夜が続く（第二節）。
     /// 日付が変わるのは就寝の瞬間だけで、それは <see cref="ProtoSession"/> が <see cref="BeginNextDay"/> を呼んで起こす。
     ///
-    /// 太陽の色と強さ・環境光・街灯は <see cref="GameClock.NightBlend01"/> で補間する（表現であって権威ではない）。
+    /// 太陽の色と強さ・空と霧の色・環境光・街灯は <see cref="GameClock.NightBlend01"/> で補間する（表現であって権威ではない）。
     /// </summary>
     public sealed class ProtoDayNight : MonoBehaviour
     {
@@ -120,10 +120,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 _sun.intensity = Mathf.Lerp(_dayIntensity, _nightIntensity, t);
             }
 
+            var skyColor = Color.Lerp(_daySky, _nightSky, t);
             if (_camera != null)
             {
-                _camera.backgroundColor = Color.Lerp(_daySky, _nightSky, t);
+                _camera.backgroundColor = skyColor;
             }
+
+            // 霧は空と同じ色にする。遠くの建物が空へ溶け、夜は闇が濃くなる（霧の距離はシーンの照明設定）。
+            RenderSettings.fogColor = skyColor;
 
             // 実行中は環境光の色を変えても球面調和（ambientProbe）が追従しないので、上・横・下の三色から直接組む。
             var sky = Color.Lerp(_dayAmbientSky, _nightAmbientSky, t);
