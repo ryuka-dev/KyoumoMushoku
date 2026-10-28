@@ -205,6 +205,7 @@ def block_wall(name, x, base_step, worn):
 
 ARC_SEGMENTS = 8
 ARC_HALF = 6.0
+POST_HALF = 4.6   # 柱の位置（店の下屋庇の先 4.8〜5.0m より内側）
 ARC_SPRING = 6.8
 ARC_RISE = 1.6
 
@@ -222,8 +223,13 @@ def arcade_roof(x):
     length = 4.0
 
     def posts(bm):
-        for y in (-ARC_HALF, ARC_HALF):
+        # 柱は店の下屋庇・店先の台より通り側に立てる（店の正面＝ARC_HALF に立てると壁と窓を貫く）。
+        # 柱の頭から店の正面の梁まで横梁を渡し、下に方杖を入れる。屋根はそこから店の上へ張り出す。
+        for side in (-1, 1):
+            y = side * POST_HALF
             km.box(bm, 0.0, y, ARC_SPRING / 2, 0.22, 0.22, ARC_SPRING)
+            km.box(bm, 0.0, side * (POST_HALF + ARC_HALF) / 2, ARC_SPRING, 0.2, ARC_HALF - POST_HALF + 0.1, 0.3)
+            beam(bm, (0.0, y + side * 0.1, ARC_SPRING - 0.9), (0.0, side * (ARC_HALF - 0.35), ARC_SPRING - 0.12), 0.1)
 
     part(root, "Posts", posts, shade("steel", 3, 2, 1))
 
@@ -559,9 +565,11 @@ def hokora(x):
     part(root, "Shrine", shrine, shade("wood_dark", 3, 2, 1))
 
     def roof(bm):
+        # 切妻：棟（y=0.1）から前後の軒へ下がる。X 軸回りの正の回転は +Y の側を持ち上げるので、
+        # 奥（side=+1）の板は負の向きに回す（符号を逆にすると V 字に開いた屋根になる）。
         for side in (-1, 1):
             verts = km.box(bm, 0.0, 0.1 + side * 0.2, 1.29, 0.8, 0.46, 0.05)
-            rotate(bm, verts, "X", side * 28, center=(0.0, 0.1 + side * 0.2, 1.29))
+            rotate(bm, verts, "X", -side * 28, center=(0.0, 0.1 + side * 0.2, 1.29))
         km.box(bm, 0.0, 0.1, 1.4, 0.82, 0.08, 0.06)
 
     part(root, "Roof", roof, shade("kawara", 3, 2, 0))
