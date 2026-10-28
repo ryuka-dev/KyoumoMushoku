@@ -71,6 +71,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField, Min(0.02f)] float _retractSeconds = 0.2f;
 
         InputAction _use;
+        InputAction _unload;
         Transform _hand;
         GameObject _fist;
         GameObject _open;
@@ -92,6 +93,18 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         public Inventory Bag { get; private set; }
         public ProtoVitals Vitals { get; private set; }
+
+        /// <summary>背負い枠（段ボール）。鞄の枠は使わない。</summary>
+        public CarrySlot Back { get; private set; }
+
+        /// <summary>歩きの速さの倍率。段ボールを背負っていると遅い。</summary>
+        public float MoveSpeedMultiplier => Back != null && Back.IsOccupied && _slice != null ? _slice.CarrySpeedMultiplier : 1f;
+
+        /// <summary>走れるか。段ボールを背負っていると走れない。</summary>
+        public bool CanRun => Back == null || !Back.IsOccupied;
+
+        /// <summary>警官の目に気づかれる速さの倍率。段ボールを背負っていると目立つ。</summary>
+        public float NoticeMultiplier => Back != null && Back.IsOccupied && _slice != null ? _slice.CarryNoticeMultiplier : 1f;
 
         /// <summary>宙の物を掴んで鞄に入れた。拾った物に反応する世界の側（独り言など）が聞く。</summary>
         public event System.Action<ItemInstance> Grabbed;
@@ -136,9 +149,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
         void Awake()
         {
             Bag = new Inventory(_catalog, _bagCapacity);
+            Back = new CarrySlot(_catalog);
             Wallet = new Wallet(_startingYen);
             Vitals = GetComponent<ProtoVitals>();
             _use = new InputAction("Use", InputActionType.Button, "<Mouse>/leftButton");
+            _unload = new InputAction("Unload", InputActionType.Button, "<Keyboard>/g");
             _audio = gameObject.AddComponent<AudioSource>();
             _audio.playOnAwake = false;
             _cameraRest = _camera.transform.localPosition;
@@ -148,17 +163,20 @@ namespace KyoumoMushoku.Gameplay.Prototype
         void OnEnable()
         {
             _use.Enable();
+            _unload.Enable();
         }
 
         void OnDisable()
         {
             _use.Disable();
+            _unload.Disable();
             Time.timeScale = 1f;
         }
 
         void OnDestroy()
         {
             _use?.Dispose();
+            _unload?.Dispose();
         }
 
         void Update()
@@ -169,6 +187,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
             if (_use.WasPressedThisFrame())
             {
                 Use();
+            }
+
+            if (_unload.WasPressedThisFrame() && Back.TryTakeOut(out var unloaded))
+            {
+                Say(ProtoText.Unloaded(NameOf(unloaded)));
             }
         }
 
@@ -246,9 +269,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         void Grab(ProtoLoot target)
         {
-            if (!IsPurse(target.Item) && !Bag.CanAdd(target.Item))
+            if (!CanTake(target.Item))
             {
-                Say(ProtoText.NoRoom(target.DisplayName));
+                Say(IsCarriedOnBack(target.Item) ? ProtoText.AlreadyCarrying(target.DisplayName) : ProtoText.NoRoom(target.DisplayName));
                 _audio.pitch = 0.6f;
                 _audio.PlayOneShot(ProtoSounds.Clang, 0.4f);
                 return;
@@ -274,6 +297,21 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 _audio.pitch = 1.4f;
                 _audio.PlayOneShot(ProtoSounds.Grab, 1f);
                 Grabbed?.Invoke(loot.Item);
+            }
+            else if (IsCarriedOnBack(loot.Item))
+            {
+                if (Back.TryCarry(loot.Item))
+                {
+                    _caught++;
+                    Say(ProtoText.Shouldered(NameOf(loot.Item)));
+                    _audio.pitch = 0.8f;
+                    _audio.PlayOneShot(ProtoSounds.Grab, 1f);
+                    Grabbed?.Invoke(loot.Item);
+                }
+                else
+                {
+                    Say(ProtoText.AlreadyCarrying(loot.DisplayName));
+                }
             }
             else if (Bag.TryAdd(loot.Item))
             {
@@ -346,6 +384,18 @@ namespace KyoumoMushoku.Gameplay.Prototype
         }
 
         bool IsPurse(ItemInstance item) => _slice != null && _slice.IsPurse(item.ItemId);
+
+        /// <summary>担いで運ぶ物（段ボール）。鞄でなく背負い枠に入る。</summary>
+        bool IsCarriedOnBack(ItemInstance item) =>
+            _catalog != null && _catalog.TryGet(item.ItemId, out var definition) && definition.CarriedOnBack;
+
+        /// <summary>掴めるか。小銭入れは財布へ、段ボールは背負い枠へ、それ以外は鞄へ入るかで決まる。</summary>
+        bool CanTake(ItemInstance item) =>
+            IsPurse(item) || (IsCarriedOnBack(item) ? Back.CanCarry(item) : Bag.CanAdd(item));
+
+        /// <summary>品の表示名（品のデータに無ければ id）。</summary>
+        public string NameOf(ItemInstance item) =>
+            _catalog != null && _catalog.TryGet(item.ItemId, out var definition) ? definition.DisplayName : item.Id;
 
         /// <summary>照準の先の使う物。閉まっている店は触れる物ではないので、無いのと同じに扱う（第十七節 規則 1）。</summary>
         static IProtoUsable UsableAt(Collider collider)

@@ -24,6 +24,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         float _pitch;
         float _verticalVelocity;
         ProtoVitals _vitals;
+        ProtoHands _hands;
 
         /// <summary>走っているか（Shift を押して動いている）。渇き・空腹の消耗が増える。</summary>
         public bool IsRunning { get; private set; }
@@ -34,6 +35,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             _body = GetComponent<CharacterController>();
             _vitals = GetComponent<ProtoVitals>();
+            _hands = GetComponent<ProtoHands>();
 
             _move = new InputAction("Move", InputActionType.Value, expectedControlType: "Vector2");
             _move.AddCompositeBinding("2DVector")
@@ -93,8 +95,15 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             var input = _move.ReadValue<Vector2>();
-            IsRunning = _run.IsPressed() && input.sqrMagnitude > 0.01f;
+            // 段ボールを背負っていると走れず、歩きも遅い（GameDesign 第十一節）。
+            var canRun = _hands == null || _hands.CanRun;
+            IsRunning = canRun && _run.IsPressed() && input.sqrMagnitude > 0.01f;
             var speed = IsRunning ? _runSpeed : _walkSpeed;
+            if (_hands != null)
+            {
+                speed *= _hands.MoveSpeedMultiplier;
+            }
+
             // 渇きがゼロのあいだは足が重い（本編と同じ規則）。
             if (_vitals != null && _vitals.Vitals != null)
             {

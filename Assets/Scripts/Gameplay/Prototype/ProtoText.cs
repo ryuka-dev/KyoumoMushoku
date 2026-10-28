@@ -72,12 +72,17 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string ReadThrough(string name) => $"{name}を読みふけった。少し気が紛れた。";
         public static string Scratched(int prizeYen) =>
             prizeYen <= 0 ? "スクラッチを削った。……はずれ。" : $"スクラッチを削った。……{prizeYen}円、当たった。";
+        public static string Shouldered(string name) => $"{name}を背負った。重い。走れない。（G で降ろす）";
+        public static string AlreadyCarrying(string name) => $"もう背負っている。{name}は担げない。（G で降ろす）";
+        public static string Unloaded(string name) => $"{name}を降ろした。";
+        public static string CarryingLine(string name) => $"背負っている：{name}（ベンチで寝ると敷く・G で降ろす）";
         public static string PurseOpened(int yen) => $"小銭入れだ。中に{yen}円入っていた。";
 
         // ── 寝床と一日の区切り ───────────────────────────────
         public static string BenchPrompt => "ベンチ：横になって夜を越す";
         public static string BenchTooEarly => "ベンチ：まだ明るい。寝るには早い";
         public static string WokeUp => "朝になった。";
+        public static string WokeUpOnCardboard => "朝になった。段ボールのおかげで、少しはましに眠れた。朝露で湿って、もう使えない。";
         public static string LateNightDrowsy => "……眠い。頭が回らなくなってきた。";
         public static string LateNightExhausted => "……まずい。目を開けているのがつらい。";
         public static string MorningTitle(int day) => $"{day}日目の朝";

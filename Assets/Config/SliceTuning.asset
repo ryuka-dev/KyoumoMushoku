@@ -119,4 +119,13 @@ MonoBehaviour:
     weight: 2
   _purseItemId: coin_purse
   _purseYen: 64000000c80000002c010000f401000020030000
+  _carrySpeedMultiplier: 0.75
+  _carryNoticeMultiplier: 1.5
+  _cardboardBedding:
+    costYen: 0
+    fullRestore: 0
+    hp: 10
+    thirst: 0
+    hunger: 0
+    sanity: 12
   _finalDay: 3

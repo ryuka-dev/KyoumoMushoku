@@ -123,6 +123,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 _text.Append(HudText.EatHint);
             }
 
+            if (_hands.Back != null && _hands.Back.IsOccupied)
+            {
+                var carried = _hands.Back.Item;
+                _text.AppendLine();
+                _text.Append(ProtoText.CarryingLine(_hands.NameOf(carried)));
+            }
+
             GUI.Label(new Rect(16f, 172f, 420f, h - 220f), _text.ToString(), _style);
             GUI.Label(new Rect(16f, h - 36f, w - 32f, 28f), ProtoText.Controls, _style);
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using KyoumoMushoku.Core.Foraging;
 using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Gameplay.Foraging;
+using KyoumoMushoku.Gameplay.World;
 using UnityEngine;
 
 namespace KyoumoMushoku.Gameplay.Prototype
@@ -78,6 +79,16 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("小銭入れの中身（円）。掴んだ瞬間に、この中から一つが同じ確からしさで決まる。")]
         [SerializeField] int[] _purseYen = { 100, 200, 300, 500, 800 };
 
+        [Header("段ボール（Docs/切片の品目.md 第五節）")]
+        [Tooltip("背負っている間の歩きの速さの倍率。走れない（GameDesign 第十一節）。")]
+        [SerializeField, Range(0.1f, 1f)] float _carrySpeedMultiplier = 0.75f;
+
+        [Tooltip("背負っている間、警官の目に気づかれる速さの倍率（目立つ）。")]
+        [SerializeField, Min(1f)] float _carryNoticeMultiplier = 1.5f;
+
+        [Tooltip("背負ったままベンチで寝たときの回復（敷く）。段ボールは朝には湿って使えない。")]
+        [SerializeField] SleepTuningAsset.Recovery _cardboardBedding = new SleepTuningAsset.Recovery { hp = 10f, sanity = 12f };
+
         [Header("終わり")]
         [Tooltip("この日の夜に寝たら、翌朝に切片の結算を見せて終える。")]
         [SerializeField, Min(1)] int _finalDay = 3;
@@ -94,6 +105,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public float DisposalChance => _disposalChance;
         public int DisposalDraws => _disposalDraws;
         public TrashCanLootAsset.Table DisposalTable => _disposalTable;
+        public float CarrySpeedMultiplier => _carrySpeedMultiplier;
+        public float CarryNoticeMultiplier => _carryNoticeMultiplier;
+        public SleepTuningAsset.Recovery CardboardBedding => _cardboardBedding;
 
         [Serializable]
         public struct ItemTierEntry

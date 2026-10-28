@@ -100,7 +100,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             _suspicion = sees
-                ? PoliceEscalation.Advance(_suspicion, PoliceEscalation.LoiterGainPerSecond, 1f, delta)
+                ? PoliceEscalation.Advance(_suspicion, PoliceEscalation.LoiterGainPerSecond, _player != null ? _player.NoticeMultiplier : 1f, delta)
                 : PoliceEscalation.Relax(_suspicion, delta);
 
             var next = PoliceEscalation.NextStage(Stage, _suspicion);

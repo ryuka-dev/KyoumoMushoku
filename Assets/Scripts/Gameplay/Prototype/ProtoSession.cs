@@ -84,6 +84,15 @@ namespace KyoumoMushoku.Gameplay.Prototype
             // SAN の回復だけは崩壊時に下がるが、下限を割らない（第三節）。
             var vitals = _vitals.Vitals;
             var recovery = spot.Recovery;
+
+            // 段ボールを背負ったまま寝ると、下に敷く。回復が上がり、段ボールは朝には湿って使えない（切片の品目 第五節）。
+            var bedding = _slice != null && _hands != null && _hands.Back != null && _hands.Back.IsOccupied
+                          && _hands.Back.TryTakeOut(out _);
+            if (bedding)
+            {
+                recovery = _slice.CardboardBedding;
+            }
+
             vitals.Apply(new VitalsDelta
             {
                 Hp = recovery.hp,
@@ -102,7 +111,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             Enter(_dayNight.Clock.Day > FinalDay ? SessionState.Final : SessionState.Morning);
-            return ProtoText.WokeUp;
+            return bedding ? ProtoText.WokeUpOnCardboard : ProtoText.WokeUp;
         }
 
         /// <summary>
