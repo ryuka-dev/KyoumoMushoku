@@ -8,16 +8,32 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 遊びには一切触れない（時計も状態も変えない）。打包版で夜の灯り（点光源が多い）の重さを測るために置く。
     ///
     /// 10 秒ごとに「平均 fps・最も遅い一フレームの ms・遅い方から 1% の fps」と、そのときの昼夜を一行で書く。
+    ///
+    /// <c>-frameStatsTour</c> も付けると、カメラだけを決まった道筋（大通り→アーケード→裏通り）で動かし続ける。
+    /// 歩いて見回したときの重さを測るため。プレイヤーの体・時計・状態には触れない（描画の視点を上書きするだけ）。
     /// </summary>
+    [DefaultExecutionOrder(10000)]
     public sealed class ProtoFrameStats : MonoBehaviour
     {
         const string Flag = "-frameStats";
+        const string TourFlag = "-frameStatsTour";
         const float Window = 10f;
+        const float TourSpeed = 4f;
+
+        // 目の高さの道筋（切片の街の座標）。最後の点から最初の点へ戻って繰り返す。
+        static readonly Vector3[] TourPath =
+        {
+            new Vector3(-80f, 1.6f, 0f), new Vector3(40f, 1.6f, 0f), new Vector3(98f, 1.6f, 0f), new Vector3(103f, 1.6f, 2f),
+            new Vector3(103f, 1.6f, 19.5f), new Vector3(30f, 1.6f, 19.5f), new Vector3(27f, 1.6f, 17.4f),
+            new Vector3(-6.8f, 1.6f, 17.4f), new Vector3(-6.8f, 1.6f, 2f),
+        };
 
         readonly float[] _frames = new float[4096];
         int _count;
         float _elapsed;
         ProtoDayNight _dayNight;
+        bool _tour;
+        float _tourDistance;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
@@ -29,7 +45,37 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             var go = new GameObject("FrameStats");
             DontDestroyOnLoad(go);
-            go.AddComponent<ProtoFrameStats>();
+            go.AddComponent<ProtoFrameStats>()._tour = Array.IndexOf(Environment.GetCommandLineArgs(), TourFlag) >= 0;
+        }
+
+        void LateUpdate()
+        {
+            var cam = _tour ? Camera.main : null;
+            if (cam == null)
+            {
+                return;
+            }
+
+            _tourDistance += TourSpeed * Time.unscaledDeltaTime;
+            var remaining = _tourDistance;
+            for (var lap = 0; lap < 2; lap++)
+            {
+                for (var i = 0; i < TourPath.Length; i++)
+                {
+                    var a = TourPath[i];
+                    var b = TourPath[(i + 1) % TourPath.Length];
+                    var length = Vector3.Distance(a, b);
+                    if (remaining <= length)
+                    {
+                        cam.transform.SetPositionAndRotation(Vector3.Lerp(a, b, remaining / length), Quaternion.LookRotation(b - a));
+                        return;
+                    }
+
+                    remaining -= length;
+                }
+
+                _tourDistance = remaining;
+            }
         }
 
         void Update()
