@@ -1,5 +1,4 @@
 using System.Text;
-using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Gameplay.UI;
 using UnityEngine;
 
@@ -25,7 +24,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         GUIStyle _button;
         Texture2D _white;
         Texture2D _ring;
-        ProtoPolice[] _police = new ProtoPolice[0];
+        ProtoPoliceOverlay _policeOverlay;
         readonly StringBuilder _text = new StringBuilder();
 
         public void Configure(ProtoHands hands, ProtoDayNight dayNight, ProtoVitals vitals, ProtoSession session, Font font)
@@ -37,10 +36,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _font = font;
         }
 
-        void Start() => _police = FindObjectsByType<ProtoPolice>(FindObjectsSortMode.None);
-
         void OnDestroy()
         {
+            _policeOverlay?.Release();
             if (_white != null)
             {
                 Destroy(_white);
@@ -83,23 +81,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
             DrawBar(new Rect(16f, 122f, 200f, 14f), HudText.ThirstLabel, vitals.ThirstFraction, new Color(0.35f, 0.65f, 0.95f));
             DrawBar(new Rect(16f, 144f, 200f, 14f), HudText.HungerLabel, vitals.HungerFraction, new Color(0.95f, 0.7f, 0.3f));
 
-            // 一人称では警官が背後にいることもあるので、最も強い段階だけを一行で知らせる。
-            var stage = PoliceStage.Unaware;
-            foreach (var officer in _police)
-            {
-                if (officer != null && officer.Stage > stage)
-                {
-                    stage = officer.Stage;
-                }
-            }
-
-            if (stage != PoliceStage.Unaware)
-            {
-                var previous = GUI.contentColor;
-                GUI.contentColor = stage == PoliceStage.Pursuing ? new Color(1f, 0.45f, 0.4f) : new Color(1f, 0.85f, 0.4f);
-                GUI.Label(new Rect(240f, 98f, 300f, 28f), ProtoText.PoliceStatus(GameTextLabels.PoliceStage(stage)), _style);
-                GUI.contentColor = previous;
-            }
+            // 警官の目：こちらを気にしている警官の頭の上（視界の外なら画面の端）に、注目度だけ開いた目を出す。
+            // 一人称では警官が背後にいることもある。どこまで気づけるかは SAN で決まる。
+            _policeOverlay.DrawEyes(_hands.ViewCamera, w, h, vitals.Sanity);
 
             // 鞄：番号は数字キーと同じ。食品の状態は SAN によって `??` になる（FoodCardText）。
             var bag = _hands.Bag;
@@ -142,6 +126,43 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 DrawBackedLabel(h * 0.68f, w, _hands.Toast);
             }
+
+            // 警官の台詞は言った警官の頭の上に（画面の外なら端に方向つきで）。
+            _policeOverlay.DrawSpeech(_hands.ViewCamera, w, h);
+
+            DrawCurtain(w, h);
+        }
+
+        float _curtainAlpha;
+        string _curtainCaption;
+
+        /// <summary>
+        /// 画面を暗くし、暗い間に起きたことを一行で言う（連れて行かれる間の暗転）。0 で消える。
+        /// 何が起きたかを世界の言葉で言う場所であり、操作の説明には使わない（第十四節）。
+        /// </summary>
+        public void SetCurtain(float alpha, string caption)
+        {
+            _curtainAlpha = Mathf.Clamp01(alpha);
+            _curtainCaption = caption;
+        }
+
+        void DrawCurtain(float w, float h)
+        {
+            if (_curtainAlpha <= 0f)
+            {
+                return;
+            }
+
+            var previous = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, _curtainAlpha);
+            GUI.DrawTexture(new Rect(0f, 0f, w, h), _white);
+            if (!string.IsNullOrEmpty(_curtainCaption))
+            {
+                GUI.color = new Color(1f, 1f, 1f, _curtainAlpha);
+                GUI.Label(new Rect(0f, h * 0.42f, w, 80f), _curtainCaption, _center);
+            }
+
+            GUI.color = previous;
         }
 
         /// <summary>
@@ -315,6 +336,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _center ??= new GUIStyle(_style) { alignment = TextAnchor.MiddleCenter, fontSize = 22 };
             _title ??= new GUIStyle(_center) { fontSize = 40 };
             _button ??= new GUIStyle(GUI.skin.button) { font = _font, fontSize = 20 };
+            _policeOverlay ??= new ProtoPoliceOverlay(_white, _style);
         }
     }
 }

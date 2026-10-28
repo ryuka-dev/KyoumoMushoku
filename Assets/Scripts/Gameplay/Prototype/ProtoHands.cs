@@ -138,6 +138,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>品のデータ（没収の規則が品の種類を読む）。</summary>
         public ItemDatabaseAsset Catalog => _catalog;
 
+        /// <summary>目（視点のカメラ）。画面の上に世界の物の位置を描く側が使う。</summary>
+        public Camera ViewCamera => _camera;
+
         /// <summary>体ごと別の場所へ移す（運ばれる・連れて行かれる）。歩きの当たり判定を一度切ってから置く。</summary>
         public void TeleportTo(Vector3 position, Quaternion rotation)
         {
@@ -328,6 +331,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             if (!can.IsOpened && HandsStopped)
             {
                 Say(ProtoText.HandsStopped);
+                ProtoPolice.ScoldStoppedHands();
                 return;
             }
 

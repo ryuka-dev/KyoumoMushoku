@@ -144,7 +144,19 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("運ばれたときの医療費。足りなければあるだけ取られ、借金はしない。生きているときに手当てを受ける値段も同じ。")]
         [SerializeField, Min(0)] int _clinicFeeYen = 500;
 
+        [Header("警官に連れて行かれる（GameDesign 第五節・第三段階）")]
+        [Tooltip("連れて行かれる歩きの速さ（m/秒）。捕まった所から送り先までの道のりをこの速さで歩いた時間だけ、時計が進む。")]
+        [SerializeField, Min(0.1f)] float _escortWalkSpeed = 1.4f;
+
+        [Tooltip("連れて行かれて過ぎる時間の下限と上限（秒）。")]
+        [SerializeField, Min(0f)] float _escortMinSeconds = 10f;
+        [SerializeField, Min(0f)] float _escortMaxSeconds = 45f;
+
         public int ClinicFeeYen => _clinicFeeYen;
+
+        /// <summary>道のり（m）を連れて行かれるのにかかる時間（秒）。</summary>
+        public float EscortSeconds(float distance) =>
+            Mathf.Clamp(distance / Mathf.Max(0.1f, _escortWalkSpeed), _escortMinSeconds, Mathf.Max(_escortMinSeconds, _escortMaxSeconds));
         public float StartingSanity => _startingSanity;
         public float LateNightStartSeconds => _lateNightStartSeconds;
         public float LateNightRampPerSecond => _lateNightRampPerSecond;

@@ -31,6 +31,23 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         public void Configure(Transform head) => _head = head;
 
+        /// <summary>見上げ・見下ろしの角度（下向きが正）。</summary>
+        public float Pitch => _pitch;
+
+        /// <summary>
+        /// 視点を外から向ける（警官に掴まれて顔を向けさせられる・連れて行かれた先で向き直る）。
+        /// 左右は体ごと、上下は頭だけを回す。次にマウスを動かしたとき、ここから続く。
+        /// </summary>
+        public void SetView(float yaw, float pitch)
+        {
+            transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            _pitch = Mathf.Clamp(pitch, -80f, 80f);
+            if (_head != null)
+            {
+                _head.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
+            }
+        }
+
         void Awake()
         {
             _body = GetComponent<CharacterController>();

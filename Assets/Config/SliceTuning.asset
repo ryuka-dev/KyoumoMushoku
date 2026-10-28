@@ -207,3 +207,6 @@ MonoBehaviour:
     sanity: 12
   _finalDay: 3
   _clinicFeeYen: 500
+  _escortWalkSpeed: 1.4
+  _escortMinSeconds: 10
+  _escortMaxSeconds: 45

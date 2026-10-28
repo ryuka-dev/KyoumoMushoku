@@ -174,7 +174,21 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         // ── 警官 ─────────────────────────────────────────────
         public static string PoliceSays(string line) => $"警官「{line}」";
-        public static string PoliceStatus(string stage) => $"警官：{stage}";
+        public static string PoliceBubble(string line) => $"「{line}」";
+        public static string PoliceFromEdge(string line, bool left) => left ? $"◀ 警官「{line}」" : $"警官「{line}」 ▶";
+
+        // 本編の PoliceText（注意・警告・追跡・捕縛）に、一人称で足した台詞。
+        public static string PoliceScold => "こら、手を止めなさい。";
+        public static string PoliceHeard => "ん？　今の音は……";
+        public static string PoliceGaveUp => "……逃げ足の速いやつだ。";
+        public static string PoliceLetGo => "……二度と来るなよ。";
+        public static string PoliceTakeAway => "……ちょっと来なさい。";
+        public static string PoliceSeize => "腐ったものは預かる。";
+        public static string PlaceParkEdge => "公園の外れ";
+        public static string PlaceArcadeOutside => "商店街の外";
+        public static string NameList(System.Collections.Generic.IEnumerable<string> names) => string.Join("・", names);
+        public static string EscortedTo(string place, string seized) =>
+            $"{place}まで連れて行かれた。" + (string.IsNullOrEmpty(seized) ? "" : $"\n取り上げられた：{seized}");
 
         // ── 珍しさ ───────────────────────────────────────────
         public static string Rare => "珍しい";
