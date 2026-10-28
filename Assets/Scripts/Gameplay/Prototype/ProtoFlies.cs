@@ -51,6 +51,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             public float Heading;
             public bool Crawling;
             public float CrawlTimer;
+            public float ApproachTime;
         }
 
         /// <summary>蠅が止まって歩ける三角形。部品の局部座標で持つので、箱が揺れても一緒に動く。</summary>
@@ -106,6 +107,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
         bool _wasOpened;
         int _lastHits;
         SurfaceTri[] _tris = new SurfaceTri[0];
+        SurfaceTri[] _solid = new SurfaceTri[0];
+        Bounds _solidBounds;
         float[] _triWeights = new float[0];
         float _triTotal;
         ProtoOutline _outline;
@@ -171,7 +174,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>
         /// 止まって歩ける面を、箱の本当の形から集める。当たり判定の箱の上に止まらせると、ゴミ袋や形の不揃いな箱では宙に浮いて見える。
         /// 形は縁取りの殻の網から読む（元の網は読み取り不可でも、殻の網は同じ頂点で読める）。
-        /// 下向きの面と、ほかの部品に覆われた面（ふたの下の本体の天面など）は除く。上を向いた面ほど選ばれやすい。
+        /// 下向きの面、ほかの部品に覆われた面（ふたの下の本体の天面など）、降りてくる道がふさがった面（本体の中の台座など）は除く。
+        /// 上を向いた面ほど選ばれやすい。
         /// </summary>
         void BuildSurface()
         {
@@ -181,8 +185,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
-            var tris = new System.Collections.Generic.List<SurfaceTri>();
-            var weights = new System.Collections.Generic.List<float>();
+            var solid = new System.Collections.Generic.List<SurfaceTri>();
+            var candidates = new System.Collections.Generic.List<SurfaceTri>();
+            var candidateWeights = new System.Collections.Generic.List<float>();
+            var candidateProbes = new System.Collections.Generic.List<Vector3>();
+            var candidateNormals = new System.Collections.Generic.List<Vector3>();
             foreach (var shell in _outline.Shells)
             {
                 if (shell.Target == null || shell.Mesh == null || !shell.Mesh.isReadable)
@@ -192,8 +199,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
                 var space = shell.Target.transform;
                 var vertices = shell.Mesh.vertices;
-                var shellNormals = shell.Mesh.normals;
                 var triangles = shell.Mesh.triangles;
+                var scale = space.lossyScale;
+                var mirror = scale.x * scale.y * scale.z < 0f ? -1f : 1f;
                 for (var t = 0; t + 2 < triangles.Length; t += 3)
                 {
                     var la = vertices[triangles[t]];
@@ -209,29 +217,46 @@ namespace KyoumoMushoku.Gameplay.Prototype
                         continue;
                     }
 
-                    // 面の外向き：巻き順の外積を、頂点の法線の側へそろえる。
-                    var normal = cross / (area * 2f);
-                    var hint = space.TransformDirection(shellNormals[triangles[t]] + shellNormals[triangles[t + 1]] + shellNormals[triangles[t + 2]]);
-                    if (Vector3.Dot(normal, hint) < 0f)
-                    {
-                        normal = -normal;
-                    }
+                    // 面の外向きは巻き順で決める（描画の裏面の切り捨てと同じ決まり）。鏡に映した部品（拡大率の積が負）は向きが逆になる。
+                    // 殻の頂点の法線は位置ごとに平均してあり、ふたの結び目のような薄い所では当てにならないので使わない。
+                    var normal = cross / (area * 2f) * mirror;
 
-                    if (normal.y < -0.2f || Covered((a + b + c) / 3f + normal * 0.02f, shell.Target, _outline))
-                    {
-                        continue;
-                    }
-
-                    tris.Add(new SurfaceTri
+                    var entry = new SurfaceTri
                     {
                         Space = space,
                         A = la,
                         B = lb,
                         C = lc,
                         Normal = space.InverseTransformDirection(normal).normalized,
-                    });
-                    weights.Add(area * (normal.y > 0.6f ? 2f : 1f));
+                    };
+                    solid.Add(entry);
+
+                    if (normal.y < -0.2f || Covered((a + b + c) / 3f + normal * 0.02f, shell.Target, _outline))
+                    {
+                        continue;
+                    }
+
+                    candidates.Add(entry);
+                    candidateWeights.Add(area * (normal.y > 0.6f ? 2f : 1f));
+                    candidateProbes.Add((a + b + c) / 3f + normal * 0.02f);
+                    candidateNormals.Add(normal);
                 }
+            }
+
+            _solid = solid.ToArray();
+
+            // 降りてくる道がふさがった面（網の内側に埋もれた台座、ふたの陰など）には止まらない。止まりに行くと箱を突き抜ける。
+            var tris = new System.Collections.Generic.List<SurfaceTri>();
+            var weights = new System.Collections.Generic.List<float>();
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                if (!LandingClear(candidateProbes[i] - candidateNormals[i] * 0.02f, candidateNormals[i]))
+                {
+                    continue;
+                }
+
+                tris.Add(candidates[i]);
+                weights.Add(candidateWeights[i]);
             }
 
             _tris = tris.ToArray();
@@ -241,6 +266,38 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 _triTotal += w;
             }
+        }
+
+        /// <summary>半直線と三角形が交わるか（Möller–Trumbore）。交わるなら t に起点からの距離（direction が単位長のとき）。</summary>
+        static bool RayTriangle(Vector3 origin, Vector3 direction, Vector3 a, Vector3 b, Vector3 c, out float t)
+        {
+            t = 0f;
+            var ab = b - a;
+            var ac = c - a;
+            var p = Vector3.Cross(direction, ac);
+            var determinant = Vector3.Dot(ab, p);
+            if (Mathf.Abs(determinant) < 1e-9f)
+            {
+                return false;
+            }
+
+            var inverse = 1f / determinant;
+            var s = origin - a;
+            var u = Vector3.Dot(s, p) * inverse;
+            if (u < 0f || u > 1f)
+            {
+                return false;
+            }
+
+            var q = Vector3.Cross(s, ab);
+            var v = Vector3.Dot(direction, q) * inverse;
+            if (v < 0f || u + v > 1f)
+            {
+                return false;
+            }
+
+            t = Vector3.Dot(ac, q) * inverse;
+            return t > 1e-5f;
         }
 
         /// <summary>その点が、ほかの部品（self 以外）の中にあるか。覆われた面には止まらない。</summary>
@@ -305,6 +362,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             var dt = Time.deltaTime;
             var top = Top();
+            UpdateSolidBounds();
             for (var i = 0; i < _flies.Length; i++)
             {
                 Step(ref _flies[i], dt, opened, top);
@@ -425,6 +483,19 @@ namespace KyoumoMushoku.Gameplay.Prototype
                         var surface = SurfacePosition(fly);
                         fly.Target = fly.Approaching ? surface + SurfaceNormal(fly) * 0.12f : surface;
                         Steer(ref fly, dt, _maxSpeed * (fly.Approaching ? 0.8f : 0.4f));
+                        if (fly.Approaching)
+                        {
+                            // 回り込めずに箱の面に引っかかり続けたら、止まるのをやめてまた飛ぶ
+                            // （そこから降りると、面へ向かう途中で箱を突き抜けることがある）。
+                            fly.ApproachTime += dt;
+                            if (fly.ApproachTime > 1.5f)
+                            {
+                                fly.Mode = Mode.Flying;
+                                fly.Timer = 0f;
+                                return;
+                            }
+                        }
+
                         var reach = fly.Approaching ? 0.04f : 0.012f;
                         if ((fly.Target - fly.Position).sqrMagnitude < reach * reach)
                         {
@@ -450,9 +521,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                     fly.Timer -= dt;
                     if (fly.Timer <= 0f)
                     {
-                        fly.Mode = Mode.Flying;
-                        fly.Velocity = Vector3.up * _maxSpeed * 0.8f;
-                        fly.Timer = Random.Range(0.08f, 0.2f);
+                        TakeOff(ref fly);
                     }
 
                     return;
@@ -483,18 +552,125 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 fly.Velocity = fly.Velocity.normalized * maxSpeed;
             }
 
+            var previous = fly.Position;
             fly.Position += fly.Velocity * dt;
 
-            // 箱の中へは潜らない（天面より下に落ちたら天面へ戻す。ただし飛び去る途中は好きにさせる）。
-            if (fly.Mode == Mode.Flying)
+            // 箱を突き抜けない。面に降りる最後の一息は、降りる道が空いていることを止まり場を選ぶときに確かめてある。
+            var landing = fly.Mode == Mode.Resting && !fly.Approaching;
+            if (!landing)
             {
-                var floor = Top().y + 0.01f;
-                if (fly.Position.y < floor && InsideFootprint(fly.Position))
+                KeepOutside(ref fly, previous);
+            }
+        }
+
+        /// <summary>
+        /// 箱の本当の形（全部の三角形）を突き抜けさせない。この一こまで動いた線分が面を横切ったら、横切る手前で止め、
+        /// 面へ向かう速さを消す（面に沿って滑って回り込む）。外から来た蠅は面の外に残るので、
+        /// 網が閉じているか、法線がどちらを向くかに左右されない。
+        /// </summary>
+        void KeepOutside(ref Fly fly, Vector3 previous)
+        {
+            var move = fly.Position - previous;
+            var length = move.magnitude;
+            if (_solid.Length == 0 || length < 1e-6f || (!_solidBounds.Contains(previous) && !_solidBounds.Contains(fly.Position)))
+            {
+                return;
+            }
+
+            if (!FirstHit(previous, fly.Position, out var distance, out var normal))
+            {
+                return;
+            }
+
+            var direction = move / length;
+            fly.Position = previous + direction * Mathf.Max(0f, distance - 0.01f);
+
+            // 面の、蠅が来た側を向く法線で、面へ向かう速さを消す。
+            if (Vector3.Dot(normal, direction) > 0f)
+            {
+                normal = -normal;
+            }
+
+            var into = Vector3.Dot(fly.Velocity, normal);
+            if (into < 0f)
+            {
+                fly.Velocity -= normal * into;
+            }
+        }
+
+        /// <summary>線分 from→to が箱の網の面と最初に交わる所（from からの距離）と、その面の法線。</summary>
+        bool FirstHit(Vector3 from, Vector3 to, out float distance, out Vector3 normal)
+        {
+            var move = to - from;
+            var length = move.magnitude;
+            distance = float.MaxValue;
+            normal = Vector3.up;
+            if (length < 1e-6f)
+            {
+                return false;
+            }
+
+            var direction = move / length;
+            foreach (var tri in _solid)
+            {
+                if (tri.Space == null)
                 {
-                    fly.Position.y = floor;
-                    fly.Velocity.y = Mathf.Abs(fly.Velocity.y);
+                    continue;
+                }
+
+                if (RayTriangle(from, direction, tri.Space.TransformPoint(tri.A), tri.Space.TransformPoint(tri.B), tri.Space.TransformPoint(tri.C), out var t)
+                    && t <= length && t < distance)
+                {
+                    distance = t;
+                    normal = tri.Space.TransformDirection(tri.Normal).normalized;
                 }
             }
+
+            return distance <= length;
+        }
+
+        /// <summary>止まり場から外へ、降りてくる道（面の正面 12cm）が空いているか。埋もれた面や覆われた面には降りられない。</summary>
+        bool LandingClear(Vector3 point, Vector3 normal) =>
+            !FirstHit(point + normal * 0.006f, point + normal * 0.12f, out _, out _);
+
+        void UpdateSolidBounds()
+        {
+            if (_outline == null)
+            {
+                return;
+            }
+
+            var first = true;
+            foreach (var shell in _outline.Shells)
+            {
+                if (shell.Target == null)
+                {
+                    continue;
+                }
+
+                if (first)
+                {
+                    _solidBounds = shell.Target.bounds;
+                    first = false;
+                }
+                else
+                {
+                    _solidBounds.Encapsulate(shell.Target.bounds);
+                }
+            }
+
+            _solidBounds.Expand(0.1f);
+        }
+
+        /// <summary>止まっていた面から飛び立つ。面の法線の向き（少し上寄り）へ離れるので、ふたの下や横からでも箱を突き抜けない。</summary>
+        void TakeOff(ref Fly fly)
+        {
+            var normal = fly.Landed ? SurfaceNormal(fly) : Vector3.up;
+            fly.Mode = Mode.Flying;
+            fly.Landed = false;
+            fly.Velocity = (normal + Vector3.up * 0.4f).normalized * _maxSpeed * 0.8f;
+            fly.Target = fly.Position + normal * 0.25f + Vector3.up * 0.15f;
+            fly.Timer = Random.Range(0.15f, 0.3f);
         }
 
         void Leave(ref Fly fly)
@@ -525,8 +701,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 if (_flies[i].Mode == Mode.Resting)
                 {
-                    _flies[i].Mode = Mode.Flying;
-                    _flies[i].Timer = 0f;
+                    TakeOff(ref _flies[i]);
+                    continue;
                 }
 
                 if (_flies[i].Mode == Mode.Flying)
@@ -544,12 +720,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
             return new Vector3(b.center.x, b.max.y, b.center.z);
         }
 
-        bool InsideFootprint(Vector3 p)
-        {
-            var b = _collider.bounds;
-            return p.x > b.min.x && p.x < b.max.x && p.z > b.min.z && p.z < b.max.z;
-        }
-
         Vector3 SwarmPoint()
         {
             var b = _collider.bounds;
@@ -563,6 +733,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             fly.Timer = Random.Range(_restSeconds.x, _restSeconds.y);
             fly.Landed = false;
             fly.Approaching = true;
+            fly.ApproachTime = 0f;
             fly.Crawling = false;
             fly.CrawlTimer = Random.Range(0.3f, 1f);
             fly.Heading = Random.Range(0f, 360f);
@@ -593,7 +764,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
                 var local = tri.A + (tri.B - tri.A) * u + (tri.C - tri.A) * v;
                 var world = tri.Space.TransformPoint(local);
-                if (Covered(world + tri.Space.TransformDirection(tri.Normal) * 0.02f, tri.Space.GetComponent<Renderer>(), _outline))
+                var normal = tri.Space.TransformDirection(tri.Normal).normalized;
+                if (Covered(world + normal * 0.02f, tri.Space.GetComponent<Renderer>(), _outline) || !LandingClear(world, normal))
                 {
                     continue;
                 }
