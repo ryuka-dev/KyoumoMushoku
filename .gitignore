@@ -85,3 +85,8 @@ __pycache__/
 # 一覧と入手先は Docs/素材台帳.md。ビルドには含まれる。
 /[Aa]ssets/ThirdParty/
 /[Aa]ssets/ThirdParty.meta
+
+# 学内の発表の資料（手元に残すが、公開しない）
+/CT_12_*.pptx
+/発表原稿.txt
+/QR_releases-page.png
