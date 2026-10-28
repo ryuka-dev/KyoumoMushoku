@@ -66,6 +66,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string FaucetPrompt => "水道：水を飲む";
         public static string Drank => "水を飲んだ。";
         public static string NotThirsty => "喉は渇いていない。";
+        public static string ToiletPrompt => "公衆トイレ：手洗いの水を飲む（気が滅入る）";
+        public static string DrankToiletWater => "トイレの手洗いで水を飲んだ。……喉は潤ったが、気が滅入る。";
         public static string Consumed(string name, bool wasRotten) =>
             wasRotten ? $"{name}を口にした。……腐っていた。" : $"{name}を口にした。";
         public static string NotEdible(string name) => $"{name}は口にできない。";
