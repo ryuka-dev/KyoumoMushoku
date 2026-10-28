@@ -77,11 +77,21 @@ def beam(bm, a, b, thickness):
 
 
 def ring(bm, sides, radius, thickness, width):
-    """縦に立てた輪（車輪）。Y 軸が回転軸。"""
-    outer = cylinder(bm, sides, radius, radius, -width / 2, width / 2, caps=False)
-    inner = cylinder(bm, sides, radius - thickness, radius - thickness, -width / 2, width / 2, caps=False)
-    rotate(bm, outer + inner, "X", 90)
-    return outer + inner
+    """縦に立てた輪（車輪）。Y 軸が回転軸。外周・内周・両側の面で閉じた輪にする
+    （両側の面が無いと、横から見たとき面積がほぼ無く、輪が切れ切れの弧に見える）。"""
+    rings = []
+    for rr in (radius, radius - thickness):
+        for y in (-width / 2, width / 2):
+            rings.append([bm.verts.new((rr * math.cos(2 * math.pi * i / sides), y, rr * math.sin(2 * math.pi * i / sides)))
+                          for i in range(sides)])
+    o0, o1, i0, i1 = rings
+    faces = []
+    for a, b in ((o0, o1), (o1, i1), (i1, i0), (i0, o0)):
+        for k in range(sides):
+            n = (k + 1) % sides
+            faces.append(bm.faces.new((a[k], a[n], b[n], b[k])))
+    bmesh.ops.recalc_face_normals(bm, faces=faces)
+    return o0 + o1 + i0 + i1
 
 
 # ── 電柱 ───────────────────────────────────────────────
@@ -358,8 +368,9 @@ def bicycle(x):
 
     def wheels(bm):
         for px in (-0.55, 0.55):
-            verts = ring(bm, 12, r, 0.05, 0.04)
+            verts = ring(bm, 16, r, 0.06, 0.045)
             move(bm, verts, (px, 0.0, r))
+            km.box(bm, px, 0.0, r, 0.07, 0.08, 0.07)  # ハブ
 
     part(root, "Wheels", wheels, const("black", 2))
 
@@ -386,7 +397,8 @@ def bicycle(x):
         km.box(bm, 0.62, -0.17, 0.98, 0.3, 0.01, 0.2)
         km.box(bm, 0.77, 0.0, 0.98, 0.01, 0.34, 0.2)
         km.box(bm, 0.47, 0.0, 0.98, 0.01, 0.34, 0.2)
-        beam(bm, (-0.05, 0, 0.3), (-0.2, 0.18, 0.02), 0.025)     # スタンド
+        for sy in (-0.06, 0.06):                                  # 後ろの両立スタンド（立ったまま停まる）
+            beam(bm, (-0.55, sy, r), (-0.66, sy * 1.6, 0.012), 0.022)
 
     part(root, "Parts", parts, shade("steel", 3, 2, 1))
     return root
