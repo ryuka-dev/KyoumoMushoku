@@ -51,9 +51,10 @@ Shader "KyoumoMushoku/ProtoFlies"
                 Varyings output;
                 float4 positionCS = TransformObjectToHClip(input.positionOS.xyz);
                 float4x4 projection = GetViewToHClipMatrix();
-                float2 scale = abs(float2(projection[0][0], projection[1][1]));
+                // 符号は残す（中間テクスチャへ描くとき投影は上下が反転していて、abs を取ると翅が下に付く）。
+                float2 scale = float2(projection[0][0], projection[1][1]);
                 // 胴の幅（m）。遠くて画面上で小さくなりすぎるときは、最小のピクセル数に当たる幅まで広げる。
-                float minimum = _MinBodyPixels * 2.0 * positionCS.w / (_ScreenParams.y * scale.y);
+                float minimum = _MinBodyPixels * 2.0 * positionCS.w / (_ScreenParams.y * abs(scale.y));
                 float size = max(_BodySize, minimum);
                 positionCS.xy += input.offset * size * scale;
                 output.positionCS = positionCS;
