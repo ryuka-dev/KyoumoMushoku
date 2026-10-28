@@ -48,6 +48,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         float _alpha;
         float _width;
 
+        /// <summary>殻の一覧。殻の網は元の網と同じ頂点で読み取りができるので、蠅が止まる面を探すのにも使う。</summary>
+        public System.Collections.Generic.IReadOnlyList<Shell> Shells => _shells;
+
         public void Configure(ProtoHands hands, Material material, Shell[] shells)
         {
             _hands = hands;

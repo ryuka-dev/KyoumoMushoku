@@ -45,6 +45,22 @@ namespace KyoumoMushoku.Gameplay.Prototype
             public float Life;
             public float Alpha;
             public bool Landed;
+            public bool Approaching;
+            public int Tri;
+            public Vector3 Local;
+            public float Heading;
+            public bool Crawling;
+            public float CrawlTimer;
+        }
+
+        /// <summary>蠅が止まって歩ける三角形。部品の局部座標で持つので、箱が揺れても一緒に動く。</summary>
+        struct SurfaceTri
+        {
+            public Transform Space;
+            public Vector3 A;
+            public Vector3 B;
+            public Vector3 C;
+            public Vector3 Normal;
         }
 
         [SerializeField] Material _material;
@@ -72,6 +88,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField, Range(0f, 1f)] float _restChance = 0.12f;
         [Tooltip("一匹がたかっている秒数の幅（過ぎると飛び去り、別の一匹が来る）。")]
         [SerializeField] Vector2 _stay = new Vector2(8f, 24f);
+        [Tooltip("止まっている秒数の幅。止まっている間は、歩いては休むを繰り返す。")]
+        [SerializeField] Vector2 _restSeconds = new Vector2(1.5f, 5f);
+        [Tooltip("面の上を歩く速さ（m/秒）。")]
+        [SerializeField, Min(0f)] float _crawlSpeed = 0.06f;
 
         ProtoTrashCan _can;
         Collider _collider;
@@ -85,6 +105,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
         MaterialPropertyBlock _block;
         bool _wasOpened;
         int _lastHits;
+        SurfaceTri[] _tris = new SurfaceTri[0];
+        float[] _triWeights = new float[0];
+        float _triTotal;
+        ProtoOutline _outline;
 
         void Awake()
         {
@@ -140,6 +164,102 @@ namespace KyoumoMushoku.Gameplay.Prototype
                     _flies[i].Timer = Random.Range(0.5f, 6f);
                 }
             }
+
+            BuildSurface();
+        }
+
+        /// <summary>
+        /// 止まって歩ける面を、箱の本当の形から集める。当たり判定の箱の上に止まらせると、ゴミ袋や形の不揃いな箱では宙に浮いて見える。
+        /// 形は縁取りの殻の網から読む（元の網は読み取り不可でも、殻の網は同じ頂点で読める）。
+        /// 下向きの面と、ほかの部品に覆われた面（ふたの下の本体の天面など）は除く。上を向いた面ほど選ばれやすい。
+        /// </summary>
+        void BuildSurface()
+        {
+            _outline = GetComponent<ProtoOutline>();
+            if (_outline == null)
+            {
+                return;
+            }
+
+            var tris = new System.Collections.Generic.List<SurfaceTri>();
+            var weights = new System.Collections.Generic.List<float>();
+            foreach (var shell in _outline.Shells)
+            {
+                if (shell.Target == null || shell.Mesh == null || !shell.Mesh.isReadable)
+                {
+                    continue;
+                }
+
+                var space = shell.Target.transform;
+                var vertices = shell.Mesh.vertices;
+                var shellNormals = shell.Mesh.normals;
+                var triangles = shell.Mesh.triangles;
+                for (var t = 0; t + 2 < triangles.Length; t += 3)
+                {
+                    var la = vertices[triangles[t]];
+                    var lb = vertices[triangles[t + 1]];
+                    var lc = vertices[triangles[t + 2]];
+                    var a = space.TransformPoint(la);
+                    var b = space.TransformPoint(lb);
+                    var c = space.TransformPoint(lc);
+                    var cross = Vector3.Cross(b - a, c - a);
+                    var area = cross.magnitude * 0.5f;
+                    if (area < 1e-6f)
+                    {
+                        continue;
+                    }
+
+                    // 面の外向き：巻き順の外積を、頂点の法線の側へそろえる。
+                    var normal = cross / (area * 2f);
+                    var hint = space.TransformDirection(shellNormals[triangles[t]] + shellNormals[triangles[t + 1]] + shellNormals[triangles[t + 2]]);
+                    if (Vector3.Dot(normal, hint) < 0f)
+                    {
+                        normal = -normal;
+                    }
+
+                    if (normal.y < -0.2f || Covered((a + b + c) / 3f + normal * 0.02f, shell.Target, _outline))
+                    {
+                        continue;
+                    }
+
+                    tris.Add(new SurfaceTri
+                    {
+                        Space = space,
+                        A = la,
+                        B = lb,
+                        C = lc,
+                        Normal = space.InverseTransformDirection(normal).normalized,
+                    });
+                    weights.Add(area * (normal.y > 0.6f ? 2f : 1f));
+                }
+            }
+
+            _tris = tris.ToArray();
+            _triWeights = weights.ToArray();
+            _triTotal = 0f;
+            foreach (var w in _triWeights)
+            {
+                _triTotal += w;
+            }
+        }
+
+        /// <summary>その点が、ほかの部品（self 以外）の中にあるか。覆われた面には止まらない。</summary>
+        static bool Covered(Vector3 point, Renderer self, ProtoOutline outline)
+        {
+            foreach (var shell in outline.Shells)
+            {
+                if (shell.Target == null || shell.Target == self)
+                {
+                    continue;
+                }
+
+                if (shell.Target.bounds.Contains(point))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         void OnDestroy()
@@ -293,10 +413,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                     }
                     else if (Random.value < _restChance * dt)
                     {
-                        fly.Mode = Mode.Resting;
-                        fly.Target = LidPoint();
-                        fly.Timer = Random.Range(0.6f, 2.5f);
-                        fly.Landed = false;
+                        BeginRest(ref fly);
                     }
 
                     return;
@@ -304,22 +421,31 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 case Mode.Resting:
                     if (!fly.Landed)
                     {
-                        Steer(ref fly, dt, _maxSpeed * 0.6f);
-                        if ((fly.Target - fly.Position).sqrMagnitude < 0.02f * 0.02f)
+                        // 面の正面に一度寄ってから、面へ降りる（箱の向こう側から箱を突き抜けて来ない）。
+                        var surface = SurfacePosition(fly);
+                        fly.Target = fly.Approaching ? surface + SurfaceNormal(fly) * 0.12f : surface;
+                        Steer(ref fly, dt, _maxSpeed * (fly.Approaching ? 0.8f : 0.4f));
+                        var reach = fly.Approaching ? 0.04f : 0.012f;
+                        if ((fly.Target - fly.Position).sqrMagnitude < reach * reach)
                         {
-                            fly.Landed = true;
-                            fly.Velocity = Vector3.zero;
+                            if (fly.Approaching)
+                            {
+                                fly.Approaching = false;
+                            }
+                            else
+                            {
+                                fly.Landed = true;
+                                fly.Velocity = Vector3.zero;
+                            }
                         }
 
                         return;
                     }
 
-                    // 止まっている間も、ときどき数ミリだけ歩く。箱が叩かれたら Startle で飛び立つ。
-                    fly.Position = fly.Target;
-                    if (Random.value < 2f * dt)
-                    {
-                        fly.Target += new Vector3(Random.Range(-0.01f, 0.01f), 0f, Random.Range(-0.01f, 0.01f));
-                    }
+                    // 止まっている間は、面の上を歩いては休む。止まる点は部品に付いていくので、箱が揺れても浮かない。
+                    // 箱が叩かれたら Startle で飛び立つ。
+                    Crawl(ref fly, dt);
+                    fly.Position = SurfacePosition(fly);
 
                     fly.Timer -= dt;
                     if (fly.Timer <= 0f)
@@ -360,7 +486,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             fly.Position += fly.Velocity * dt;
 
             // 箱の中へは潜らない（天面より下に落ちたら天面へ戻す。ただし飛び去る途中は好きにさせる）。
-            if (fly.Mode != Mode.Leaving && fly.Mode != Mode.Arriving)
+            if (fly.Mode == Mode.Flying)
             {
                 var floor = Top().y + 0.01f;
                 if (fly.Position.y < floor && InsideFootprint(fly.Position))
@@ -431,10 +557,183 @@ namespace KyoumoMushoku.Gameplay.Prototype
             return Top() + new Vector3(r.x * (b.extents.x + _swarmRadius), Random.Range(0.05f, _swarmHeight), r.y * (b.extents.z + _swarmRadius));
         }
 
-        Vector3 LidPoint()
+        void BeginRest(ref Fly fly)
         {
-            var b = _collider.bounds;
-            return Top() + new Vector3(Random.Range(-0.6f, 0.6f) * b.extents.x, 0.005f, Random.Range(-0.6f, 0.6f) * b.extents.z);
+            fly.Mode = Mode.Resting;
+            fly.Timer = Random.Range(_restSeconds.x, _restSeconds.y);
+            fly.Landed = false;
+            fly.Approaching = true;
+            fly.Crawling = false;
+            fly.CrawlTimer = Random.Range(0.3f, 1f);
+            fly.Heading = Random.Range(0f, 360f);
+            fly.Tri = -1;
+            for (var attempt = 0; attempt < 6 && _tris.Length > 0; attempt++)
+            {
+                var pick = Random.value * _triTotal;
+                var i = 0;
+                while (i < _triWeights.Length - 1 && pick > _triWeights[i])
+                {
+                    pick -= _triWeights[i];
+                    i++;
+                }
+
+                var tri = _tris[i];
+                if (tri.Space == null)
+                {
+                    continue;
+                }
+
+                var u = Random.value;
+                var v = Random.value;
+                if (u + v > 1f)
+                {
+                    u = 1f - u;
+                    v = 1f - v;
+                }
+
+                var local = tri.A + (tri.B - tri.A) * u + (tri.C - tri.A) * v;
+                var world = tri.Space.TransformPoint(local);
+                if (Covered(world + tri.Space.TransformDirection(tri.Normal) * 0.02f, tri.Space.GetComponent<Renderer>(), _outline))
+                {
+                    continue;
+                }
+
+                fly.Tri = i;
+                fly.Local = local;
+                return;
+            }
         }
+
+        /// <summary>
+        /// 面の上を歩く。歩いては休み、歩き出すたびに向きを少し変える。一歩ごとに、同じ部品の止まれる面のうち一番近い点へ吸い付けるので、
+        /// 角を越えても、でこぼこの面でも浮かず沈まない。近くに止まれる面が無ければ（ふたの下や底の縁）引き返す。
+        /// </summary>
+        void Crawl(ref Fly fly, float dt)
+        {
+            fly.CrawlTimer -= dt;
+            if (fly.CrawlTimer <= 0f)
+            {
+                fly.Crawling = !fly.Crawling;
+                fly.CrawlTimer = fly.Crawling ? Random.Range(0.2f, 0.6f) : Random.Range(0.3f, 1.2f);
+                if (fly.Crawling)
+                {
+                    fly.Heading += Random.Range(-70f, 70f);
+                }
+            }
+
+            if (!fly.Crawling || fly.Tri < 0 || fly.Tri >= _tris.Length || _tris[fly.Tri].Space == null)
+            {
+                return;
+            }
+
+            var current = _tris[fly.Tri];
+            var space = current.Space;
+            Frame(current.Normal, out var tangent, out var bitangent);
+            var radians = fly.Heading * Mathf.Deg2Rad;
+            var direction = space.TransformDirection(tangent * Mathf.Cos(radians) + bitangent * Mathf.Sin(radians)).normalized;
+            var candidate = fly.Local + space.InverseTransformVector(direction * (_crawlSpeed * dt));
+
+            var best = -1;
+            var bestPoint = candidate;
+            var bestDistance = float.MaxValue;
+            for (var i = 0; i < _tris.Length; i++)
+            {
+                if (_tris[i].Space != space)
+                {
+                    continue;
+                }
+
+                var point = ClosestPointOnTriangle(candidate, _tris[i].A, _tris[i].B, _tris[i].C);
+                var distance = (point - candidate).sqrMagnitude;
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    bestPoint = point;
+                    best = i;
+                }
+            }
+
+            if (best < 0 || space.TransformVector(bestPoint - candidate).magnitude > 0.01f)
+            {
+                fly.Heading += 180f;
+                return;
+            }
+
+            fly.Tri = best;
+            fly.Local = bestPoint;
+        }
+
+        static void Frame(Vector3 normal, out Vector3 tangent, out Vector3 bitangent)
+        {
+            tangent = Vector3.Cross(normal, Mathf.Abs(normal.y) < 0.9f ? Vector3.up : Vector3.right).normalized;
+            bitangent = Vector3.Cross(normal, tangent);
+        }
+
+        /// <summary>三角形 abc の上で p に一番近い点（Ericson『Real-Time Collision Detection』5.1.5）。</summary>
+        static Vector3 ClosestPointOnTriangle(Vector3 p, Vector3 a, Vector3 b, Vector3 c)
+        {
+            var ab = b - a;
+            var ac = c - a;
+            var ap = p - a;
+            var d1 = Vector3.Dot(ab, ap);
+            var d2 = Vector3.Dot(ac, ap);
+            if (d1 <= 0f && d2 <= 0f)
+            {
+                return a;
+            }
+
+            var bp = p - b;
+            var d3 = Vector3.Dot(ab, bp);
+            var d4 = Vector3.Dot(ac, bp);
+            if (d3 >= 0f && d4 <= d3)
+            {
+                return b;
+            }
+
+            var vc = d1 * d4 - d3 * d2;
+            if (vc <= 0f && d1 >= 0f && d3 <= 0f)
+            {
+                return a + ab * (d1 / (d1 - d3));
+            }
+
+            var cp = p - c;
+            var d5 = Vector3.Dot(ab, cp);
+            var d6 = Vector3.Dot(ac, cp);
+            if (d6 >= 0f && d5 <= d6)
+            {
+                return c;
+            }
+
+            var vb = d5 * d2 - d1 * d6;
+            if (vb <= 0f && d2 >= 0f && d6 <= 0f)
+            {
+                return a + ac * (d2 / (d2 - d6));
+            }
+
+            var va = d3 * d6 - d5 * d4;
+            if (va <= 0f && d4 - d3 >= 0f && d5 - d6 >= 0f)
+            {
+                return b + (c - b) * ((d4 - d3) / (d4 - d3 + (d5 - d6)));
+            }
+
+            var denominator = 1f / (va + vb + vc);
+            return a + ab * (vb * denominator) + ac * (vc * denominator);
+        }
+
+        bool OnSurface(Fly fly) => fly.Tri >= 0 && fly.Tri < _tris.Length && _tris[fly.Tri].Space != null;
+
+        /// <summary>止まる点（面からわずかに浮かせる）。止まれる面を作れなかった箱は、当たり判定の天面に止まる。</summary>
+        Vector3 SurfacePosition(Fly fly)
+        {
+            if (!OnSurface(fly))
+            {
+                return Top() + Vector3.up * 0.005f;
+            }
+
+            return _tris[fly.Tri].Space.TransformPoint(fly.Local) + SurfaceNormal(fly) * 0.004f;
+        }
+
+        Vector3 SurfaceNormal(Fly fly) =>
+            OnSurface(fly) ? _tris[fly.Tri].Space.TransformDirection(_tris[fly.Tri].Normal).normalized : Vector3.up;
     }
 }
