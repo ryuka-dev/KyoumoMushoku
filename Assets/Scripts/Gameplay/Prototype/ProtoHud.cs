@@ -249,6 +249,27 @@ namespace KyoumoMushoku.Gameplay.Prototype
             GUI.Label(new Rect(0f, h * 0.24f + 56f, w, 240f), body, _center);
 
             var y = h * 0.24f + 300f;
+            if (final)
+            {
+                // 三日の結算の後も、そのまま遊び続けられる。三つの釦を横に並べる。
+                if (GUI.Button(new Rect(w / 2f - 320f, y, 200f, 44f), ProtoText.ContinueButton, _button))
+                {
+                    _session.Continue();
+                }
+
+                if (GUI.Button(new Rect(w / 2f - 100f, y, 200f, 44f), ProtoText.RestartButton, _button))
+                {
+                    _session.Restart();
+                }
+
+                if (GUI.Button(new Rect(w / 2f + 120f, y, 200f, 44f), ProtoText.QuitButton, _button))
+                {
+                    _session.Quit();
+                }
+
+                return;
+            }
+
             if (morning)
             {
                 if (GUI.Button(new Rect(w / 2f - 210f, y, 200f, 44f), ProtoText.ContinueButton, _button))

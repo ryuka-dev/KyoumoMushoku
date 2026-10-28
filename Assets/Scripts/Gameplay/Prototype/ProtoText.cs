@@ -134,7 +134,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             $"{days}日間で、ゴミ箱から {caught} 個を掴んだ。\n所持金 {yen}円　カバン {capacity}マス　気分 {mood}\n"
             + (innNights > 0 ? $"安宿に {innNights} 泊した。\n" : "")
             + knacksLine
-            + "\n今日も無職。\n\n（体験版はここまで）";
+            + "\n今日も無職。\n\n（体験版はここで一区切り。続けて遊ぶこともできる）";
         public static string CollapsedTitle => "倒れた";
         public static string CollapsedBody(int day) => $"{day}日目。路上で意識が途切れた。";
         public static string ContinueButton => "続ける";

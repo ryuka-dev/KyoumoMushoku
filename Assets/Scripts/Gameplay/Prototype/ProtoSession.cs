@@ -11,7 +11,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 一人称の切片の一局の流れ。寝て一晩を越すこと、朝の区切り、倒れたときの終わりを持つ。
     ///
     /// 毎朝、区切りで前の日の結果を見せ、続けるか終えるかを選ばせる（GameDesign 第十六節：一日ごとにやめられる）。
-    /// 切片は三日（<see cref="SliceTuningAsset.FinalDay"/>）。その夜に寝たら、翌朝に三日間の結算を見せて終える。
+    /// 切片は三日（<see cref="SliceTuningAsset.FinalDay"/>）。その夜に寝たら、翌朝に三日間の結算を見せる。
+    /// 結算の後も続けて遊べる（2026-10-28 決定）。四日目からの昼夜の長さは三日目のまま（DaySchedule は最後の日を使い続ける）。
     /// 日付の変わり目は就寝の瞬間だけに起こる（第二節）。時計・店の帳簿・ゴミ箱の中身は、ここから一度に新しい一日へ進める。
     ///
     /// 倒れたら局を終える。本編の病院（搬送・医療費・SAN の代償）は切片には入れていない。
@@ -164,7 +165,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 CaughtTotal += CaughtYesterday;
             }
 
-            Enter(_dayNight.Clock.Day > FinalDay ? SessionState.Final : SessionState.Morning);
+            // 三日の結算は一度だけ。続けて遊んだ後の朝は、ふつうの朝の区切りになる。
+            var final = !FinalShown && _dayNight.Clock.Day > FinalDay;
+            FinalShown |= final;
+            Enter(final ? SessionState.Final : SessionState.Morning);
             return atInn ? ProtoText.WokeUpAtInn : bedding ? ProtoText.WokeUpOnCardboard : ProtoText.WokeUp;
         }
 
@@ -198,10 +202,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
         }
 
-        /// <summary>朝の区切りから、そのまま次の一日を遊ぶ。</summary>
+        /// <summary>三日の結算をもう見せたか。見せた後は、続けて遊んでも二度は出ない。</summary>
+        public bool FinalShown { get; private set; }
+
+        /// <summary>朝の区切りか三日の結算から、そのまま次の一日を遊ぶ。</summary>
         public void Continue()
         {
-            if (State == SessionState.Morning)
+            if (State == SessionState.Morning || State == SessionState.Final)
             {
                 _knacksSinceMorning.Clear();
                 Enter(SessionState.Playing);
