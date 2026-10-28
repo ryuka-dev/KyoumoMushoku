@@ -4045,6 +4045,8 @@ GameObject:
   - component: {fileID: 69356826}
   - component: {fileID: 69356828}
   - component: {fileID: 69356827}
+  - component: {fileID: 69356830}
+  - component: {fileID: 69356829}
   m_Layer: 0
   m_Name: TrashCan_Park
   m_TagString: Untagged
@@ -4113,6 +4115,55 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.783, y: 1.161, z: 0.67499995}
   m_Center: {x: -1.0421607e-14, y: 0.5805, z: 0.00000011920929}
+--- !u!114 &69356829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 69356825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &69356830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 69356825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1108311190}
+    Mesh: {fileID: 4300000, guid: a93e48f88b2a5d04a8eaa7c7b2fc8415, type: 2}
+  - Target: {fileID: 735854198}
+    Mesh: {fileID: 4300000, guid: e1fd00a599b5bea4c9bf432cc0f9be23, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &69398882
 GameObject:
   m_ObjectHideFlags: 0
@@ -8524,6 +8575,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 142283679}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &144336665 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 1588066396962892842, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
+  m_PrefabInstance: {fileID: 1118536867}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &145139713
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11036,6 +11092,8 @@ GameObject:
   - component: {fileID: 178309468}
   - component: {fileID: 178309470}
   - component: {fileID: 178309469}
+  - component: {fileID: 178309472}
+  - component: {fileID: 178309471}
   m_Layer: 0
   m_Name: Trash_Bag_1
   m_TagString: Untagged
@@ -11104,6 +11162,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.47661164, y: 0.678974, z: 0.85886693}
   m_Center: {x: 0, y: 0.339487, z: 0}
+--- !u!114 &178309471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 178309467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &178309472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 178309467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 819703112}
+    Mesh: {fileID: 4300000, guid: ab39ae9a8234d784096e737028c85c60, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1001 &178765197
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18554,6 +18659,8 @@ GameObject:
   - component: {fileID: 309879575}
   - component: {fileID: 309879577}
   - component: {fileID: 309879576}
+  - component: {fileID: 309879579}
+  - component: {fileID: 309879578}
   m_Layer: 0
   m_Name: TrashCan_BackAlley
   m_TagString: Untagged
@@ -18622,6 +18729,55 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.783, y: 0.9990001, z: 0.783}
   m_Center: {x: 0, y: 0.4995, z: 0}
+--- !u!114 &309879578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 309879574}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &309879579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 309879574}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 269874016}
+    Mesh: {fileID: 4300000, guid: ef63363ea541cbf44a7d78589e8fcf65, type: 2}
+  - Target: {fileID: 1550697920}
+    Mesh: {fileID: 4300000, guid: cfc3c80b81ecc7046a59d72817d9d8a0, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1001 &311124325
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -23429,6 +23585,7 @@ MonoBehaviour:
   _session: {fileID: 383865369}
   _openingDelay: 1.5
   _nudgeAfter: 35
+  _lineSeconds: 4
 --- !u!1 &387035651
 GameObject:
   m_ObjectHideFlags: 0
@@ -26531,6 +26688,7 @@ GameObject:
   - component: {fileID: 437684267}
   - component: {fileID: 437684269}
   - component: {fileID: 437684268}
+  - component: {fileID: 437684270}
   m_Layer: 0
   m_Name: VendingMachine_1
   m_TagString: Untagged
@@ -26601,6 +26759,34 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.95, y: 1.64, z: 0.72}
   m_Center: {x: 0, y: 1.02, z: 0}
+--- !u!114 &437684270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 437684266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1346577336}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  - Target: {fileID: 1746165119}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  - Target: {fileID: 1045116330}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &439300187
 GameObject:
   m_ObjectHideFlags: 0
@@ -29799,6 +29985,8 @@ GameObject:
   - component: {fileID: 490699046}
   - component: {fileID: 490699048}
   - component: {fileID: 490699047}
+  - component: {fileID: 490699050}
+  - component: {fileID: 490699049}
   m_Layer: 0
   m_Name: TrashCan_Park
   m_TagString: Untagged
@@ -29867,6 +30055,55 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.783, y: 1.161, z: 0.67499995}
   m_Center: {x: -1.0421607e-14, y: 0.5805, z: 0.00000011920929}
+--- !u!114 &490699049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 490699045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &490699050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 490699045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1430456298}
+    Mesh: {fileID: 4300000, guid: a93e48f88b2a5d04a8eaa7c7b2fc8415, type: 2}
+  - Target: {fileID: 1516966393}
+    Mesh: {fileID: 4300000, guid: e1fd00a599b5bea4c9bf432cc0f9be23, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &492788850
 GameObject:
   m_ObjectHideFlags: 0
@@ -30170,6 +30407,8 @@ GameObject:
   - component: {fileID: 495377770}
   - component: {fileID: 495377772}
   - component: {fileID: 495377771}
+  - component: {fileID: 495377774}
+  - component: {fileID: 495377773}
   m_Layer: 0
   m_Name: Trash_Bag_3
   m_TagString: Untagged
@@ -30238,6 +30477,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.5998393, y: 0.5793571, z: 0.7867196}
   m_Center: {x: 0, y: 0.28967854, z: 0}
+--- !u!114 &495377773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 495377769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &495377774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 495377769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1927491650}
+    Mesh: {fileID: 4300000, guid: 104319e04ee9f074a88f78e89c6a8800, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &495789272
 GameObject:
   m_ObjectHideFlags: 0
@@ -32927,6 +33213,11 @@ Transform:
   - {fileID: 1516966392}
   m_Father: {fileID: 490699046}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &534771805 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -6652725513331149018, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+  m_PrefabInstance: {fileID: 446825880}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &535363208
 GameObject:
   m_ObjectHideFlags: 0
@@ -33028,6 +33319,8 @@ GameObject:
   - component: {fileID: 537661946}
   - component: {fileID: 537661947}
   - component: {fileID: 537661948}
+  - component: {fileID: 537661950}
+  - component: {fileID: 537661949}
   m_Layer: 0
   m_Name: Trash_Bag_2
   m_TagString: Untagged
@@ -33096,6 +33389,53 @@ MonoBehaviour:
   _lootLifetime: 6
   _rareShare: 0.06
   _uncommonShare: 0.12
+--- !u!114 &537661949
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 537661945}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &537661950
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 537661945}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1694084550}
+    Mesh: {fileID: 4300000, guid: a739bf3e9ea560840b38047374e1bda3, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1001 &540203425
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -33753,6 +34093,7 @@ GameObject:
   - component: {fileID: 548601463}
   - component: {fileID: 548601465}
   - component: {fileID: 548601464}
+  - component: {fileID: 548601466}
   m_Layer: 0
   m_Name: Faucet
   m_TagString: Untagged
@@ -33813,6 +34154,34 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.5, y: 1, z: 0.5}
   m_Center: {x: 0, y: 0.5, z: 0}
+--- !u!114 &548601466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 548601462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1118910627}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  - Target: {fileID: 753768953}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  - Target: {fileID: 150615145}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &549600391
 GameObject:
   m_ObjectHideFlags: 0
@@ -33914,6 +34283,8 @@ GameObject:
   - component: {fileID: 549632148}
   - component: {fileID: 549632150}
   - component: {fileID: 549632149}
+  - component: {fileID: 549632152}
+  - component: {fileID: 549632151}
   m_Layer: 0
   m_Name: Trash_Bag_1
   m_TagString: Untagged
@@ -33982,6 +34353,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.47661164, y: 0.678974, z: 0.85886693}
   m_Center: {x: 0, y: 0.339487, z: 0}
+--- !u!114 &549632151
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549632147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &549632152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549632147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 428907755}
+    Mesh: {fileID: 4300000, guid: ab39ae9a8234d784096e737028c85c60, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &549672121
 GameObject:
   m_ObjectHideFlags: 0
@@ -33993,6 +34411,8 @@ GameObject:
   - component: {fileID: 549672122}
   - component: {fileID: 549672124}
   - component: {fileID: 549672123}
+  - component: {fileID: 549672126}
+  - component: {fileID: 549672125}
   m_Layer: 0
   m_Name: Trash_Bag_2
   m_TagString: Untagged
@@ -34061,6 +34481,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.192766, y: 0.69777215, z: 0.103366494}
   m_Center: {x: 0, y: 0.34888607, z: 0}
+--- !u!114 &549672125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549672121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &549672126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549672121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 164955589}
+    Mesh: {fileID: 4300000, guid: a739bf3e9ea560840b38047374e1bda3, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &550904883
 GameObject:
   m_ObjectHideFlags: 0
@@ -37889,6 +38356,7 @@ GameObject:
   - component: {fileID: 630297865}
   - component: {fileID: 630297867}
   - component: {fileID: 630297866}
+  - component: {fileID: 630297868}
   m_Layer: 0
   m_Name: VendingMachine_1
   m_TagString: Untagged
@@ -37959,6 +38427,34 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.95, y: 1.64, z: 0.72}
   m_Center: {x: 0, y: 1.02, z: 0}
+--- !u!114 &630297868
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 630297864}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1119101392}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  - Target: {fileID: 565364762}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  - Target: {fileID: 1719341873}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &631116617
 GameObject:
   m_ObjectHideFlags: 0
@@ -43820,6 +44316,7 @@ GameObject:
   - component: {fileID: 745661338}
   - component: {fileID: 745661340}
   - component: {fileID: 745661339}
+  - component: {fileID: 745661341}
   m_Layer: 0
   m_Name: VendingMachine_2
   m_TagString: Untagged
@@ -43890,6 +44387,34 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.95, y: 1.64, z: 0.72}
   m_Center: {x: 0, y: 1.02, z: 0}
+--- !u!114 &745661341
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 745661337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1087978274}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  - Target: {fileID: 2061480274}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  - Target: {fileID: 549600393}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &745852470
 GameObject:
   m_ObjectHideFlags: 0
@@ -50066,6 +50591,8 @@ GameObject:
   - component: {fileID: 838497700}
   - component: {fileID: 838497702}
   - component: {fileID: 838497701}
+  - component: {fileID: 838497704}
+  - component: {fileID: 838497703}
   m_Layer: 0
   m_Name: Trash_Bag_3
   m_TagString: Untagged
@@ -50134,6 +50661,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.48899344, y: 0.5793571, z: 0.97870946}
   m_Center: {x: 0, y: 0.28967854, z: 0}
+--- !u!114 &838497703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 838497699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &838497704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 838497699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1903686136}
+    Mesh: {fileID: 4300000, guid: 104319e04ee9f074a88f78e89c6a8800, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &838514681
 GameObject:
   m_ObjectHideFlags: 0
@@ -57213,6 +57787,8 @@ GameObject:
   - component: {fileID: 970929353}
   - component: {fileID: 970929354}
   - component: {fileID: 970929355}
+  - component: {fileID: 970929357}
+  - component: {fileID: 970929356}
   m_Layer: 0
   m_Name: Trash_Bag_1
   m_TagString: Untagged
@@ -57281,6 +57857,53 @@ MonoBehaviour:
   _lootLifetime: 6
   _rareShare: 0.06
   _uncommonShare: 0.12
+--- !u!114 &970929356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 970929352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &970929357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 970929352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 2129159444}
+    Mesh: {fileID: 4300000, guid: ab39ae9a8234d784096e737028c85c60, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &971192853
 GameObject:
   m_ObjectHideFlags: 0
@@ -59690,6 +60313,11 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 3286930751590091468, guid: 407eea1c08938614a98cc266f6039c8c, type: 3}
   m_PrefabInstance: {fileID: 994333067}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &997817663 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -6710133935455397784, guid: 8fb338ee5dbbee548b6ba6662a1091bd, type: 3}
+  m_PrefabInstance: {fileID: 1118536867}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1000610746
 PrefabInstance:
@@ -71090,6 +71718,8 @@ GameObject:
   - component: {fileID: 1179755140}
   - component: {fileID: 1179755139}
   - component: {fileID: 1179755138}
+  - component: {fileID: 1179755142}
+  - component: {fileID: 1179755141}
   m_Layer: 0
   m_Name: TrashCan_ConvenienceStore
   m_TagString: Untagged
@@ -71158,6 +71788,55 @@ Transform:
   - {fileID: 1118536868}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1179755141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1179755137}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &1179755142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1179755137}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 144336665}
+    Mesh: {fileID: 4300000, guid: ee0d4ddf5f23fee49a342016323e9cc2, type: 2}
+  - Target: {fileID: 997817663}
+    Mesh: {fileID: 4300000, guid: dd7f41452780ec8419ee9d3492e1ccd2, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &1180649227
 GameObject:
   m_ObjectHideFlags: 0
@@ -71925,6 +72604,8 @@ GameObject:
   - component: {fileID: 1191295531}
   - component: {fileID: 1191295533}
   - component: {fileID: 1191295532}
+  - component: {fileID: 1191295535}
+  - component: {fileID: 1191295534}
   m_Layer: 0
   m_Name: Trash_Bag_1
   m_TagString: Untagged
@@ -71993,6 +72674,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.47661164, y: 0.678974, z: 0.85886693}
   m_Center: {x: 0, y: 0.339487, z: 0}
+--- !u!114 &1191295534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1191295530}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &1191295535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1191295530}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1365082015}
+    Mesh: {fileID: 4300000, guid: ab39ae9a8234d784096e737028c85c60, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &1193911156
 GameObject:
   m_ObjectHideFlags: 0
@@ -77311,6 +78039,8 @@ GameObject:
   - component: {fileID: 1280696409}
   - component: {fileID: 1280696408}
   - component: {fileID: 1280696407}
+  - component: {fileID: 1280696411}
+  - component: {fileID: 1280696410}
   m_Layer: 0
   m_Name: TrashCan_BackAlley
   m_TagString: Untagged
@@ -77379,6 +78109,55 @@ Transform:
   - {fileID: 446825881}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1280696410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1280696406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &1280696411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1280696406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 534771805}
+    Mesh: {fileID: 4300000, guid: ef63363ea541cbf44a7d78589e8fcf65, type: 2}
+  - Target: {fileID: 1754642614}
+    Mesh: {fileID: 4300000, guid: cfc3c80b81ecc7046a59d72817d9d8a0, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &1281199220
 GameObject:
   m_ObjectHideFlags: 0
@@ -79553,6 +80332,8 @@ GameObject:
   - component: {fileID: 1320940593}
   - component: {fileID: 1320940595}
   - component: {fileID: 1320940594}
+  - component: {fileID: 1320940597}
+  - component: {fileID: 1320940596}
   m_Layer: 0
   m_Name: Trash_Bag_1
   m_TagString: Untagged
@@ -79621,6 +80402,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.47661164, y: 0.678974, z: 0.85886693}
   m_Center: {x: 0, y: 0.339487, z: 0}
+--- !u!114 &1320940596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320940592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &1320940597
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320940592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 673924675}
+    Mesh: {fileID: 4300000, guid: ab39ae9a8234d784096e737028c85c60, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1001 &1321096730
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -81223,6 +82051,8 @@ GameObject:
   - component: {fileID: 1341678826}
   - component: {fileID: 1341678828}
   - component: {fileID: 1341678827}
+  - component: {fileID: 1341678830}
+  - component: {fileID: 1341678829}
   m_Layer: 0
   m_Name: Trash_Bag_2
   m_TagString: Untagged
@@ -81291,6 +82121,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.192766, y: 0.69777215, z: 0.103366494}
   m_Center: {x: 0, y: 0.34888607, z: 0}
+--- !u!114 &1341678829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1341678825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &1341678830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1341678825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 508155111}
+    Mesh: {fileID: 4300000, guid: a739bf3e9ea560840b38047374e1bda3, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &1342747052
 GameObject:
   m_ObjectHideFlags: 0
@@ -82168,6 +83045,8 @@ GameObject:
   - component: {fileID: 1351958947}
   - component: {fileID: 1351958949}
   - component: {fileID: 1351958948}
+  - component: {fileID: 1351958951}
+  - component: {fileID: 1351958950}
   m_Layer: 0
   m_Name: TrashCan_ConvenienceStore
   m_TagString: Untagged
@@ -82236,6 +83115,55 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.215, y: 1.2825001, z: 0.648}
   m_Center: {x: -1.0421607e-14, y: 0.6412501, z: 0.00000011920929}
+--- !u!114 &1351958950
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1351958946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &1351958951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1351958946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 439300189}
+    Mesh: {fileID: 4300000, guid: ee0d4ddf5f23fee49a342016323e9cc2, type: 2}
+  - Target: {fileID: 164979773}
+    Mesh: {fileID: 4300000, guid: dd7f41452780ec8419ee9d3492e1ccd2, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &1352367721
 GameObject:
   m_ObjectHideFlags: 0
@@ -84566,6 +85494,7 @@ GameObject:
   - component: {fileID: 1397701399}
   - component: {fileID: 1397701400}
   - component: {fileID: 1397701401}
+  - component: {fileID: 1397701402}
   m_Layer: 0
   m_Name: Bench
   m_TagString: Untagged
@@ -84628,6 +85557,36 @@ MonoBehaviour:
   _tuning: {fileID: 11400000, guid: 2ded40c094b7c2d4c8b7d5405d9ed5b4, type: 2}
   _session: {fileID: 383865369}
   _dayNight: {fileID: 1497018777}
+--- !u!114 &1397701402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1397701398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1322464075}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  - Target: {fileID: 1015630222}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  - Target: {fileID: 542682579}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  - Target: {fileID: 339818519}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1001 &1401754456
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -85267,6 +86226,8 @@ GameObject:
   - component: {fileID: 1410405373}
   - component: {fileID: 1410405375}
   - component: {fileID: 1410405374}
+  - component: {fileID: 1410405377}
+  - component: {fileID: 1410405376}
   m_Layer: 0
   m_Name: Trash_Bag_2
   m_TagString: Untagged
@@ -85335,6 +86296,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.192766, y: 0.69777215, z: 0.103366494}
   m_Center: {x: 0, y: 0.34888607, z: 0}
+--- !u!114 &1410405376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410405372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &1410405377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410405372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1612777151}
+    Mesh: {fileID: 4300000, guid: a739bf3e9ea560840b38047374e1bda3, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1001 &1411884702
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -85408,6 +86416,7 @@ GameObject:
   - component: {fileID: 1413799298}
   - component: {fileID: 1413799299}
   - component: {fileID: 1413799300}
+  - component: {fileID: 1413799301}
   m_Layer: 0
   m_Name: Faucet
   m_TagString: Untagged
@@ -85468,6 +86477,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFaucet
   _tuning: {fileID: 11400000, guid: 59c950840943c7a48a1dce1ab2f31546, type: 2}
   _vitals: {fileID: 658567156}
+--- !u!114 &1413799301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1413799297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 728167805}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  - Target: {fileID: 1685719800}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  - Target: {fileID: 1620314664}
+    Mesh: {fileID: 4300000, guid: 2439e40b0333d384482e6bef2d282aea, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &1414355951
 GameObject:
   m_ObjectHideFlags: 0
@@ -88710,6 +89747,8 @@ GameObject:
   - component: {fileID: 1480697975}
   - component: {fileID: 1480697974}
   - component: {fileID: 1480697973}
+  - component: {fileID: 1480697977}
+  - component: {fileID: 1480697976}
   m_Layer: 0
   m_Name: TrashCan_Park
   m_TagString: Untagged
@@ -88778,6 +89817,55 @@ Transform:
   - {fileID: 1121622878}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1480697976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1480697972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &1480697977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1480697972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1848441317}
+    Mesh: {fileID: 4300000, guid: a93e48f88b2a5d04a8eaa7c7b2fc8415, type: 2}
+  - Target: {fileID: 1734018511}
+    Mesh: {fileID: 4300000, guid: e1fd00a599b5bea4c9bf432cc0f9be23, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1001 &1482764475
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -92338,6 +93426,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4047281072751281256, guid: 5c0bc39f1b4050142a8597bbe7c3dd03, type: 3}
   m_PrefabInstance: {fileID: 1535175433}
   m_PrefabAsset: {fileID: 0}
+--- !u!23 &1539590549 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 4493903202982350566, guid: 9af55394096b68c42b07d13f698ac0c0, type: 3}
+  m_PrefabInstance: {fileID: 297660801}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1540924717
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -93192,6 +94285,8 @@ GameObject:
   - component: {fileID: 1558972888}
   - component: {fileID: 1558972890}
   - component: {fileID: 1558972889}
+  - component: {fileID: 1558972892}
+  - component: {fileID: 1558972891}
   m_Layer: 0
   m_Name: TrashCan_BackAlley
   m_TagString: Untagged
@@ -93260,6 +94355,55 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.783, y: 0.9990001, z: 0.783}
   m_Center: {x: 0, y: 0.4995, z: 0}
+--- !u!114 &1558972891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1558972887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &1558972892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1558972887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 775434252}
+    Mesh: {fileID: 4300000, guid: ef63363ea541cbf44a7d78589e8fcf65, type: 2}
+  - Target: {fileID: 2049193839}
+    Mesh: {fileID: 4300000, guid: cfc3c80b81ecc7046a59d72817d9d8a0, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1001 &1559268512
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -97016,6 +98160,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 630297865}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &1612777151 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 5357815066365468, guid: a80e693172871c146bd1012208b1c07f, type: 3}
+  m_PrefabInstance: {fileID: 1532922520}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1613778280
 GameObject:
   m_ObjectHideFlags: 0
@@ -101244,6 +102393,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4047281072751281256, guid: 5c0bc39f1b4050142a8597bbe7c3dd03, type: 3}
   m_PrefabInstance: {fileID: 1694044704}
   m_PrefabAsset: {fileID: 0}
+--- !u!23 &1694084550 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 18542364efaada8449f47850d812c339, type: 3}
+  m_PrefabInstance: {fileID: 899337347}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1694213215
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -103730,6 +104884,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3286930751590091468, guid: 407eea1c08938614a98cc266f6039c8c, type: 3}
   m_PrefabInstance: {fileID: 1733219836}
   m_PrefabAsset: {fileID: 0}
+--- !u!23 &1734018511 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8801890252889996527, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+  m_PrefabInstance: {fileID: 1121622877}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1735180181
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -104494,6 +105653,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3742437383860512694, guid: 9c482dc4fbfedbc459e2fb4ecc97f13d, type: 3}
   m_PrefabInstance: {fileID: 1748743628}
   m_PrefabAsset: {fileID: 0}
+--- !u!23 &1754642614 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 7418098771544918504, guid: 4a97733d88752764ebdab40ffeacb00a, type: 3}
+  m_PrefabInstance: {fileID: 446825880}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1756650329
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -104959,6 +106123,8 @@ GameObject:
   - component: {fileID: 1765862990}
   - component: {fileID: 1765862992}
   - component: {fileID: 1765862991}
+  - component: {fileID: 1765862994}
+  - component: {fileID: 1765862993}
   m_Layer: 0
   m_Name: Trash_Bag_1
   m_TagString: Untagged
@@ -105027,6 +106193,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.47661164, y: 0.678974, z: 0.85886693}
   m_Center: {x: 0, y: 0.339487, z: 0}
+--- !u!114 &1765862993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1765862989}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &1765862994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1765862989}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 2018217730}
+    Mesh: {fileID: 4300000, guid: ab39ae9a8234d784096e737028c85c60, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1001 &1769496679
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -107427,6 +108640,8 @@ GameObject:
   - component: {fileID: 1842064541}
   - component: {fileID: 1842064543}
   - component: {fileID: 1842064542}
+  - component: {fileID: 1842064545}
+  - component: {fileID: 1842064544}
   m_Layer: 0
   m_Name: TrashCan_BackAlley
   m_TagString: Untagged
@@ -107495,6 +108710,55 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.783, y: 0.9990001, z: 0.783}
   m_Center: {x: 0, y: 0.4995, z: 0}
+--- !u!114 &1842064544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842064540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &1842064545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842064540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 824804514}
+    Mesh: {fileID: 4300000, guid: ef63363ea541cbf44a7d78589e8fcf65, type: 2}
+  - Target: {fileID: 526383211}
+    Mesh: {fileID: 4300000, guid: cfc3c80b81ecc7046a59d72817d9d8a0, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &1846312957
 GameObject:
   m_ObjectHideFlags: 0
@@ -107686,6 +108950,8 @@ GameObject:
   - component: {fileID: 1848063440}
   - component: {fileID: 1848063442}
   - component: {fileID: 1848063441}
+  - component: {fileID: 1848063444}
+  - component: {fileID: 1848063443}
   m_Layer: 0
   m_Name: Trash_Bag_2
   m_TagString: Untagged
@@ -107754,6 +109020,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.192766, y: 0.69777215, z: 0.103366494}
   m_Center: {x: 0, y: 0.34888607, z: 0}
+--- !u!114 &1848063443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848063439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &1848063444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848063439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1368892322}
+    Mesh: {fileID: 4300000, guid: a739bf3e9ea560840b38047374e1bda3, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1001 &1848274295
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -107815,6 +109128,11 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 7240336676095841171, guid: bb99f9a572d2975468500885f55537db, type: 3}
   m_PrefabInstance: {fileID: 1848274295}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &1848441317 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -4684600263410887734, guid: 3608db86540f9d64dacdf543591ac1ff, type: 3}
+  m_PrefabInstance: {fileID: 1121622877}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1849097198
 PrefabInstance:
@@ -110942,6 +112260,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5220498809700295444, guid: f6151e4719635974eaa7afbcb69dd895, type: 3}
   m_PrefabInstance: {fileID: 1903686134}
   m_PrefabAsset: {fileID: 0}
+--- !u!23 &1903686136 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 6357355197778811003, guid: f6151e4719635974eaa7afbcb69dd895, type: 3}
+  m_PrefabInstance: {fileID: 1903686134}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1905438073
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -111711,6 +113034,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1927008987}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &1927491650 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 6357355197778811003, guid: f6151e4719635974eaa7afbcb69dd895, type: 3}
+  m_PrefabInstance: {fileID: 487220661}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1928165702
 GameObject:
   m_ObjectHideFlags: 0
@@ -118338,6 +119666,8 @@ GameObject:
   - component: {fileID: 2042767572}
   - component: {fileID: 2042767574}
   - component: {fileID: 2042767573}
+  - component: {fileID: 2042767576}
+  - component: {fileID: 2042767575}
   m_Layer: 0
   m_Name: TrashCan_ConvenienceStore
   m_TagString: Untagged
@@ -118406,6 +119736,55 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.215, y: 1.2825001, z: 0.648}
   m_Center: {x: -1.0421607e-14, y: 0.6412501, z: 0.00000011920929}
+--- !u!114 &2042767575
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2042767571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &2042767576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2042767571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 620664935}
+    Mesh: {fileID: 4300000, guid: ee0d4ddf5f23fee49a342016323e9cc2, type: 2}
+  - Target: {fileID: 589190167}
+    Mesh: {fileID: 4300000, guid: dd7f41452780ec8419ee9d3492e1ccd2, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &2043568048
 GameObject:
   m_ObjectHideFlags: 0
@@ -119115,6 +120494,8 @@ GameObject:
   - component: {fileID: 2053670541}
   - component: {fileID: 2053670543}
   - component: {fileID: 2053670542}
+  - component: {fileID: 2053670545}
+  - component: {fileID: 2053670544}
   m_Layer: 0
   m_Name: Trash_Bag_1
   m_TagString: Untagged
@@ -119183,6 +120564,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.47661164, y: 0.678974, z: 0.85886693}
   m_Center: {x: 0, y: 0.339487, z: 0}
+--- !u!114 &2053670544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2053670540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &2053670545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2053670540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 1539590549}
+    Mesh: {fileID: 4300000, guid: ab39ae9a8234d784096e737028c85c60, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1 &2054057276
 GameObject:
   m_ObjectHideFlags: 0
@@ -122925,6 +124353,8 @@ GameObject:
   - component: {fileID: 2123930422}
   - component: {fileID: 2123930424}
   - component: {fileID: 2123930423}
+  - component: {fileID: 2123930426}
+  - component: {fileID: 2123930425}
   m_Layer: 0
   m_Name: Trash_Bag_1
   m_TagString: Untagged
@@ -122993,6 +124423,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.47661164, y: 0.678974, z: 0.85886693}
   m_Center: {x: 0, y: 0.339487, z: 0}
+--- !u!114 &2123930425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2123930421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e458db760139d541b61644a0426ba0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFlies
+  _material: {fileID: 2100000, guid: 97edd98be6de27249b2fc08707114776, type: 2}
+  _count: 4
+  _color: {r: 0.03, g: 0.03, b: 0.035, a: 1}
+  _pixelSize: 2
+  _visibleDistance: 25
+  _swarmRadius: 0.35
+  _swarmHeight: 0.6
+  _maxSpeed: 1.6
+  _acceleration: 14
+  _restChance: 0.12
+  _stay: {x: 8, y: 24}
+--- !u!114 &2123930426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2123930421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c89526ef40ac24c946c682e03611b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoOutline
+  _hands: {fileID: 658567152}
+  _material: {fileID: 2100000, guid: 65b947e333cd4ff48a32e011b2ba6eec, type: 2}
+  _shells:
+  - Target: {fileID: 858367745}
+    Mesh: {fileID: 4300000, guid: ab39ae9a8234d784096e737028c85c60, type: 2}
+  _color: {r: 1, g: 0.78, b: 0.35, a: 1}
+  _fullDistance: 10
+  _fadeDistance: 18
+  _idleAlpha: 0.85
+  _idleWidth: 2.5
+  _aimedWidth: 4
+  _fadeSeconds: 0.15
 --- !u!1001 &2124400380
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -123275,6 +124752,11 @@ PrefabInstance:
 --- !u!4 &2129159443 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 77882d17cfe5f4746aa5e6274c34e3d4, type: 3}
+  m_PrefabInstance: {fileID: 2129159442}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &2129159444 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 77882d17cfe5f4746aa5e6274c34e3d4, type: 3}
   m_PrefabInstance: {fileID: 2129159442}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2129221931

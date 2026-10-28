@@ -109,6 +109,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>手の届くところで照準が合っているゴミ箱（袋を含む）。無ければ null。</summary>
         public ProtoTrashCan AimedTrashCan { get; private set; }
 
+        /// <summary>左クリックで使われる物（開いていないゴミ箱か使える物）。無ければ null。縁取りが「狙われている」を知るのに使う。</summary>
+        public Component AimedObject { get; private set; }
+
         /// <summary>前に <see cref="TakeCaughtCount"/> してから掴んで鞄に入れた数。</summary>
         int _caught;
         public string Toast { get; private set; }
@@ -278,6 +281,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             Aim = AimState.None;
             AimPrompt = null;
             AimedTrashCan = null;
+            AimedObject = null;
 
             var ray = new Ray(_camera.transform.position, _camera.transform.forward);
             ProtoTrashCan can = null;
@@ -298,12 +302,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
             if (inReach && can != null && !can.IsOpened)
             {
                 SetAim(can.Prompt);
+                AimedObject = can;
                 return;
             }
 
             if (inReach && usable != null)
             {
                 SetAim(usable.Prompt(this));
+                AimedObject = usable as Component;
                 return;
             }
 

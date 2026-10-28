@@ -75,6 +75,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>ふたが開いたか、またはもう何も出ない。</summary>
         public bool IsOpened => _opened;
 
+        /// <summary>今の中身になってから叩かれた回数（補充で 0 に戻る）。蠅が驚くのに使う。</summary>
+        public int Hits => _hits;
+
         /// <summary>照準の案内（開く前だけ使う。開いた箱は案内しない）。</summary>
         public string Prompt => _hasLid ? ProtoText.TrashCanPrompt : ProtoText.TrashBagPrompt;
 
