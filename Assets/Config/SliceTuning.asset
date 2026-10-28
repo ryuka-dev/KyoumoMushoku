@@ -136,6 +136,57 @@ MonoBehaviour:
   _glovesItemId: work_gloves
   _capItemId: cap
   _capNoticeMultiplier: 0.6
+  _itemModels:
+  - id: bento
+    model: {fileID: 919132149155446097, guid: b34f995d2e71f1f488be11162ed5c86c, type: 3}
+  - id: bottle_empty
+    model: {fileID: 919132149155446097, guid: 833d9bea6c9c6b942a031ff544e0d599, type: 3}
+  - id: brand_box
+    model: {fileID: 919132149155446097, guid: ceba70b2f267f3b408625fe53c4825e7, type: 3}
+  - id: bread
+    model: {fileID: 919132149155446097, guid: 84c912112dc8aaf4fb3b5e08ac65401c, type: 3}
+  - id: can_aluminum
+    model: {fileID: 919132149155446097, guid: 2f849a0e252cd0747a8015d0288b34f3, type: 3}
+  - id: can_coffee
+    model: {fileID: 919132149155446097, guid: bddd906a9262f36469e6d3363b1cc2c8, type: 3}
+  - id: cap
+    model: {fileID: 919132149155446097, guid: 780e88fd87573ab439fbece11ef4b46f, type: 3}
+  - id: cardboard
+    model: {fileID: 919132149155446097, guid: e1e731e913de0174f99461577f24c729, type: 3}
+  - id: cig_butt
+    model: {fileID: 919132149155446097, guid: 2f38142f963fdf945ac201fab1f5a7d3, type: 3}
+  - id: cigarette
+    model: {fileID: 919132149155446097, guid: 466c9b4f5440c674fa6e894c59d30e3b, type: 3}
+  - id: coin_purse
+    model: {fileID: 919132149155446097, guid: c51763680e98d404987806c24830592e, type: 3}
+  - id: copper_wire
+    model: {fileID: 919132149155446097, guid: 10078d7fdf10df64b814736a5b484325, type: 3}
+  - id: game_soft
+    model: {fileID: 919132149155446097, guid: d1f3c1ba1155a5445aa0b8edb4ad9082, type: 3}
+  - id: half_bottle
+    model: {fileID: 919132149155446097, guid: 34ab3b9e54a69834f8c61af347c45fda, type: 3}
+  - id: handheld
+    model: {fileID: 919132149155446097, guid: 1f0163de3b8242c49898ebffb1a6215e, type: 3}
+  - id: karaage
+    model: {fileID: 919132149155446097, guid: e77e1fabc30cc834aae039984b6e4320, type: 3}
+  - id: onigiri
+    model: {fileID: 919132149155446097, guid: 377f7e40755765345b183618d476ee4a, type: 3}
+  - id: paperback
+    model: {fileID: 919132149155446097, guid: ed41708eb7494b34db0e113c42efe770, type: 3}
+  - id: scratch
+    model: {fileID: 919132149155446097, guid: 55c221b85adafd0469164e26bc2df607, type: 3}
+  - id: sweet_bun
+    model: {fileID: 919132149155446097, guid: def82ae9032f58e408c4821864ae8a5b, type: 3}
+  - id: umbrella_broken
+    model: {fileID: 919132149155446097, guid: 065e1b641821d1548b810d2e7077fbc6, type: 3}
+  - id: water_bottle
+    model: {fileID: 919132149155446097, guid: e304a3b41af36cc4797884028873f4d8, type: 3}
+  - id: weekly_mag
+    model: {fileID: 919132149155446097, guid: 526bdd95656fb5049b8af1899a472633, type: 3}
+  - id: work_gloves
+    model: {fileID: 919132149155446097, guid: 6f6f224d76b81d646badc498fd996b8d, type: 3}
+  - id: wristwatch
+    model: {fileID: 919132149155446097, guid: 85bebcd71e5464b489e8c6aac51b037b, type: 3}
   _carrySpeedMultiplier: 0.75
   _carryNoticeMultiplier: 1.5
   _cardboardBedding:

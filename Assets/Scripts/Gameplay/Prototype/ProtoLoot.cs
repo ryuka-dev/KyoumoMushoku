@@ -22,7 +22,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static IReadOnlyList<ProtoLoot> Active => _active;
 
         Rigidbody _body;
-        Renderer _renderer;
+        Renderer[] _renderers;
         Light _glow;
         Transform _beam;
         TextMeshPro _label;
@@ -33,39 +33,72 @@ namespace KyoumoMushoku.Gameplay.Prototype
         float _age;
         float _lifetime;
         float _baseScale;
+        float _labelHeight;
 
         public ItemInstance Item { get; private set; }
         public string DisplayName { get; private set; }
         public LootTier Tier { get; private set; }
         public bool IsBeingPulled => _pullTarget != null;
 
+        /// <summary>
+        /// 宙に飛ばす。<paramref name="model"/>（`Assets/Art/Models/Props/Items/Item_*.fbx`）があればそれを容器の子に置き、
+        /// 当たり判定は模型の外形の箱にする（FBX の根は軸変換の回転を持つので、直接回さない）。無ければ色付きの立方体。
+        /// </summary>
         public static ProtoLoot Spawn(ItemInstance item, string displayName, int slots, LootTier tier,
-            Color color, Material baseMaterial, TMP_FontAsset font, Vector3 position, Vector3 velocity, float lifetime)
+            Color color, Material baseMaterial, TMP_FontAsset font, Vector3 position, Vector3 velocity, float lifetime,
+            GameObject model = null)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = "Loot_" + item.Id;
-            // 道具は実寸の 1.35 倍で作る約束（Tools/Models/kmlowpoly.py の PROP_SCALE）に合わせる。
-            var size = 0.24f + 0.09f * Mathf.Clamp(slots, 1, 4);
-            go.transform.position = position;
-            go.transform.localScale = Vector3.one * size;
+            GameObject go;
+            float labelHeight;
+            float fontScale;
+            if (model != null)
+            {
+                go = new GameObject("Loot_" + item.Id);
+                go.transform.position = position;
+                var shape = Instantiate(model, go.transform, false);
+                var bounds = LocalBounds(go.transform, shape);
+                // 容器の原点を模型の中心に合わせる（回転が中心で起きる）。
+                shape.transform.localPosition -= bounds.center;
+                var box = go.AddComponent<BoxCollider>();
+                box.size = Vector3.Max(bounds.size, Vector3.one * 0.05f);
+                labelHeight = bounds.extents.y + 0.18f;
+                fontScale = 0.4f;
+            }
+            else
+            {
+                go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.name = "Loot_" + item.Id;
+                // 道具は実寸の 1.35 倍で作る約束（Tools/Models/kmlowpoly.py の PROP_SCALE）に合わせる。
+                var size = 0.24f + 0.09f * Mathf.Clamp(slots, 1, 4);
+                go.transform.position = position;
+                go.transform.localScale = Vector3.one * size;
+                labelHeight = size + 0.15f;
+                fontScale = 1f;
+                var material = new Material(baseMaterial);
+                material.SetColor("_BaseColor", color);
+                go.GetComponent<Renderer>().sharedMaterial = material;
+            }
 
             var loot = go.AddComponent<ProtoLoot>();
             loot.Item = item;
             loot.DisplayName = displayName;
             loot.Tier = tier;
             loot._lifetime = lifetime;
-            loot._baseScale = size;
+            loot._baseScale = go.transform.localScale.x;
+            loot._labelHeight = labelHeight;
+            loot._renderers = go.GetComponentsInChildren<Renderer>();
 
-            loot._renderer = go.GetComponent<Renderer>();
-            var material = new Material(baseMaterial);
-            material.SetColor("_BaseColor", color);
+            // 段の光：材質を個体ごとに複製して発光させる（共有の調色板材質は書き換えない）。
             if (tier != LootTier.Common)
             {
-                material.EnableKeyword("_EMISSION");
-                material.SetColor("_EmissionColor", EmissionOf(tier));
+                foreach (var renderer in loot._renderers)
+                {
+                    var glowing = new Material(renderer.sharedMaterial);
+                    glowing.EnableKeyword("_EMISSION");
+                    glowing.SetColor("_EmissionColor", EmissionOf(tier) * (model != null ? 0.35f : 1f));
+                    renderer.sharedMaterial = glowing;
+                }
             }
-
-            loot._renderer.sharedMaterial = material;
 
             if (tier >= LootTier.Rare)
             {
@@ -90,7 +123,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 loot._label = labelGo.AddComponent<TextMeshPro>();
                 loot._label.font = font;
                 loot._label.text = displayName;
-                loot._label.fontSize = 2.2f;
+                loot._label.fontSize = 2.2f * fontScale;
                 loot._label.alignment = TextAlignmentOptions.Center;
                 loot._label.color = tier == LootTier.Jackpot ? JackpotColor : tier == LootTier.Rare ? new Color(1f, 0.85f, 0.3f) : Color.white;
                 loot._label.rectTransform.sizeDelta = new Vector2(4f, 1f);
@@ -126,6 +159,29 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
         }
 
+        /// <summary>模型の外形（容器の局所座標）。</summary>
+        static Bounds LocalBounds(Transform container, GameObject shape)
+        {
+            var renderers = shape.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
+            {
+                return new Bounds(Vector3.zero, Vector3.one * 0.2f);
+            }
+
+            var bounds = new Bounds(container.InverseTransformPoint(renderers[0].bounds.center), Vector3.zero);
+            foreach (var renderer in renderers)
+            {
+                var b = renderer.bounds;
+                for (var i = 0; i < 8; i++)
+                {
+                    var corner = b.center + Vector3.Scale(b.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                    bounds.Encapsulate(container.InverseTransformPoint(corner));
+                }
+            }
+
+            return bounds;
+        }
+
         static readonly Color RareColor = new Color(1f, 0.8f, 0.3f);
         static readonly Color JackpotColor = new Color(0.75f, 0.92f, 1f);
         const float BeamHeight = 6f;
@@ -158,7 +214,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             if (_label != null && Camera.main != null)
             {
-                _label.transform.position = transform.position + Vector3.up * (_baseScale + 0.15f);
+                _label.transform.position = transform.position + Vector3.up * _labelHeight;
                 _label.transform.rotation = Camera.main.transform.rotation;
             }
 
@@ -172,7 +228,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             if (_beam != null)
             {
                 // 光の柱は品の真上に立ち、傾かない。掴んで引き寄せる間に消す。
-                _beam.gameObject.SetActive(_pullTarget == null && _renderer.enabled);
+                _beam.gameObject.SetActive(_pullTarget == null && (_renderers.Length == 0 || _renderers[0].enabled));
                 _beam.position = transform.position + Vector3.up * (BeamHeight * 0.5f);
                 _beam.rotation = Quaternion.identity;
             }
@@ -201,7 +257,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
             else if (_age > _lifetime - 1f)
             {
                 // 消える直前は明滅させて「もうすぐ消える」を見せる。
-                _renderer.enabled = Mathf.Repeat(_age * 8f, 1f) > 0.3f;
+                var visible = Mathf.Repeat(_age * 8f, 1f) > 0.3f;
+                foreach (var renderer in _renderers)
+                {
+                    renderer.enabled = visible;
+                }
             }
         }
     }

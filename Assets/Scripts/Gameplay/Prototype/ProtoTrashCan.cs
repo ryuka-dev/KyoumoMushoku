@@ -330,7 +330,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             ProtoLoot.Spawn(new ItemInstance(draw.Item, draw.State), name, slots, tier, ColorOf(category),
-                _itemMaterial, _font, top, velocity, _lootLifetime);
+                _itemMaterial, _font, top, velocity, _lootLifetime, _slice != null ? _slice.ModelOf(draw.Item) : null);
         }
 
         void Update()

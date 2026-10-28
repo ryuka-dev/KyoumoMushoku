@@ -105,6 +105,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("キャップがあるときの、警官の目に気づかれる速さの倍率。")]
         [SerializeField, Range(0.1f, 1f)] float _capNoticeMultiplier = 0.6f;
 
+        [Header("品の模型（Assets/Art/Models/Props/Items）")]
+        [Tooltip("宙に飛ぶ品の見た目。ここに無い品は色付きの立方体で飛ぶ。")]
+        [SerializeField] List<ItemModelEntry> _itemModels = new List<ItemModelEntry>();
+
         [Header("段ボール（Docs/切片の品目.md 第五節）")]
         [Tooltip("背負っている間の歩きの速さの倍率。走れない（GameDesign 第十一節）。")]
         [SerializeField, Range(0.1f, 1f)] float _carrySpeedMultiplier = 0.75f;
@@ -157,6 +161,27 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             return LootTier.Common;
+        }
+
+        [Serializable]
+        public struct ItemModelEntry
+        {
+            public string id;
+            public GameObject model;
+        }
+
+        /// <summary>品の模型。無ければ null（立方体で飛ぶ）。</summary>
+        public GameObject ModelOf(ItemId item)
+        {
+            foreach (var entry in _itemModels)
+            {
+                if (entry.id == item.Value)
+                {
+                    return entry.model;
+                }
+            }
+
+            return null;
         }
 
         [Serializable]
