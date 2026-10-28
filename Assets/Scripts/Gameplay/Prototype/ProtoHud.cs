@@ -229,7 +229,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             if (final)
             {
                 title = ProtoText.FinalTitle(_session.FinalDay);
-                body = ProtoText.FinalBody(_session.FinalDay, _session.CaughtTotal, yen, _hands.Bag.Capacity, mood);
+                body = ProtoText.FinalBody(_session.FinalDay, _session.CaughtTotal, yen, _hands.Bag.Capacity, mood, _session.InnNights);
             }
             else if (morning)
             {

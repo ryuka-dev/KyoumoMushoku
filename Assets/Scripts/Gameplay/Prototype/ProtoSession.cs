@@ -1,4 +1,5 @@
 using KyoumoMushoku.Core.Survival;
+using KyoumoMushoku.Gameplay.World;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -72,8 +73,17 @@ namespace KyoumoMushoku.Gameplay.Prototype
             Time.timeScale = 1f;
         }
 
-        /// <summary>寝床で眠る。一晩ぶんの消耗と回復を当て、日付を進める。返すのは目覚めの一言。</summary>
-        public string Sleep(ProtoSleepSpot spot)
+        /// <summary>この局で安宿に泊まった晩の数（結算で見せる。2D 版の段階目標「初めての安宿」）。</summary>
+        public int InnNights { get; private set; }
+
+        /// <summary>寝床（ベンチ）で眠る。返すのは目覚めの一言。</summary>
+        public string Sleep(ProtoSleepSpot spot) => spot != null ? Sleep(spot.Recovery, atInn: false) : null;
+
+        /// <summary>
+        /// 眠る。一晩ぶんの消耗と回復を当て、日付を進める。返すのは目覚めの一言。
+        /// 安宿（<paramref name="atInn"/>）は 2D 版と同じくすべてを満たし、一晩の消耗も免除される。段ボールは敷かない（背負ったまま朝を迎える）。
+        /// </summary>
+        public string Sleep(SleepTuningAsset.Recovery recovery, bool atInn)
         {
             if (State != SessionState.Playing || _vitals == null || _vitals.Vitals == null)
             {
@@ -83,23 +93,37 @@ namespace KyoumoMushoku.Gameplay.Prototype
             // 本編の GameSession.ApplySleepRecovery と同じ規則：一晩ぶん渇きと空腹が減り、寝床の回復が乗る。
             // SAN の回復だけは崩壊時に下がるが、下限を割らない（第三節）。
             var vitals = _vitals.Vitals;
-            var recovery = spot.Recovery;
 
-            // 段ボールを背負ったまま寝ると、下に敷く。回復が上がり、段ボールは朝には湿って使えない（切片の品目 第五節）。
-            var bedding = _slice != null && _hands != null && _hands.Back != null && _hands.Back.IsOccupied
+            // 段ボールを背負ったままベンチで寝ると、下に敷く。回復が上がり、段ボールは朝には湿って使えない（切片の品目 第五節）。
+            var bedding = !atInn && _slice != null && _hands != null && _hands.Back != null && _hands.Back.IsOccupied
                           && _hands.Back.TryTakeOut(out _);
             if (bedding)
             {
                 recovery = _slice.CardboardBedding;
             }
 
-            vitals.Apply(new VitalsDelta
+            if (atInn || recovery.fullRestore)
             {
-                Hp = recovery.hp,
-                Thirst = recovery.thirst - vitals.Tuning.OvernightThirstDrain,
-                Hunger = recovery.hunger - vitals.Tuning.OvernightHungerDrain,
-                Sanity = SanityScale.SleepRecovery(recovery.sanity, vitals.Sanity),
-            });
+                // 完全回復（本編の GameSession.ApplySleepRecovery と同じ）。SAN も含めて満たす。
+                InnNights++;
+                vitals.Apply(new VitalsDelta
+                {
+                    Hp = vitals.Tuning.MaxHp,
+                    Thirst = vitals.Tuning.MaxThirst,
+                    Hunger = vitals.Tuning.MaxHunger,
+                    Sanity = vitals.Tuning.MaxSanity,
+                });
+            }
+            else
+            {
+                vitals.Apply(new VitalsDelta
+                {
+                    Hp = recovery.hp,
+                    Thirst = recovery.thirst - vitals.Tuning.OvernightThirstDrain,
+                    Hunger = recovery.hunger - vitals.Tuning.OvernightHungerDrain,
+                    Sanity = SanityScale.SleepRecovery(recovery.sanity, vitals.Sanity),
+                });
+            }
 
             _dayNight.BeginNextDay();
             _store?.BeginNextDay();
@@ -111,7 +135,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             Enter(_dayNight.Clock.Day > FinalDay ? SessionState.Final : SessionState.Morning);
-            return bedding ? ProtoText.WokeUpOnCardboard : ProtoText.WokeUp;
+            return atInn ? ProtoText.WokeUpAtInn : bedding ? ProtoText.WokeUpOnCardboard : ProtoText.WokeUp;
         }
 
         /// <summary>

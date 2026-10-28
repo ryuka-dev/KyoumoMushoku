@@ -82,6 +82,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string BenchPrompt => "ベンチ：横になって夜を越す";
         public static string BenchTooEarly => "ベンチ：まだ明るい。寝るには早い";
         public static string WokeUp => "朝になった。";
+        public static string WokeUpAtInn => "朝になった。布団で眠った。体も頭も、すっかり軽い。";
+        public static string InnSign(int yen) => $"旅館　素泊まり{yen}円";
+        public static string InnPrompt(string price) => $"安宿：泊まる（{price}・すべて回復する）";
+        public static string InnTooEarly(string price) => $"安宿：夕方から泊まれる（{price}）";
+        public static string InnCannotAfford => "金が足りない。";
         public static string WokeUpOnCardboard => "朝になった。段ボールのおかげで、少しはましに眠れた。朝露で湿って、もう使えない。";
         public static string LateNightDrowsy => "……眠い。頭が回らなくなってきた。";
         public static string LateNightExhausted => "……まずい。目を開けているのがつらい。";
@@ -89,8 +94,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string MorningBody(int caught, int yen, string mood) =>
             $"昨日はゴミ箱から {caught} 個を掴んだ。\n所持金 {yen}円　気分 {mood}\n\n今日も無職。";
         public static string FinalTitle(int days) => $"{days}日目の夜が明けた";
-        public static string FinalBody(int days, int caught, int yen, int capacity, string mood) =>
-            $"{days}日間で、ゴミ箱から {caught} 個を掴んだ。\n所持金 {yen}円　カバン {capacity}マス　気分 {mood}\n\n今日も無職。\n\n（体験版はここまで）";
+        public static string FinalBody(int days, int caught, int yen, int capacity, string mood, int innNights) =>
+            $"{days}日間で、ゴミ箱から {caught} 個を掴んだ。\n所持金 {yen}円　カバン {capacity}マス　気分 {mood}\n"
+            + (innNights > 0 ? $"安宿に {innNights} 泊した。\n" : "")
+            + "\n今日も無職。\n\n（体験版はここまで）";
         public static string CollapsedTitle => "倒れた";
         public static string CollapsedBody(int day) => $"{day}日目。路上で意識が途切れた。";
         public static string ContinueButton => "続ける";
