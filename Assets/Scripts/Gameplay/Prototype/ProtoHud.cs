@@ -75,7 +75,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var status = ProtoText.Status(clock != null ? clock.Day : 1,
                 clock != null ? GameTextLabels.Phase(clock.Phase) : HudText.Unknown,
                 _hands.Wallet != null ? _hands.Wallet.Yen : 0,
-                GameTextLabels.SanityTier(vitals.SanityTier));
+                ProtoText.Mood(vitals.SanityTier));
             GUI.Label(new Rect(16f, 12f, 360f, 84f), status, _style);
             // 体に何かが当たった直後は、HP のバーが白く瞬く（何が減ったかを目で結ぶ）。
             var hpBlink = DamageAge < HpBlinkSeconds && Mathf.Repeat(DamageAge * 6f, 1f) < 0.5f;
@@ -281,7 +281,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             var vitals = _vitals.Vitals;
             var day = _dayNight != null && _dayNight.Clock != null ? _dayNight.Clock.Day : 1;
-            var mood = GameTextLabels.SanityTier(vitals.SanityTier);
+            var mood = ProtoText.Mood(vitals.SanityTier);
             var morning = _session.State == ProtoSession.SessionState.Morning;
             var final = _session.State == ProtoSession.SessionState.Final;
             var yen = _hands.Wallet != null ? _hands.Wallet.Yen : 0;

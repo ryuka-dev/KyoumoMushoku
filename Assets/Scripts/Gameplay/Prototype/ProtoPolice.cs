@@ -291,7 +291,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                     Say(PoliceText.Notice);
                     break;
                 case PoliceStage.Warning when previous < PoliceStage.Warning:
-                    Say(PoliceText.Warning);
+                    Say(ProtoText.PoliceWarning);
                     // 漁っている最中なら、手を止めない に向けて数える（判断は手が持つ）。
                     _player.NotifyWarned();
                     break;

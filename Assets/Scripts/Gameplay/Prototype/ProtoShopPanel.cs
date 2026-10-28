@@ -316,7 +316,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             Fill(panel, new Color(0f, 0f, 0f, 0.7f));
 
             GUI.Label(new Rect(panel.x, panel.y + 12f, panel.width, 32f),
-                ShopText.WorkHeader(Mathf.Min(_round, _store.JobRounds), _store.JobRounds), _center);
+                ProtoText.WorkHeader(Mathf.Min(_round, _store.JobRounds), _store.JobRounds), _center);
 
             var bar = new Rect(panel.x + 40f, panel.y + 60f, panel.width - 80f, 40f);
             Fill(bar, new Color(0.25f, 0.25f, 0.27f, 1f));
@@ -325,7 +325,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 new Color(0.35f, 0.7f, 0.4f, 1f));
             Fill(new Rect(bar.x + bar.width * _cursor - 4f, bar.y - 8f, 8f, bar.height + 16f), Color.white);
 
-            var feedback = _feedback != null && Time.unscaledTime < _feedbackUntil ? _feedback : ShopText.WorkHits(_hits);
+            var feedback = _feedback != null && Time.unscaledTime < _feedbackUntil ? _feedback : ProtoText.WorkHits(_hits);
             var previous = GUI.contentColor;
             if (_feedback != null && Time.unscaledTime < _feedbackUntil)
             {

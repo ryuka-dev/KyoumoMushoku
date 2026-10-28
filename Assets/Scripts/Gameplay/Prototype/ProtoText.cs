@@ -5,7 +5,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
 {
     /// <summary>
     /// 一人称の切片（Docs/一人称試作.md）のプレイヤー向け文字列。ローカライズの規約どおり、文字列はここにだけ書く。
-    /// 店主の台詞・状態の名前・食品の見出しは本編のテキストモジュール（ShopText・HudText・GameTextLabels・FoodCardText）を使う。
+    /// 状態の名前・食品の見出しは本編のテキストモジュール（HudText・GameTextLabels・FoodCardText）を使う。
+    /// 店員の台詞・気分の段・警官の警告は、本編の言い回しが切片に合わないので、ここに切片版を置く。
     /// </summary>
     public static class ProtoText
     {
@@ -37,9 +38,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             KnackId.SpotDuds => "……叩いた手応えで、中身の見当がつくようになってきた。",
             KnackId.SteadyHands => "……見られていても、もう手は止めない。止めたところで、どうせ追い払われる。",
-            KnackId.IronStomach => "……腹を壊さずに済んだ。胃袋が、この暮らしに慣れてきた。",
-            KnackId.StreetSleeper => "……ベンチでの眠り方が分かってきた。前より疲れが取れる。",
-            _ => "……この街の勝手が、少し分かってきた。",
+            KnackId.IronStomach => "……腹を壊さなかった。胃袋がこの暮らしに慣れてきたらしい。",
+            KnackId.StreetSleeper => "……ベンチでもうまく眠れるようになってきた。前より疲れが取れる。",
+            _ => "……この街の勝手が少し分かってきた。",
         } + $"（コツ：{GameTextLabels.Knack(id)}）";
         public static string KnacksLine(System.Collections.Generic.IReadOnlyList<KnackId> knacks, bool learnedYesterday)
         {
@@ -71,11 +72,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string Price(int yen) => $"{yen}円";
         public static string ShopDoorPrompt => "コンビニ：入る";
         public static string RecycleSign => "リサイクル　買取";
-        public static string RecyclePrompt => "リサイクルショップ：値打ち物を買い取る";
+        public static string RecyclePrompt => "リサイクルショップ：値打ち物なら買い取ってくれる";
         public static string RecycleSellPrompt(int count, string price) => $"リサイクルショップ：値打ち物を売る（{count}点・{price}）";
         public static string RecycleSold(int count, int paidYen) => $"店主「{count}点で{paidYen}円。まいど」";
         public static string RecycleNothing => "店主「うちは値打ち物しか買わないよ。缶や瓶はコンビニへ」";
-        public static string RecycleHint => "これは……アーケードのリサイクル屋なら、金になるかもしれない。";
+        public static string RecycleHint => "これは……商店街のリサイクル屋なら金になるかもしれない。";
         public static string ShopTitle => "コンビニ";
         public static string ShopGreeting => "……いらっしゃいませ。";
         public static string ShopGreetingBeforeDisposal => "……いらっしゃいませ。（今夜も弁当、だいぶ余りそうだな）";
@@ -86,11 +87,27 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string ShopWallet(int yen, int used, int capacity) => $"所持金 {yen}円　カバン {used}/{capacity}";
         public static string ShopLeave => "店を出る［Esc］";
         public static string BackpackOwned(string name) => $"{name}：購入済み";
-        public static string WorkPrompt => "はたらく：レジ打ち（気分と空腹を削る・時間が進む）";
+        public static string WorkPrompt => "はたらく：レジ打ち（腹が減り、気が滅入る・時間が進む）";
         public static string WorkDoneToday => "はたらく：今日のシフトはもう終わった";
         public static string WorkControls => "左クリック／Space：打つ　　Esc：やめる（何も減らない）";
         public static string WorkHit => "ピッ";
         public static string WorkMiss => "……打ち損じた";
+
+        // ── 店員の台詞（本編の ShopText はコンビニの店主の口ぶり。切片の店員は疲れた敬語で、言葉にとげがある） ──
+        public static string ClerkThanks(string name) =>
+            string.IsNullOrEmpty(name) ? "……ありがとうございましたー。" : $"……{name}ですね。ありがとうございましたー。";
+        public static string ClerkCannotAfford => "……お金、足りないみたいですけど。";
+        public static string ClerkBagFull => "……もう持てないんじゃないですか。";
+        public static string ClerkAlreadyOwned => "……それ、もう持ってますよね。";
+        public static string ClerkNotSold => "……それは置いてないです。";
+        public static string ClerkSalvageSold(int count, int paidYen, bool capReached) =>
+            $"……{count}点で{paidYen}円です。" + (capReached ? "今日はここまでで。" : "");
+        public static string ClerkBuybackCapReached => "……今日はもう買い取れないです。";
+        public static string ClerkNothingToSell => "……売る物、無いですよね。";
+        public static string ClerkJobDone(int paidYen) =>
+            paidYen > 0 ? $"……お疲れさまでした。{paidYen}円です。" : "……今日はもう上がってください。";
+        public static string WorkHeader(int round, int totalRounds) => $"＝ レジ打ち ＝　{round}/{totalRounds} 点目";
+        public static string WorkHits(int hits) => $"打てた {hits} 点";
 
         // ── 水・飲食 ─────────────────────────────────────────
         public static string FaucetPrompt => "水道：水を飲む";
@@ -103,14 +120,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string NotEdible(string name) => $"{name}は口にできない。";
         public static string ReadThrough(string name) => $"{name}を読みふけった。少し気が紛れた。";
         public static string Scratched(int prizeYen) =>
-            prizeYen <= 0 ? "スクラッチを削った。……はずれ。" : $"スクラッチを削った。……{prizeYen}円、当たった。";
+            prizeYen <= 0 ? "スクラッチを削った。……はずれ。" : $"スクラッチを削った。……{prizeYen}円当たった！";
         public static string Shouldered(string name) => $"{name}を背負った。重い。走れない。（G で降ろす）";
-        public static string AlreadyCarrying(string name) => $"もう背負っている。{name}は担げない。（G で降ろす）";
+        public static string AlreadyCarrying(string name) => $"もう背負っている物がある。{name}までは担げない。（G で降ろす）";
         public static string Unloaded(string name) => $"{name}を降ろした。";
         public static string CarryingLine(string name) => $"背負っている：{name}（ベンチで寝ると敷く・G で降ろす）";
-        public static string GlovesFound => "軍手だ。これなら、ふたを叩くのも一回少なくて済む。";
-        public static string CapFound => "キャップだ。目深にかぶれば、少しは目立たない。";
-        public static string EquipmentInBag(string name) => $"{name}は、カバンにあるあいだ役に立つ。";
+        public static string GlovesFound => "軍手だ。これなら、ふたを叩く回数が一回減る。";
+        public static string CapFound => "キャップだ。目深にかぶれば、少しは目立たなくなる。";
+        public static string EquipmentInBag(string name) => $"{name}はカバンに入れておくだけで役に立つ。";
         public static string FirstButt => "……前の俺なら、こんな物は拾わなかった。";
         public static string PurseOpened(int yen) => $"小銭入れだ。中に{yen}円入っていた。";
 
@@ -118,21 +135,21 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string BenchPrompt => "ベンチ：横になって夜を越す";
         public static string BenchTooEarly => "ベンチ：まだ明るい。寝るには早い";
         public static string WokeUp => "朝になった。";
-        public static string WokeUpAtInn => "朝になった。布団で眠った。体も頭も、すっかり軽い。";
+        public static string WokeUpAtInn => "朝になった。久しぶりに布団で眠れた。体も頭もすっかり軽い。";
         public static string InnSign(int yen) => $"旅館　素泊まり{yen}円";
         public static string InnPrompt(string price) => $"安宿：泊まる（{price}・すべて回復する）";
         public static string InnTooEarly(string price) => $"安宿：夕方から泊まれる（{price}）";
         public static string InnCannotAfford => "金が足りない。";
-        public static string WokeUpOnCardboard => "朝になった。段ボールのおかげで、少しはましに眠れた。朝露で湿って、もう使えない。";
+        public static string WokeUpOnCardboard => "朝になった。段ボールを敷いたおかげで、少しはましに眠れた。段ボールは朝露でしけって、もう使えない。";
         public static string LateNightDrowsy => "……眠い。頭が回らなくなってきた。";
         public static string LateNightExhausted => "……まずい。目を開けているのがつらい。";
         public static string MorningTitle(int day) => $"{day}日目の朝";
         public static string MorningBody(int caught, int yen, string mood, string knacksLine) =>
-            $"昨日はゴミ箱から {caught} 個を掴んだ。\n所持金 {yen}円　気分 {mood}\n{knacksLine}\n今日も無職。";
+            $"昨日はゴミ箱から {caught} 個掴んだ。\n所持金 {yen}円　気分 {mood}\n{knacksLine}\n今日も無職。";
         public static string FinalTitle(int days) => $"{days}日目の夜が明けた";
         public static string FinalBody(int days, int caught, int yen, int capacity, string mood, int innNights, int clinicVisits,
             string knacksLine) =>
-            $"{days}日間で、ゴミ箱から {caught} 個を掴んだ。\n所持金 {yen}円　カバン {capacity}マス　気分 {mood}\n"
+            $"{days}日間で、ゴミ箱から {caught} 個掴んだ。\n所持金 {yen}円　カバン {capacity}マス　気分 {mood}\n"
             + NightsLine(innNights, clinicVisits)
             + knacksLine
             + "\n今日も無職。\n\n（体験版はここで一区切り。続けて遊ぶこともできる）";
@@ -152,15 +169,15 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string CollapsedTitle => "倒れた";
         public static string CollapsedBody(int day, int feeYen, int paidYen, bool seizedRotten)
         {
-            var paid = paidYen >= feeYen ? $"医療費 {paidYen}円を払った。" : $"医療費は {feeYen}円。持ち合わせの {paidYen}円を、あるだけ払った。";
+            var paid = paidYen >= feeYen ? $"医療費 {paidYen}円を払った。" : $"医療費は {feeYen}円。手持ちの {paidYen}円を全部払った。";
             return $"{day}日目。路上で意識が途切れた。\n気がつくと、診療所のベッドの上だった。\n{paid}\n"
-                   + (seizedRotten ? "腐った物は、捨てられていた。\n" : "")
-                   + "体は戻ったが、気分は沈んだ。喉と腹は、倒れる前のまま。";
+                   + (seizedRotten ? "腐った物は捨てられていた。\n" : "")
+                   + "体は治ったが、気が沈む。喉も腹も倒れる前のままだ。";
         }
-        public static string WokeUpAtClinic => "……診療所の前に出された。向かいの公園に、水道がある。";
+        public static string WokeUpAtClinic => "……診療所を追い出された。向かいの公園に水道がある。";
         public static string ContinueButton => "続ける";
         public static string RestartButton => "最初から";
-        public static string QuitButton => "終わる";
+        public static string QuitButton => "やめる";
 
         // ── 自販機 ───────────────────────────────────────────
         public static string VendingPrompt(string name, string price) => $"自販機：{name}を買う：{price}";
@@ -177,6 +194,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string PoliceBubble(string line) => $"「{line}」";
         public static string PoliceFromEdge(string line, bool left) => left ? $"◀ 警官「{line}」" : $"警官「{line}」 ▶";
 
+        // 本編の PoliceText.Warning は訳文のように聞こえるので、切片ではこちらを使う。
+        public static string PoliceWarning => "こんなところで漁っちゃだめだよ。ほら、よそへ行きなさい。";
         // 本編の PoliceText（注意・警告・追跡・捕縛）に、一人称で足した台詞。
         public static string PoliceScold => "こら、手を止めなさい。";
         public static string PoliceHeard => "ん？　今の音は……";
@@ -190,6 +209,16 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string NameList(System.Collections.Generic.IEnumerable<string> names) => string.Join("・", names);
         public static string EscortedTo(string place, string seized) =>
             $"{place}まで連れて行かれた。" + (string.IsNullOrEmpty(seized) ? "" : $"\n取り上げられた：{seized}");
+
+        // ── 気分の段（HUD は「気分 ○○」と出すので、本編の段の名前では「気分 気分が沈む」と重なる） ──
+        public static string Mood(KyoumoMushoku.Core.Survival.SanityTier tier) => tier switch
+        {
+            KyoumoMushoku.Core.Survival.SanityTier.Elated => "上機嫌",
+            KyoumoMushoku.Core.Survival.SanityTier.Normal => "普通",
+            KyoumoMushoku.Core.Survival.SanityTier.Dulled => "憂うつ",
+            KyoumoMushoku.Core.Survival.SanityTier.Broken => "限界",
+            _ => "―",
+        };
 
         // ── 珍しさ ───────────────────────────────────────────
         public static string Rare => "珍しい";

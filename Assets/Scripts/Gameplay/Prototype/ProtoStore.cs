@@ -63,18 +63,18 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             if (!HasSalvage(bag))
             {
-                return ShopText.NothingToSell;
+                return ProtoText.ClerkNothingToSell;
             }
 
             if (RemainingToday <= 0)
             {
-                return ShopText.BuybackCapReached;
+                return ProtoText.ClerkBuybackCapReached;
             }
 
             var result = SalvageBuyback.SellSalvage(wallet, bag, _ledger, DailyCap);
             return result.SoldCount > 0
-                ? ShopText.SalvageSold(result.SoldCount, result.PaidYen, result.CapReached)
-                : ShopText.BuybackCapReached;
+                ? ProtoText.ClerkSalvageSold(result.SoldCount, result.PaidYen, result.CapReached)
+                : ProtoText.ClerkBuybackCapReached;
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 _dayNight.Skip(_tuning.JobShiftSeconds);
             }
 
-            return ShopText.JobDone(paid);
+            return ProtoText.ClerkJobDone(paid);
         }
 
         /// <summary>棚の品を一つ買う。返すのは店主の一言。</summary>
@@ -110,15 +110,15 @@ namespace KyoumoMushoku.Gameplay.Prototype
             switch (result)
             {
                 case PurchaseResult.Bought:
-                    return ShopText.BoughtThanks(bought.DisplayName);
+                    return ProtoText.ClerkThanks(bought.DisplayName);
                 case PurchaseResult.CannotAfford:
-                    return ShopText.CannotAfford;
+                    return ProtoText.ClerkCannotAfford;
                 case PurchaseResult.AlreadyOwned:
-                    return ShopText.AlreadyOwned;
+                    return ProtoText.ClerkAlreadyOwned;
                 case PurchaseResult.InventoryFull:
-                    return ShopText.InventoryFull;
+                    return ProtoText.ClerkBagFull;
                 default:
-                    return ShopText.NotSold;
+                    return ProtoText.ClerkNotSold;
             }
         }
 
