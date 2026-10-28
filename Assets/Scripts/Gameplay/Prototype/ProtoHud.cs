@@ -128,10 +128,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             if (!string.IsNullOrEmpty(_hands.AimPrompt))
             {
-                // 押して何かが起きるときだけ操作を添える。
-                DrawBackedLabel(h / 2f + 30f, w, _hands.Aim == ProtoHands.AimState.InReach
-                    ? ProtoText.ClickPrompt(_hands.AimPrompt)
-                    : _hands.AimPrompt);
+                DrawBackedLabel(h / 2f + 30f, w, ProtoText.ClickPrompt(_hands.AimPrompt));
             }
 
             if (!string.IsNullOrEmpty(_hands.Toast) && _hands.ToastAge < _hands.ToastSeconds)

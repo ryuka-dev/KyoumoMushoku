@@ -103,8 +103,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>照準の先。HUD の照準の形を決める。</summary>
         public AimState Aim { get; private set; }
 
-        /// <summary>照準の先の案内（押す操作は含まない）。<see cref="AimState.InReach"/> なら左クリックで起きること、
-        /// <see cref="AimState.Distant"/> なら状態の事実（開いた箱など）。無ければ null。</summary>
+        /// <summary>左クリックで起きることの案内（押す操作は含まない）。<see cref="AimState.InReach"/> のときだけ。無ければ null。</summary>
         public string AimPrompt { get; private set; }
 
         /// <summary>手の届くところで照準が合っているゴミ箱（袋を含む）。無ければ null。</summary>
@@ -271,7 +270,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         /// <summary>
         /// 照準の案内を決める。順番は <see cref="Use"/> の解釈と同じ（案内と、押して起きることを食い違わせない）：
-        /// 開いていないゴミ箱 → 使える物 → 宙の物 → 開いたゴミ箱。届かない距離の物は照準の形だけで知らせる。
+        /// 開いていないゴミ箱 → 使える物 → 宙の物。開いたゴミ箱は案内しない（叩いても何も起きない）。
+        /// 届かない距離の物は照準の形だけで知らせる。
         /// </summary>
         void UpdateAim()
         {
@@ -314,15 +314,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
-            if (inReach && can != null)
-            {
-                // 開いた箱は叩いても何も起きないので、押す操作は付けず、照準も薄いままにする。
-                Aim = AimState.Distant;
-                AimPrompt = can.Prompt;
-                return;
-            }
-
-            if (can != null || usable != null)
+            // 開いた箱はもう触れる物ではないので、近くても遠くても照準は元の「+」に戻す。
+            if ((can != null && !can.IsOpened) || usable != null)
             {
                 Aim = AimState.Distant;
             }

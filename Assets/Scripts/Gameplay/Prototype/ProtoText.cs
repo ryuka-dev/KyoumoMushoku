@@ -25,8 +25,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string ClickPrompt(string prompt) => $"［左クリック］{prompt}";
         public static string TrashCanPrompt => "ゴミ箱：ふたが開くまで叩く";
         public static string TrashBagPrompt => "ゴミ袋：破れるまで叩く";
-        public static string TrashCanOpenedPrompt => "ゴミ箱：もう開けた";
-        public static string TrashBagOpenedPrompt => "ゴミ袋：もう破れている";
         public static string GrabPrompt(string name) => $"掴む：{name}";
 
         // ── 最初の一手（一日目だけの独り言） ──
