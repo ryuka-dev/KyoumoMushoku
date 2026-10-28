@@ -92,6 +92,17 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>切片の数値（警官の音を鳴らす側も読む）。</summary>
         public SliceTuningAsset Slice => _slice;
 
+        /// <summary>目の高さ（地面から）。視線の扇を描く側が、目と同じ高さから測る。</summary>
+        public float EyeHeightMeters => EyeHeight;
+
+        /// <summary>目の届く距離。</summary>
+        public float SightRadius => _sightRadius;
+
+        /// <summary>
+        /// 視界の円錐の開き（度）。警告・追跡の間はこちらを向いているので円錐を問わない（<see cref="CanSeePlayer"/> と同じ）＝360。
+        /// </summary>
+        public float SightAngle => Stage >= PoliceStage.Warning ? 360f : _sightAngle;
+
         /// <summary>頭の上の位置。台詞と目の印はここに出る（<see cref="ProtoPoliceOverlay"/>）。</summary>
         public Vector3 HeadPosition => transform.position + Vector3.up * HeadHeight;
 
@@ -470,10 +481,21 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var camera = _player.ViewCamera != null ? _player.ViewCamera.transform : null;
             var rest = camera != null ? camera.localPosition : Vector3.zero;
 
-            // 掴まれた一打。素材集の鈍い音（SliceTuning）、無ければ合成の音。耳元で鳴るよう、目の位置で鳴らす。
-            var hit = _slice != null && _slice.CaptureHit != null ? _slice.CaptureHit : ProtoSounds.Thud;
-            var hitVolume = _slice != null ? _slice.CaptureHitVolume : 0.8f;
-            AudioSource.PlayClipAtPoint(hit, camera != null ? camera.position : _player.transform.position, hitVolume);
+            // 掴まれて突き飛ばされた：風切り → 鈍い一打 → 耳がこもる（ProtoEars）。画面が一瞬赤く、HP が瞬き、息が漏れる。
+            if (_player.Ears != null)
+            {
+                _player.Ears.Grabbed();
+            }
+
+            _hud.FlashDamage(ProtoText.CaptureGasp);
+
+            // 掴んでいるのは警官なので、こちらを向いている。
+            var toPlayer = Flat(_player.transform.position - transform.position);
+            if (toPlayer.sqrMagnitude > 0.01f)
+            {
+                transform.rotation = Quaternion.LookRotation(toPlayer);
+            }
+
             var seized = Confiscate(out var seizedNames);
             Say(seized > 0 ? ProtoText.PoliceSeize : ProtoText.PoliceTakeAway);
 
@@ -526,7 +548,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _hud.SetCurtain(1f, caption);
             yield return new WaitForSecondsRealtime(CaptionSeconds);
 
-            // 3. 明るくなると、警官が向かいにいる。
+            // 3. 明るくなると、警官が向かいにいる。こもった耳も戻っていく。
+            if (_player.Ears != null)
+            {
+                _player.Ears.Unmuffle(UnmuffleSeconds);
+            }
+
             yield return Fade(1f, 0f, caption);
             _hud.SetCurtain(0f, null);
             ResetEncounter();
@@ -551,6 +578,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         const float GrabHoldSeconds = 1.1f;
         const float FadeSeconds = 0.45f;
         const float CaptionSeconds = 1.6f;
+        const float UnmuffleSeconds = 0.9f;
 
         /// <summary>取り上げた品の数。<paramref name="names"/> は取り上げた品の名前（暗転の一行で言う）。</summary>
         int Confiscate(out string names)

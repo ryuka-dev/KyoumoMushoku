@@ -33,6 +33,16 @@ namespace KyoumoMushoku.Core.Tests
             Assert.IsFalse(PoliceAwarenessSight.Shows(PoliceAwareness.InFrontOnly, onScreen: false));
         }
 
+        [TestCase(100f, true)]
+        [TestCase(70f, true)]
+        [TestCase(69.9f, false)]
+        [TestCase(50f, false)]
+        [TestCase(10f, false)]
+        public void Gaze_IsReadOnlyWhenElated(float sanity, bool expected)
+        {
+            Assert.AreEqual(expected, PoliceAwarenessSight.ReadsGaze(sanity));
+        }
+
         [Test]
         public void None_ShowsNothing()
         {

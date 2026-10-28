@@ -184,6 +184,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string PoliceLetGo => "……二度と来るなよ。";
         public static string PoliceTakeAway => "……ちょっと来なさい。";
         public static string PoliceSeize => "腐ったものは預かる。";
+        public static string CaptureGasp => "……っ！";
         public static string PlaceParkEdge => "公園の外れ";
         public static string PlaceArcadeOutside => "商店街の外";
         public static string NameList(System.Collections.Generic.IEnumerable<string> names) => string.Join("・", names);

@@ -212,6 +212,10 @@ MonoBehaviour:
   _escortMaxSeconds: 45
   _policeAlarm: {fileID: 8300000, guid: 91ec50bce27579641852557040a7b754, type: 3}
   _policeAlarmVolume: 0.6
+  _captureYank: {fileID: 8300000, guid: fb276463bd6b0464ab1822cc7937587d, type: 3}
+  _captureYankVolume: 0.55
+  _captureYankSeconds: 0.22
   _captureHit: {fileID: 8300000, guid: 970e0d3fda899f0449103cdaf604c713, type: 3}
   _captureHitVolume: 0.8
+  _captureHitPitch: 0.85
   _policeStepVolume: 0.22

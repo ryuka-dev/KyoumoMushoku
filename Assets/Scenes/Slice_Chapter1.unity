@@ -42696,6 +42696,7 @@ GameObject:
   - component: {fileID: 658567156}
   - component: {fileID: 658567157}
   - component: {fileID: 658567158}
+  - component: {fileID: 658567159}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -42838,6 +42839,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8ea50a7eff4d6748ae8eb0ed4bc2482, type: 3}
   m_Name: 
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Knacks.PlayerKnacks
+--- !u!114 &658567159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658567151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e09264613e15394f897cd790c7b0b04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoEars
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
 --- !u!1001 &659958397
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -53671,6 +53685,7 @@ GameObject:
   - component: {fileID: 830639219}
   - component: {fileID: 830639218}
   - component: {fileID: 830639221}
+  - component: {fileID: 830639222}
   m_Layer: 0
   m_Name: Police_Arcade
   m_TagString: Untagged
@@ -53773,6 +53788,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b0d183d637e4cc469d1658afb785f7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoPoliceBody
+--- !u!114 &830639222
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 830639217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c73d1b7c88b86df40ba9aa0724271747, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoPoliceGaze
 --- !u!1 &831789642 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7864648995001599526, guid: db2a701c46e3af849a97e11be488b4b8, type: 3}
@@ -77978,6 +78005,7 @@ GameObject:
   - component: {fileID: 1189681661}
   - component: {fileID: 1189681660}
   - component: {fileID: 1189681663}
+  - component: {fileID: 1189681664}
   m_Layer: 0
   m_Name: Police
   m_TagString: Untagged
@@ -78074,6 +78102,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b0d183d637e4cc469d1658afb785f7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoPoliceBody
+--- !u!114 &1189681664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1189681659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c73d1b7c88b86df40ba9aa0724271747, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoPoliceGaze
 --- !u!1001 &1190920711
 PrefabInstance:
   m_ObjectHideFlags: 0

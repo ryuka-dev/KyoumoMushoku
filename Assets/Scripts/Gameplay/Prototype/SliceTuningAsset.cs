@@ -157,9 +157,21 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField] AudioClip _policeAlarm;
         [SerializeField, Range(0f, 1f)] float _policeAlarmVolume = 0.6f;
 
-        [Tooltip("捕まった瞬間の鈍い一打。空なら合成の音（ProtoSounds.Thud）。")]
+        [Tooltip("捕まった瞬間、引っ張られる風切り。頭だけを鳴らしてすぐ絞る。空なら鳴らさない。")]
+        [SerializeField] AudioClip _captureYank;
+        [SerializeField, Range(0f, 1f)] float _captureYankVolume = 0.55f;
+        [SerializeField, Min(0.05f)] float _captureYankSeconds = 0.22f;
+
+        [Tooltip("風切りの後、体に当たる鈍い一打。空なら合成の音（ProtoSounds.Thud）。")]
         [SerializeField] AudioClip _captureHit;
         [SerializeField, Range(0f, 1f)] float _captureHitVolume = 0.8f;
+        [Tooltip("一打の高さ。1 より低いほど重く聞こえる。")]
+        [SerializeField, Range(0.5f, 1.5f)] float _captureHitPitch = 0.85f;
+
+        public AudioClip CaptureYank => _captureYank;
+        public float CaptureYankVolume => _captureYankVolume;
+        public float CaptureYankSeconds => _captureYankSeconds;
+        public float CaptureHitPitch => _captureHitPitch;
 
         [Tooltip("追ってくる足音の大きさ（合成。素材集に足音が無いため）。追っている間だけ鳴る。")]
         [SerializeField, Range(0f, 1f)] float _policeStepVolume = 0.22f;

@@ -77,7 +77,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 _hands.Wallet != null ? _hands.Wallet.Yen : 0,
                 GameTextLabels.SanityTier(vitals.SanityTier));
             GUI.Label(new Rect(16f, 12f, 360f, 84f), status, _style);
-            DrawBar(new Rect(16f, 100f, 200f, 14f), HudText.HpLabel, vitals.HpFraction, new Color(0.85f, 0.3f, 0.3f));
+            // 体に何かが当たった直後は、HP のバーが白く瞬く（何が減ったかを目で結ぶ）。
+            var hpBlink = DamageAge < HpBlinkSeconds && Mathf.Repeat(DamageAge * 6f, 1f) < 0.5f;
+            DrawBar(new Rect(16f, 100f, 200f, 14f), HudText.HpLabel, vitals.HpFraction, hpBlink ? Color.white : new Color(0.85f, 0.3f, 0.3f));
             DrawBar(new Rect(16f, 122f, 200f, 14f), HudText.ThirstLabel, vitals.ThirstFraction, new Color(0.35f, 0.65f, 0.95f));
             DrawBar(new Rect(16f, 144f, 200f, 14f), HudText.HungerLabel, vitals.HungerFraction, new Color(0.95f, 0.7f, 0.3f));
 
@@ -130,11 +132,50 @@ namespace KyoumoMushoku.Gameplay.Prototype
             // 警官の台詞は言った警官の頭の上に（画面の外なら端に方向つきで）。
             _policeOverlay.DrawSpeech(_hands.ViewCamera, w, h);
 
+            DrawDamage(w, h);
             DrawCurtain(w, h);
         }
 
         float _curtainAlpha;
         string _curtainCaption;
+        float _damageAt = -100f;
+        string _gasp;
+
+        const float DamageFlashSeconds = 0.45f;
+        const float HpBlinkSeconds = 0.9f;
+        const float GaspSeconds = 1.3f;
+
+        /// <summary>
+        /// 体に何かが当たった（捕まって突き飛ばされた）。画面が一瞬赤くなり、HP のバーが瞬き、<paramref name="gasp"/> が漏れる。
+        /// 止まった時間の中でも見えるよう、実時間で消えていく。
+        /// </summary>
+        public void FlashDamage(string gasp)
+        {
+            _damageAt = Time.unscaledTime;
+            _gasp = gasp;
+        }
+
+        float DamageAge => Time.unscaledTime - _damageAt;
+
+        void DrawDamage(float w, float h)
+        {
+            var age = DamageAge;
+            if (age < DamageFlashSeconds)
+            {
+                var previous = GUI.color;
+                GUI.color = new Color(0.75f, 0.05f, 0.05f, 0.35f * (1f - age / DamageFlashSeconds));
+                GUI.DrawTexture(new Rect(0f, 0f, w, h), _white);
+                GUI.color = previous;
+            }
+
+            if (age < GaspSeconds && !string.IsNullOrEmpty(_gasp))
+            {
+                var previous = GUI.color;
+                GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01((GaspSeconds - age) / 0.4f));
+                DrawBackedLabel(h * 0.6f, w, _gasp);
+                GUI.color = previous;
+            }
+        }
 
         /// <summary>
         /// 画面を暗くし、暗い間に起きたことを一行で言う（連れて行かれる間の暗転）。0 で消える。

@@ -35,5 +35,11 @@ namespace KyoumoMushoku.Core.Police
         /// <summary>警官の目の印を出すか。<paramref name="onScreen"/> は警官が視界の中にいるか。</summary>
         public static bool Shows(PoliceAwareness awareness, bool onScreen) =>
             awareness == PoliceAwareness.Full || (awareness == PoliceAwareness.InFrontOnly && onScreen);
+
+        /// <summary>
+        /// 警官がどちらを見ているか（視線の届く範囲）まで読めるか。上機嫌の報酬（第三節：報酬は情報だけで、数値は足さない）。
+        /// 機嫌よく街を歩いている人には、巡査がどこを見ているかが分かる。
+        /// </summary>
+        public static bool ReadsGaze(float sanity) => sanity >= SanityScale.ElatedThreshold;
     }
 }

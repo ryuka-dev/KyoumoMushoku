@@ -141,6 +141,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>目（視点のカメラ）。画面の上に世界の物の位置を描く側が使う。</summary>
         public Camera ViewCamera => _camera;
 
+        /// <summary>耳（自分の身に起きたことの音と、耳がこもる後処理）。</summary>
+        public ProtoEars Ears { get; private set; }
+
         /// <summary>体ごと別の場所へ移す（運ばれる・連れて行かれる）。歩きの当たり判定を一度切ってから置く。</summary>
         public void TeleportTo(Vector3 position, Quaternion rotation)
         {
@@ -224,6 +227,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             // 手が止まっている間（朝の区切り・店の中）に覚えることもあるので、有効かどうかに関わらず聞く。
             Knacks.Acquired += OnKnackAcquired;
+            Ears = GetComponent<ProtoEars>();
+            if (Ears == null)
+            {
+                Ears = gameObject.AddComponent<ProtoEars>();
+                Ears.Configure(_slice);
+            }
             _use = new InputAction("Use", InputActionType.Button, "<Mouse>/leftButton");
             _unload = new InputAction("Unload", InputActionType.Button, "<Keyboard>/g");
             _audio = gameObject.AddComponent<AudioSource>();
