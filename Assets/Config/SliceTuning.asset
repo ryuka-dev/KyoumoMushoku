@@ -83,4 +83,15 @@ MonoBehaviour:
     tier: 3
   - id: handheld
     tier: 3
+  _recyclePrices:
+  - id: brand_box
+    yen: 200
+  - id: game_soft
+    yen: 600
+  - id: wristwatch
+    yen: 900
+  - id: handheld
+    yen: 1500
+  - id: paperback
+    yen: 150
   _finalDay: 3

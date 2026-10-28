@@ -40,6 +40,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
             $"{name}を買う：{price}（カバン +{extraSlots}）";
         public static string Price(int yen) => $"{yen}円";
         public static string ShopDoorPrompt => "コンビニ：入る";
+        public static string RecycleSign => "リサイクル　買取";
+        public static string RecyclePrompt => "リサイクルショップ：値打ち物を買い取る";
+        public static string RecycleSellPrompt(int count, string price) => $"リサイクルショップ：値打ち物を売る（{count}点・{price}）";
+        public static string RecycleSold(int count, int paidYen) => $"店主「{count}点で{paidYen}円。まいど」";
+        public static string RecycleNothing => "店主「うちは値打ち物しか買わないよ。缶や瓶はコンビニへ」";
+        public static string RecycleHint => "これは……アーケードのリサイクル屋なら、金になるかもしれない。";
         public static string ShopTitle => "コンビニ";
         public static string ShopGreeting => "……いらっしゃいませ。";
         public static string ShopGreetingBeforeDisposal => "……いらっしゃいませ。（今夜も弁当、だいぶ余りそうだな）";

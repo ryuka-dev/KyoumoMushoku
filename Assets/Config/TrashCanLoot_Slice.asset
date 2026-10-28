@@ -30,6 +30,8 @@ MonoBehaviour:
         weight: 8
       - id: cigarette
         weight: 2
+      - id: game_soft
+        weight: 1
       freshWeight: 25
       staleWeight: 45
       rottenWeight: 30
@@ -46,6 +48,8 @@ MonoBehaviour:
         weight: 5
       - id: cigarette
         weight: 2
+      - id: game_soft
+        weight: 1
       freshWeight: 20
       staleWeight: 45
       rottenWeight: 35
@@ -62,6 +66,8 @@ MonoBehaviour:
         weight: 25
       - id: bottle_empty
         weight: 10
+      - id: brand_box
+        weight: 2
       freshWeight: 45
       staleWeight: 40
       rottenWeight: 15
@@ -100,6 +106,14 @@ MonoBehaviour:
         weight: 12
       - id: cigarette
         weight: 2
+      - id: brand_box
+        weight: 4
+      - id: game_soft
+        weight: 1
+      - id: wristwatch
+        weight: 0.8
+      - id: handheld
+        weight: 0.4
       freshWeight: 8
       staleWeight: 32
       rottenWeight: 60
@@ -118,6 +132,14 @@ MonoBehaviour:
         weight: 12
       - id: cigarette
         weight: 3
+      - id: brand_box
+        weight: 4
+      - id: game_soft
+        weight: 1
+      - id: wristwatch
+        weight: 1
+      - id: handheld
+        weight: 0.6
       freshWeight: 8
       staleWeight: 32
       rottenWeight: 60

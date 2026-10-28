@@ -89,6 +89,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         public Inventory Bag { get; private set; }
         public ProtoVitals Vitals { get; private set; }
+
+        /// <summary>宙の物を掴んで鞄に入れた。拾った物に反応する世界の側（独り言など）が聞く。</summary>
+        public event System.Action<ItemInstance> Grabbed;
         public Wallet Wallet { get; private set; }
 
         public enum AimState
@@ -193,7 +196,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
-            var usable = hit.collider != null ? hit.collider.GetComponentInParent<IProtoUsable>() : null;
+            var usable = hit.collider != null ? UsableAt(hit.collider) : null;
             if (usable != null)
             {
                 _punchT = 0f;
@@ -262,6 +265,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 _caught++;
                 Say(ProtoText.Caught(loot.DisplayName));
+                Grabbed?.Invoke(loot.Item);
                 _audio.pitch = loot.Tier >= KyoumoMushoku.Core.Foraging.LootTier.Rare ? 1.4f : 1f;
                 _audio.PlayOneShot(ProtoSounds.Grab, 1f);
             }
@@ -290,7 +294,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             if (Physics.Raycast(ray, out var hit, _hintReach, ~0, QueryTriggerInteraction.Ignore))
             {
                 can = hit.collider.GetComponentInParent<ProtoTrashCan>();
-                usable = hit.collider.GetComponentInParent<IProtoUsable>();
+                usable = UsableAt(hit.collider);
                 inReach = hit.distance <= _punchReach;
             }
 
@@ -325,6 +329,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 Aim = AimState.Distant;
             }
+        }
+
+        /// <summary>照準の先の使う物。閉まっている店は触れる物ではないので、無いのと同じに扱う（第十七節 規則 1）。</summary>
+        static IProtoUsable UsableAt(Collider collider)
+        {
+            var usable = collider.GetComponentInParent<IProtoUsable>();
+            return usable is IProtoClosable closable && !closable.IsOpenNow ? null : usable;
         }
 
         void SetAim(string prompt)

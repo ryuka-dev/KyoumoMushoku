@@ -50,6 +50,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField, Min(0.01f)] float _fadeSeconds = 0.15f;
 
         ProtoTrashCan _can;
+        IProtoClosable _closable;
         Renderer[] _outlines = new Renderer[0];
         MaterialPropertyBlock _block;
         float _alpha;
@@ -68,6 +69,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         void Awake()
         {
             _can = GetComponent<ProtoTrashCan>();
+            _closable = GetComponent<IProtoClosable>();
             _block = new MaterialPropertyBlock();
             _width = _idleWidth;
             if (_material == null)
@@ -109,7 +111,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var camera = Camera.main;
             var target = 0f;
             var width = _idleWidth;
-            var available = _can == null || !_can.IsOpened;
+            var available = (_can == null || !_can.IsOpened) && (_closable == null || _closable.IsOpenNow);
             if (available && camera != null)
             {
                 // 狙われているのが自分そのものか（自販機と、その下の小銭探しは別々に光る）。

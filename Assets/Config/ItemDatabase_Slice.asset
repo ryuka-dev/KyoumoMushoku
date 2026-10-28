@@ -195,3 +195,59 @@ MonoBehaviour:
     buyPriceYen: 0
     capacityBonus: 0
     carriedOnBack: 0
+  - id: brand_box
+    displayName: "\u30D6\u30E9\u30F3\u30C9\u54C1\u306E\u7A7A\u304D\u7BB1"
+    category: 2
+    slots: 2
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
+    carriedOnBack: 0
+  - id: game_soft
+    displayName: "\u4E2D\u53E4\u306E\u30B2\u30FC\u30E0\u30BD\u30D5\u30C8"
+    category: 2
+    slots: 1
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
+    carriedOnBack: 0
+  - id: wristwatch
+    displayName: "\u6B62\u307E\u3063\u305F\u8155\u6642\u8A08"
+    category: 2
+    slots: 1
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
+    carriedOnBack: 0
+  - id: handheld
+    displayName: "\u753B\u9762\u306E\u5272\u308C\u305F\u643A\u5E2F\u30B2\u30FC\u30E0\u6A5F"
+    category: 2
+    slots: 2
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
+    carriedOnBack: 0

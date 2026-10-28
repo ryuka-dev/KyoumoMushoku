@@ -58,6 +58,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("品ごとの段。ここに無い品は「並」。出やすさからは導かない（同じ品が表によって珍しくなったり並になったりしない）。")]
         [SerializeField] List<ItemTierEntry> _itemTiers = DefaultItemTiers();
 
+        [Header("リサイクルショップ（Docs/切片の品目.md 第六節）")]
+        [Tooltip("アーケードのリサイクルショップが買う品と値段（円）。一日の上限は無い。ここに無い品は買わない。品のデータの売値は 0 にしておく（コンビニの店主は買わない）。")]
+        [SerializeField] List<RecyclePriceEntry> _recyclePrices = DefaultRecyclePrices();
+
         [Header("終わり")]
         [Tooltip("この日の夜に寝たら、翌朝に切片の結算を見せて終える。")]
         [SerializeField, Min(1)] int _finalDay = 3;
@@ -95,6 +99,36 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             return LootTier.Common;
         }
+
+        [Serializable]
+        public struct RecyclePriceEntry
+        {
+            public string id;
+            [Min(0)] public int yen;
+        }
+
+        /// <summary>リサイクルショップの買値。買わない品は 0。</summary>
+        public int RecyclePriceOf(ItemId item)
+        {
+            foreach (var entry in _recyclePrices)
+            {
+                if (entry.id == item.Value)
+                {
+                    return entry.yen;
+                }
+            }
+
+            return 0;
+        }
+
+        static List<RecyclePriceEntry> DefaultRecyclePrices() => new List<RecyclePriceEntry>
+        {
+            new RecyclePriceEntry { id = "brand_box", yen = 200 },
+            new RecyclePriceEntry { id = "game_soft", yen = 600 },
+            new RecyclePriceEntry { id = "wristwatch", yen = 900 },
+            new RecyclePriceEntry { id = "handheld", yen = 1500 },
+            new RecyclePriceEntry { id = "paperback", yen = 150 },
+        };
 
         static List<ItemTierEntry> DefaultItemTiers()
         {
