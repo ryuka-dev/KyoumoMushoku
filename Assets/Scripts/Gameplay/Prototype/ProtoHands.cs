@@ -225,7 +225,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var interval = Time.unscaledTime - _lastPunchAt;
             _lastPunchAt = Time.unscaledTime;
             var mash = 1f - Mathf.Clamp01((interval - _mashInterval) / Mathf.Max(0.01f, _calmInterval - _mashInterval));
-            var strength = can.Hit(_camera.transform.forward, Mathf.Lerp(_calmLoudness, 1f, mash), out var toast);
+            var strength = can.Hit(_camera.transform.forward, Mathf.Lerp(_calmLoudness, 1f, mash), Vitals != null ? Vitals.Vitals : null, out var toast);
             if (toast != null)
             {
                 Say(toast);

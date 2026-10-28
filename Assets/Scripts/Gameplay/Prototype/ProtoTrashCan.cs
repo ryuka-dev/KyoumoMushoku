@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using KyoumoMushoku.Core.Foraging;
 using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Core.Randomness;
+using KyoumoMushoku.Core.Survival;
 using KyoumoMushoku.Gameplay.Foraging;
 using KyoumoMushoku.Gameplay.Items;
 using TMPro;
@@ -22,6 +23,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
     ///
     /// 中身が戻るのは本編と同じ二つの契機：日付が変わったとき（就寝）と、夜になったとき（<see cref="ForageRefillTracker"/>）。
     /// 開けた箱も、開けていない箱も、その時点の時間帯のテーブルで引き直す。
+    ///
+    /// 開けて漁ると、本編と同じく時計が進み、その間の渇きと空腹が減る（種類ごとの <c>forageClockSeconds</c>）。
+    /// 一日に開けられる数が昼の長さで決まり、どの箱を開けるかが判断になる。廃棄の袋は勝手に噴き出すので時計を進めない。
     /// </summary>
     public sealed class ProtoTrashCan : MonoBehaviour
     {
@@ -109,8 +113,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>
         /// 叩く。戻り値はヒットストップの強さ（0〜1）。開いた後は 0。
         /// <paramref name="loudness"/> は叩き方の音の大きさ（連打で 1、間を空けると小さい）。箱の中身による響きに掛かる。
+        /// <paramref name="vitals"/> は叩いた人の状態。開けて漁った時間ぶん、渇きと空腹が減る。
         /// </summary>
-        public float Hit(Vector3 direction, float loudness, out string toast)
+        public float Hit(Vector3 direction, float loudness, Vitals vitals, out string toast)
         {
             toast = null;
             if (_opened)
@@ -152,7 +157,25 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             Open(direction, out toast);
+            if (!_disposal)
+            {
+                SpendForageTime(vitals);
+            }
+
             return 1f;
+        }
+
+        /// <summary>漁った時間ぶん時計を進め、その間の渇きと空腹を減らす（本編の TrashCan と同じ）。</summary>
+        void SpendForageTime(Vitals vitals)
+        {
+            var seconds = _loot != null ? _loot.SpawnFor(_kind).ForageClockSeconds : 0f;
+            if (seconds <= 0f)
+            {
+                return;
+            }
+
+            _dayNight?.Clock?.Advance(seconds);
+            vitals?.DrainTime(seconds);
         }
 
         public void Refill()

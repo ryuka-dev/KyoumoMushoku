@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: DaySchedule_Slice
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.DayCycle.DayScheduleAsset
   _days:
-  - dayMinutes: 2
-    duskMinutes: 0.75
   - dayMinutes: 2.5
-    duskMinutes: 0.75
+    duskMinutes: 1
   - dayMinutes: 3
     duskMinutes: 1
+  - dayMinutes: 4.5
+    duskMinutes: 1.5
