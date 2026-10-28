@@ -331,6 +331,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             ProtoLoot.Spawn(new ItemInstance(draw.Item, draw.State), name, slots, tier, ColorOf(category),
                 _itemMaterial, _font, top, velocity, _lootLifetime, _slice != null ? _slice.ModelOf(draw.Item) : null);
+            if (tier == LootTier.Jackpot)
+            {
+                // 大当たりが飛び出した瞬間：足もとに虹の輪が広がり、虹の星が弾ける（ProtoTierLook の形）。
+                var ground = _collider != null ? _collider.bounds.min.y : transform.position.y;
+                ProtoRainbowFx.Ripple(_itemMaterial, new Vector3(top.x, ground, top.z));
+                ProtoRainbowFx.Burst(_itemMaterial, top, 6);
+            }
         }
 
         void Update()
@@ -388,14 +395,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         LootTier TierOf(ItemId item) => _slice != null ? _slice.TierOf(item) : LootTier.Common;
 
-        /// <summary>珍しい物は鈴、大当たりは鈴に低い響きを重ねる。</summary>
+        /// <summary>珍しい物は鈴、大当たりは「キュイン」。</summary>
         void PlayTierSound(LootTier tier)
         {
             if (tier == LootTier.Jackpot)
             {
                 _audio.pitch = 1f;
-                _audio.PlayOneShot(ProtoSounds.Chime, 1f);
-                _audio.PlayOneShot(ProtoSounds.Jackpot, 1f);
+                _audio.PlayOneShot(ProtoSounds.Jackpot, 0.9f);
             }
             else if (tier == LootTier.Rare)
             {
@@ -508,27 +514,23 @@ namespace KyoumoMushoku.Gameplay.Prototype
             rb.angularVelocity = UnityEngine.Random.insideUnitSphere * 15f;
         }
 
+        /// <summary>
+        /// ふたの隙間から漏れる光（<see cref="ProtoTierLook"/> と同じ言葉）。上機嫌なら色が段を語る（紫＝珍しい・虹＝大当たり）。
+        /// 「何か良い物」までしか読めないときは白の粒（読めない色）。色は退色するので、形でも分ける：
+        /// 珍しいと「何か良い物」は小さな菱形の粒、大当たりは虹の星（星は大当たりだけの形）。
+        /// </summary>
         void LeakGlint(HitGlint glint)
         {
-            var spark = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            spark.name = "Glint";
-            Destroy(spark.GetComponent<Collider>());
-            spark.transform.position = TopPoint()
-                + Vector3.ProjectOnPlane(UnityEngine.Random.insideUnitSphere, Vector3.up) * 0.3f;
-            // 上機嫌なら色が段を語る（金＝珍しい・白く強い＝大当たり）。「何か良い物」までしか読めないときは淡い黄の一色。
-            var jackpot = glint == HitGlint.Jackpot;
-            spark.transform.localScale = Vector3.one * (jackpot ? 0.08f : 0.05f);
-            var color = glint switch
+            var position = TopPoint() + Vector3.ProjectOnPlane(UnityEngine.Random.insideUnitSphere, Vector3.up) * 0.3f;
+            if (glint == HitGlint.Jackpot)
             {
-                HitGlint.Jackpot => new Color(0.75f, 0.92f, 1f),
-                HitGlint.Rare => new Color(1f, 0.8f, 0.2f),
-                _ => new Color(1f, 0.95f, 0.7f),
-            };
-            var material = new Material(_itemMaterial);
-            material.EnableKeyword("_EMISSION");
-            material.SetColor("_BaseColor", color);
-            material.SetColor("_EmissionColor", color * (jackpot ? 7f : 4f));
-            spark.GetComponent<Renderer>().sharedMaterial = material;
+                ProtoRainbowFx.Star(_itemMaterial, position, Vector3.up * 1.8f + UnityEngine.Random.insideUnitSphere * 0.4f, 0.1f, 0.6f);
+                return;
+            }
+
+            var color = glint == HitGlint.Rare ? ProtoTierLook.Rare : ProtoTierLook.Unknown;
+            var spark = ProtoTierLook.Spark(_itemMaterial, position, 0.05f, color, 3f);
+            spark.name = "Glint";
             var rb = spark.AddComponent<Rigidbody>();
             rb.useGravity = false;
             rb.linearVelocity = Vector3.up * 1.5f + UnityEngine.Random.insideUnitSphere * 0.5f;
