@@ -1,6 +1,7 @@
+using System.Collections.Generic;
 using KyoumoMushoku.Core.Police;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering;
 
 namespace KyoumoMushoku.Gameplay.Prototype
 {
@@ -12,113 +13,165 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 描く範囲と、警官が実際に見えている範囲を食い違わせない（第三節「嘘をつかない」）。ただし電柱のような細い物が
     /// 一本の線だけを遮った隙間は描かない（扇が欠けて見えるだけで、読む助けにならない）。
     ///
-    /// 地面へは上から投影する（URP のデカール）。網を地面に沿わせる作りは、縁石や物の上で三角形が立ち上がって割れ、
-    /// 光を受けないので夜に白く浮いた（2026-10-28 の作者の截図）。投影なら段差に自然に沿い、壁には角度で映らず、
-    /// 地面の色を変えるだけなので夜は夜の暗さになる。扇の形は小さな絵に描き、毎こまではなく一秒に数回描き直す。
-    /// 境目は「外に暗い線・内に白い線」、その内側に淡い光の帯（範囲だと分かる）。線は数画素の幅でなめらかにぼかす
-    /// （細すぎると、足もとで拡大されたときに階段状のぎざぎざが見える）。
-    /// 遠い警官の扇は描かない（近くの警官だけ）。色は使わず、淡い白と黒の濃淡で語る（第十七節「色の言葉」）。
+    /// 描き方：扇の形を縦に伸ばした薄い立体（足もとの下から縁石の少し上まで）を作り、型抜き（ステンシル）で
+    /// 「立体の中にある、画面に見えている表面」だけを塗る（<c>ProtoGazeVolume</c> シェーダー）。網そのものは地面に触れないので、
+    /// 縁石や物の上で割れたり立ち上がったりせず、段差には画面の表面どおりに沿う。縁は形の縁なので、絵の解像度に関係なく鋭い。
+    /// 塗りは今の色に比例して明るくするので、夜は夜の暗さになる。境目の帯（外の立体から内の立体を抜いた所）を明るく、
+    /// 中は警官の足もとほど明るく届く端へ淡くする（縁だけでは範囲だと分かりにくかった・作者の指摘）。
+    /// 地面に網を沿わせる作り（割れた・夜に白く浮いた）と、デカールの投影（縁がぼやけた・場面全体の下描きが毎こま要った）の後の形。
+    /// 遠い警官の扇は描かない（近くの警官だけ）。色は使わず、明るさで語る（第十七節「色の言葉」）。
     /// </summary>
     [RequireComponent(typeof(ProtoPolice))]
     public sealed class ProtoPoliceGaze : MonoBehaviour
     {
         const int FanRays = 61;
         const int RingRays = 120;
-        const int TextureSize = 256;
         const float RedrawSeconds = 1f / 10f;
-
-        /// <summary>一こまに描く行数（絵の一辺の 1/4）。描き直しは 4 こまで終わる。</summary>
-        const int RowsPerFrame = TextureSize / 4;
         const float ShowWithin = 25f;
         const float FadeFrom = 18f;
 
-        // 投影する厚みは足もとの上下だけ（縁石の段差は入るが、人の脚や体には映らない）。
-        const float ProjectorHeight = 0.25f;
-        const float ProjectorDepth = 0.7f;
+        // 立体の高さ（警官の足もとから）。縁石の段差（±0.2m）は入り、人の脚はほとんど入らない。
+        const float VolumeBottom = -0.6f;
+        const float VolumeTop = 0.25f;
 
-        // 地面の色を寄せる割合（投影は地面の色そのものを変える）。白だけでは明るい敷石の上で見えず、暗いだけでは暗い路面で見えない。
-        const float InsideAlpha = 0.03f;
-        const float LineDarkMeters = 0.12f;
-        const float LineLightMeters = 0.18f;
-        const float LineDarkAlpha = 0.45f;
-        const float LineLightAlpha = 0.60f;
-        const float GlowMeters = 1.5f;
-        const float GlowAlpha = 0.16f;
+        /// <summary>境目の明るい帯の幅（m）。</summary>
+        const float RimMeters = 0.22f;
 
-        /// <summary>境目のぼかし（画素の何倍か）。</summary>
-        const float SoftPixels = 1.6f;
+        // 明るくする割合（今の色 × (1 + 割合)・線形の色で）。中は警官の足もとほど明るく、届く端へ向かって淡くなる（視線が警官から出ていると分かる）。
+        // 線形で ×1.3 でも画面（sRGB）では一割ほどしか明るく見えないので、大きめに取る（截図で測って決めた）。
+        // 1 を超える値は HDR の色の上でだけ効く（切片のカメラと描画設定は HDR）。
+        const float RimGain = 1.1f;
+        const float InsideNearGain = 1.4f;
+        const float InsideFarGain = 0.35f;
 
-        /// <summary>足もとでは線が一点に集まって煩いので、この距離より内側では線と帯を消す。</summary>
-        const float ApexFadeMeters = 1.2f;
+        // 型抜きの印（外の立体と内の立体）。
+        const int OuterBit = 1;
+        const int InnerBit = 2;
 
-        /// <summary>隣り合う線の届く距離がこれ以上違えば壁の角とみなし、短い方を取る（外へはみ出さない）。</summary>
-        const float CornerMeters = 0.8f;
+        /// <summary>警官ごとに描く順番の枠を分ける（二人の立体の印つけが混ざらないように）。</summary>
+        static int _nextSlot;
 
         ProtoPolice _police;
-        DecalProjector _projector;
-        Material _material;
-        Texture2D _texture;
-        Color32[] _pixels;
+        Mesh _outer;
+        Mesh _inner;
+        readonly List<Renderer> _renderers = new List<Renderer>();
+        readonly List<Material> _materials = new List<Material>();
+        Material _rimMaterial;
+        Material _insideMaterial;
         readonly float[] _reach = new float[RingRays];
         readonly float[] _raw = new float[RingRays];
         readonly RaycastHit[] _hits = new RaycastHit[8];
+        readonly List<Vector3> _vertices = new List<Vector3>();
+        readonly List<Color> _colors = new List<Color>();
+        readonly List<int> _triangles = new List<int>();
+        readonly List<Vector3> _loop = new List<Vector3>();
         float _redrawAt;
-
-        // 画素ごとの表。足もとからの距離（m）、線の番号での位置（扇の外は -1）、扇の両脇の縁までの距離（m・外は負、輪は大）。
-        // 絵の大きさ・届く距離・扇か輪か、が変わったときだけ作り直す。
-        float[] _pixelDistance;
-        float[] _pixelRay;
-        float[] _pixelSide;
-        float _tableRadius = -1f;
-        float _tableHalf = -1f;
+        bool _shown;
 
         void Awake()
         {
             _police = GetComponent<ProtoPolice>();
-            var source = Resources.Load<Material>("ProtoSightDecal");
+            var source = Resources.Load<Material>("ProtoGazeVolume");
             if (source == null)
             {
                 enabled = false;
                 return;
             }
 
-            _texture = new Texture2D(TextureSize, TextureSize, TextureFormat.RGBA32, false)
-            {
-                name = "PoliceGaze", wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear,
-            };
-            _pixels = new Color32[TextureSize * TextureSize];
-            _material = new Material(source) { name = "PoliceGaze" };
-            _material.SetTexture("Base_Map", _texture);
+            _outer = new Mesh { name = "PoliceGazeOuter" };
+            _inner = new Mesh { name = "PoliceGazeInner" };
+            _outer.MarkDynamic();
+            _inner.MarkDynamic();
 
-            var go = new GameObject("Gaze");
-            go.transform.SetParent(transform, false);
-            _projector = go.AddComponent<DecalProjector>();
-            _projector.material = _material;
-            _projector.pivot = new Vector3(0f, 0f, ProjectorDepth * 0.5f);
-            // 壁や人の脚のような立った面には映さない（地面と、物の上面だけ）。
-            _projector.startAngleFade = 30f;
-            _projector.endAngleFade = 55f;
-            _projector.enabled = false;
+            var queue = (int)RenderQueue.Transparent + 1 + _nextSlot++ * 10;
+            // 印をつける：裏面が表面より奥（＝見えている表面が立体の裏より手前）なら印。
+            AddPass(source, _outer, queue + 0, CullMode.Front, CompareFunction.GreaterEqual, OuterBit, 0, OuterBit, CompareFunction.Always, StencilOp.Replace, 0f, 0f, false);
+            // 印を消す：表面が見えている表面より奥（＝見えている表面が立体の手前）なら印を消す。
+            AddPass(source, _outer, queue + 1, CullMode.Back, CompareFunction.Greater, 0, 0, OuterBit, CompareFunction.Always, StencilOp.Zero, 0f, 0f, false);
+            AddPass(source, _inner, queue + 2, CullMode.Front, CompareFunction.GreaterEqual, InnerBit, 0, InnerBit, CompareFunction.Always, StencilOp.Replace, 0f, 0f, false);
+            AddPass(source, _inner, queue + 3, CullMode.Back, CompareFunction.Greater, 0, 0, InnerBit, CompareFunction.Always, StencilOp.Zero, 0f, 0f, false);
+            // 塗る：外にだけ印がある所＝境目の帯、両方に印がある所＝中。塗ったら印を消す（表が重なる所を二度塗らない）。
+            _rimMaterial = AddPass(source, _outer, queue + 4, CullMode.Back, CompareFunction.Always, OuterBit, OuterBit | InnerBit,
+                OuterBit | InnerBit, CompareFunction.Equal, StencilOp.Zero, RimGain, RimGain, true);
+            _insideMaterial = AddPass(source, _inner, queue + 5, CullMode.Back, CompareFunction.Always, OuterBit | InnerBit, OuterBit | InnerBit,
+                OuterBit | InnerBit, CompareFunction.Equal, StencilOp.Zero, InsideNearGain, InsideFarGain, true);
+            SetShown(false);
+        }
+
+        Material AddPass(Material source, Mesh mesh, int queue, CullMode cull, CompareFunction zTest, int stencilRef, int readMask,
+            int writeMask, CompareFunction stencilComp, StencilOp stencilPass, float gainNear, float gainFar, bool paints)
+        {
+            var material = new Material(source) { name = "PoliceGaze" + queue, renderQueue = queue };
+            material.SetFloat("_Cull", (float)cull);
+            material.SetFloat("_ZTest", (float)zTest);
+            material.SetFloat("_ColorMask", paints ? 15f : 0f);
+            material.SetFloat("_SrcBlend", (float)BlendMode.DstColor);
+            material.SetFloat("_DstBlend", (float)BlendMode.One);
+            material.SetFloat("_StencilRef", stencilRef);
+            material.SetFloat("_StencilReadMask", readMask == 0 ? 255 : readMask);
+            material.SetFloat("_StencilWriteMask", writeMask);
+            material.SetFloat("_StencilComp", (float)stencilComp);
+            material.SetFloat("_StencilPass", (float)stencilPass);
+            material.SetFloat("_GainNear", gainNear);
+            material.SetFloat("_GainFar", gainFar);
+            _materials.Add(material);
+
+            var go = new GameObject("Gaze" + (queue % 10));
+            go.layer = 2; // Ignore Raycast
+            go.transform.SetParent(null, false);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var renderer = go.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            renderer.lightProbeUsage = LightProbeUsage.Off;
+            renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            _renderers.Add(renderer);
+            return material;
         }
 
         void OnDestroy()
         {
-            if (_material != null)
+            foreach (var renderer in _renderers)
             {
-                Destroy(_material);
+                if (renderer != null)
+                {
+                    Destroy(renderer.gameObject);
+                }
             }
 
-            if (_texture != null)
+            foreach (var material in _materials)
             {
-                Destroy(_texture);
+                Destroy(material);
+            }
+
+            if (_outer != null)
+            {
+                Destroy(_outer);
+            }
+
+            if (_inner != null)
+            {
+                Destroy(_inner);
             }
         }
 
-        void OnDisable()
+        void OnDisable() => SetShown(false);
+
+        void SetShown(bool shown)
         {
-            if (_projector != null)
+            if (_shown == shown && _renderers.Count > 0 && _renderers[0] != null && _renderers[0].enabled == shown)
             {
-                _projector.enabled = false;
+                return;
+            }
+
+            _shown = shown;
+            foreach (var renderer in _renderers)
+            {
+                if (renderer != null)
+                {
+                    renderer.enabled = shown;
+                }
             }
         }
 
@@ -128,105 +181,165 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var vitals = player != null && player.Vitals != null ? player.Vitals.Vitals : null;
             var distance = player != null ? Vector3.Distance(player.transform.position, transform.position) : float.MaxValue;
             var show = vitals != null && PoliceAwarenessSight.ReadsGaze(vitals.Sanity) && distance <= ShowWithin;
-            _projector.enabled = show;
+            var wasShown = _shown;
+            SetShown(show);
             if (!show)
             {
                 return;
             }
 
-            // 上から真下へ、警官の前が絵の上になる向きで投影する（扇は警官についていく）。
-            var radius = _police.SightRadius;
+            var fade = 1f - Mathf.InverseLerp(FadeFrom, ShowWithin, distance);
+            _rimMaterial.SetFloat("_GainNear", RimGain * fade);
+            _rimMaterial.SetFloat("_GainFar", RimGain * fade);
+            _insideMaterial.SetFloat("_GainNear", InsideNearGain * fade);
+            _insideMaterial.SetFloat("_GainFar", InsideFarGain * fade);
+
+            // 形は一秒に数回作り直す。見え始めた瞬間は待たずに作る（古い形を一こまも見せない）。
+            if (!wasShown || Time.unscaledTime >= _redrawAt)
+            {
+                _redrawAt = Time.unscaledTime + RedrawSeconds;
+                Rebuild();
+            }
+        }
+
+        /// <summary>目から線を伸ばして届く距離を測り、外と内の立体を作り直す。</summary>
+        void Rebuild()
+        {
+            var full = _police.SightAngle >= 359f;
+            var half = full ? 180f : _police.SightAngle * 0.5f;
+            var rays = full ? RingRays : FanRays;
             var forward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
-            _projector.transform.SetPositionAndRotation(transform.position + Vector3.up * ProjectorHeight,
-                Quaternion.LookRotation(Vector3.down, forward));
-            _projector.size = new Vector3(radius * 2f, radius * 2f, ProjectorDepth);
-            _projector.fadeFactor = 1f - Mathf.InverseLerp(FadeFrom, ShowWithin, distance);
+            var radius = _police.SightRadius;
+            MeasureReach(forward, radius, half, rays, full);
 
-            // 描き直しは数こまに分けて進め、描き終えたら絵を差し替える（一こまに重い処理を集めない）。
-            if (_drawRow < 0 && Time.unscaledTime >= _redrawAt)
+            var origin = transform.position;
+            var bottom = origin.y + VolumeBottom;
+            var top = origin.y + VolumeTop;
+
+            // 外：線の届く所をそのままつなぐ。
+            _loop.Clear();
+            for (var r = 0; r < rays; r++)
             {
-                BeginRedraw(forward, radius);
+                _loop.Add(origin + Direction(forward, half, rays, full, r, 0f) * _reach[r]);
             }
 
-            if (_drawRow >= 0)
+            BuildPrism(_outer, _loop, full ? (Vector3?)null : origin, origin, bottom, top);
+
+            // 内：帯の幅だけ内へ。扇の両脇は、要（かなめ）を前へずらし角度を詰めて、縁と平行に近くする。
+            _loop.Clear();
+            var inset = full ? 0f : Mathf.Asin(Mathf.Clamp01(RimMeters / Mathf.Max(radius, RimMeters))) * Mathf.Rad2Deg;
+            var apex = full ? origin : origin + forward * (RimMeters / Mathf.Max(0.2f, Mathf.Sin(half * Mathf.Deg2Rad)));
+            for (var r = 0; r < rays; r++)
             {
-                DrawRows();
-            }
-        }
-
-        // 描き直しの途中の状態。
-        int _drawRow = -1;
-        int _drawRays;
-        bool _drawFull;
-
-        /// <summary>目から線を伸ばして届く距離を測り、扇の絵の描き直しを始める。</summary>
-        void BeginRedraw(Vector3 forward, float radius)
-        {
-            _drawFull = _police.SightAngle >= 359f;
-            var half = _drawFull ? 180f : _police.SightAngle * 0.5f;
-            _drawRays = _drawFull ? RingRays : FanRays;
-            MeasureReach(forward, radius, half, _drawRays, _drawFull);
-            EnsureTables(radius, half, _drawRays, _drawFull, radius * 2f / TextureSize);
-            _drawRow = 0;
-        }
-
-        /// <summary>扇の絵を、決まった行数だけ描き進める。最後の行まで描いたら絵を差し替える。</summary>
-        void DrawRows()
-        {
-            var end = Mathf.Min(_drawRow + RowsPerFrame, TextureSize);
-            DrawPixels(_drawRow * TextureSize, end * TextureSize, _drawRays, _drawFull, _tableRadius * 2f / TextureSize);
-            _drawRow = end;
-            if (_drawRow < TextureSize)
-            {
-                return;
+                var length = Mathf.Max(0.05f, _reach[r] - RimMeters);
+                _loop.Add(origin + Direction(forward, half, rays, full, r, inset) * length);
             }
 
-            _texture.SetPixels32(_pixels);
-            _texture.Apply(false);
-            _drawRow = -1;
-            _redrawAt = Time.unscaledTime + RedrawSeconds;
+            BuildPrism(_inner, _loop, full ? (Vector3?)null : apex, full ? origin : apex, bottom, top);
         }
 
-        void DrawPixels(int from, int to, int rays, bool full, float meterPerPixel)
+        static Vector3 Direction(Vector3 forward, float half, int rays, bool full, int r, float inset)
         {
-            var soft = meterPerPixel * SoftPixels;
-            var lightStart = LineDarkMeters;
-            var glowStart = LineDarkMeters + LineLightMeters;
-            for (var i = from; i < to; i++)
+            var a = full ? -180f + r * 360f / rays : Mathf.Lerp(-half + inset, half - inset, r / (float)(rays - 1));
+            return Quaternion.AngleAxis(a, Vector3.up) * forward;
+        }
+
+        /// <summary>
+        /// 平らな多角形を縦に伸ばした立体を作る。<paramref name="apex"/> があれば扇（要 → 線の先 → 要）、無ければ輪（線の先を一周）。
+        /// 面はすべて外を向ける（型抜きの裏表の判定がこれに頼る）。
+        /// </summary>
+        void BuildPrism(Mesh mesh, List<Vector3> tips, Vector3? apex, Vector3 center, float bottom, float top)
+        {
+            _vertices.Clear();
+            _triangles.Clear();
+
+            // 輪郭：扇は要を先頭に、輪は線の先だけ。
+            var outline = new List<Vector3>(tips.Count + 1);
+            if (apex.HasValue)
             {
-                var ray = _pixelRay[i];
-                var side = _pixelSide[i];
-                if (ray < 0f || side < -soft)
+                outline.Add(apex.Value);
+            }
+
+            outline.AddRange(tips);
+            var n = outline.Count;
+
+            // 頂点：上の中心・上の輪郭・下の中心・下の輪郭。頂点色の赤は「警官の足もとからの近さ」（中心・要が 1、線の先が 0）。
+            _colors.Clear();
+            var topCenter = Flat(center, top);
+            var bottomCenter = Flat(center, bottom);
+            _vertices.Add(topCenter);
+            _colors.Add(Color.white);
+            for (var i = 0; i < n; i++)
+            {
+                _vertices.Add(Flat(outline[i], top));
+                _colors.Add(apex.HasValue && i == 0 ? Color.white : Color.black);
+            }
+
+            _vertices.Add(bottomCenter);
+            _colors.Add(Color.white);
+            for (var i = 0; i < n; i++)
+            {
+                _vertices.Add(Flat(outline[i], bottom));
+                _colors.Add(apex.HasValue && i == 0 ? Color.white : Color.black);
+            }
+
+            var topStart = 1;
+            var bottomCenterIndex = n + 1;
+            var bottomStart = n + 2;
+
+            // 蓋（上は上向き・下は下向き）。扇は要から、輪は中心から三角形を広げる。
+            for (var i = 0; i < n; i++)
+            {
+                var j = (i + 1) % n;
+                if (apex.HasValue && j == 0)
                 {
-                    _pixels[i] = default;
-                    continue;
+                    continue; // 扇は最後の線の先から要へは蓋の三角形を作らない（要そのものが中心）。
                 }
 
-                // 境目までの符号つき距離（m・内側が正）：届く端か、扇の両脇の縁の近い方。
-                var dist = _pixelDistance[i];
-                var edge = Mathf.Min(ReachAt(ray, rays, full) - dist, side);
-                if (edge < -soft)
-                {
-                    _pixels[i] = default;
-                    continue;
-                }
-
-                // 外 → 暗い線 → 白い線 → 光の帯 → 中、を数画素ずつなめらかにつなぐ。
-                var inside = Ramp(edge, -soft, soft);
-                var toLight = Ramp(edge, lightStart - soft, lightStart + soft);
-                var toGlow = Ramp(edge, glowStart - soft, glowStart + soft);
-                var glow = Mathf.Lerp(GlowAlpha, InsideAlpha, Ramp(edge, glowStart, glowStart + GlowMeters));
-                var alpha = inside * Mathf.Lerp(Mathf.Lerp(LineDarkAlpha, LineLightAlpha, toLight), glow, toGlow);
-
-                // 足もとでは線と帯を消し、中の淡さだけにする（線が一点に集まって煩くならない）。
-                var apex = Ramp(dist, 0f, ApexFadeMeters);
-                alpha = Mathf.Lerp(InsideAlpha * inside, alpha, apex);
-                var white = (byte)(Mathf.Lerp(1f, toLight, apex) * 255f);
-                _pixels[i] = new Color32(white, white, white, (byte)(alpha * 255f));
+                AddTriangle(0, topStart + i, topStart + j, Vector3.up);
+                AddTriangle(bottomCenterIndex, bottomStart + i, bottomStart + j, Vector3.down);
             }
+
+            // 側面：輪郭の辺ごとに四角形を外向きに。輪郭の回る向き（符号つき面積）から、辺の外側を決める。
+            var area = 0f;
+            for (var i = 0; i < n; i++)
+            {
+                var j = (i + 1) % n;
+                area += outline[i].x * outline[j].z - outline[j].x * outline[i].z;
+            }
+
+            var sign = area >= 0f ? 1f : -1f;
+            for (var i = 0; i < n; i++)
+            {
+                var j = (i + 1) % n;
+                var edge = outline[j] - outline[i];
+                var outward = new Vector3(edge.z, 0f, -edge.x) * sign;
+                AddTriangle(topStart + i, topStart + j, bottomStart + i, outward);
+                AddTriangle(topStart + j, bottomStart + j, bottomStart + i, outward);
+            }
+
+            mesh.Clear();
+            mesh.SetVertices(_vertices);
+            mesh.SetColors(_colors);
+            mesh.SetTriangles(_triangles, 0);
+            mesh.RecalculateBounds();
         }
 
-        static float Ramp(float value, float from, float to) => Mathf.Clamp01((value - from) / (to - from));
+        /// <summary>三角形を足す。面の向き（表）が <paramref name="outward"/> を向くよう、必要なら頂点の順を入れ替える。</summary>
+        void AddTriangle(int a, int b, int c, Vector3 outward)
+        {
+            var normal = Vector3.Cross(_vertices[b] - _vertices[a], _vertices[c] - _vertices[a]);
+            if (Vector3.Dot(normal, outward) < 0f)
+            {
+                (b, c) = (c, b);
+            }
+
+            _triangles.Add(a);
+            _triangles.Add(b);
+            _triangles.Add(c);
+        }
+
+        static Vector3 Flat(Vector3 at, float y) => new Vector3(at.x, y, at.z);
 
         /// <summary>
         /// 線ごとに届く距離を測る。扇は両端を含めて等間隔、輪は一周を等間隔（最後の次は最初）。
@@ -237,82 +350,18 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var eye = transform.position + Vector3.up * _police.EyeHeightMeters;
             for (var r = 0; r < rays; r++)
             {
-                var a = full ? -180f + r * 360f / rays : Mathf.Lerp(-half, half, r / (float)(rays - 1));
-                _raw[r] = Reach(eye, Quaternion.AngleAxis(a, Vector3.up) * forward, radius);
+                _raw[r] = Reach(eye, Direction(forward, half, rays, full, r, 0f), radius);
             }
 
             for (var r = 0; r < rays; r++)
             {
                 var hasPrev = full || r > 0;
                 var hasNext = full || r < rays - 1;
-                if (hasPrev && hasNext)
-                {
-                    var prev = _raw[(r - 1 + rays) % rays];
-                    var next = _raw[(r + 1) % rays];
-                    _reach[r] = Mathf.Max(_raw[r], Mathf.Min(prev, next));
-                }
-                else
-                {
-                    _reach[r] = _raw[r];
-                }
-            }
-        }
-
-        /// <summary>線の番号での位置から、届く距離。隣り合う線の間はなめらかに、急に変わる所（壁の角）は短い方。</summary>
-        float ReachAt(float ray, int rays, bool full)
-        {
-            var i = (int)ray;
-            var j = full ? (i + 1) % rays : Mathf.Min(i + 1, rays - 1);
-            var a = _reach[i];
-            var b = _reach[j];
-            return Mathf.Abs(a - b) > CornerMeters ? Mathf.Min(a, b) : Mathf.Lerp(a, b, ray - i);
-        }
-
-        /// <summary>画素ごとの表を作る。絵の中心が警官の足もと、上（+y）が前、右（+x）が右。</summary>
-        void EnsureTables(float radius, float half, int rays, bool full, float meterPerPixel)
-        {
-            if (_pixelDistance != null && Mathf.Approximately(_tableRadius, radius) && Mathf.Approximately(_tableHalf, half))
-            {
-                return;
+                _reach[r] = hasPrev && hasNext
+                    ? Mathf.Max(_raw[r], Mathf.Min(_raw[(r - 1 + rays) % rays], _raw[(r + 1) % rays]))
+                    : _raw[r];
             }
 
-            _tableRadius = radius;
-            _tableHalf = half;
-            var count = TextureSize * TextureSize;
-            _pixelDistance ??= new float[count];
-            _pixelRay ??= new float[count];
-            _pixelSide ??= new float[count];
-            var limit = radius + meterPerPixel * SoftPixels;
-            for (var y = 0; y < TextureSize; y++)
-            {
-                for (var x = 0; x < TextureSize; x++)
-                {
-                    var i = y * TextureSize + x;
-                    var dx = (x + 0.5f) * meterPerPixel - radius;
-                    var dy = (y + 0.5f) * meterPerPixel - radius;
-                    var dist = Mathf.Sqrt(dx * dx + dy * dy);
-                    var a = Mathf.Atan2(dx, dy) * Mathf.Rad2Deg;
-                    _pixelDistance[i] = dist;
-                    if (dist > limit)
-                    {
-                        _pixelRay[i] = -1f;
-                        _pixelSide[i] = -1f;
-                        continue;
-                    }
-
-                    if (full)
-                    {
-                        _pixelRay[i] = Mathf.Repeat((a + 180f) / 360f * rays, rays);
-                        _pixelSide[i] = float.MaxValue;
-                    }
-                    else
-                    {
-                        _pixelRay[i] = Mathf.Clamp((Mathf.Clamp(a, -half, half) + half) / (2f * half) * (rays - 1), 0f, rays - 1.001f);
-                        var side = Mathf.Clamp((half - Mathf.Abs(a)) * Mathf.Deg2Rad, -Mathf.PI * 0.5f, Mathf.PI * 0.5f);
-                        _pixelSide[i] = dist * Mathf.Sin(side);
-                    }
-                }
-            }
         }
 
         /// <summary>目から伸ばした線が、建物に当たるまでの距離。人（自分・プレイヤー）は遮らない。</summary>
