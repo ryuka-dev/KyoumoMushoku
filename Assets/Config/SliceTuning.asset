@@ -119,6 +119,20 @@ MonoBehaviour:
     weight: 2
   _purseItemId: coin_purse
   _purseYen: 64000000c80000002c010000f401000020030000
+  _pityItemIds:
+  - cigarette
+  - weekly_mag
+  - paperback
+  - sweet_bun
+  - can_coffee
+  _pityBands:
+  - belowSanity: 50
+    scale: 1.5
+  - belowSanity: 30
+    scale: 2.5
+  _buttItemId: cig_butt
+  _buttBelowSanity: 50
+  _buttWeight: 8
   _carrySpeedMultiplier: 0.75
   _carryNoticeMultiplier: 1.5
   _cardboardBedding:

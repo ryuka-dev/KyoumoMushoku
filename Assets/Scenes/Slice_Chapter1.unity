@@ -4179,6 +4179,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
@@ -11320,6 +11321,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -19007,6 +19009,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
@@ -30363,6 +30366,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
@@ -30789,6 +30793,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -33726,6 +33731,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -34673,6 +34679,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -34805,6 +34812,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -51108,6 +51116,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -58451,6 +58460,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -72537,6 +72547,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
@@ -73533,6 +73544,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -79137,6 +79149,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
@@ -81450,6 +81463,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -83173,6 +83187,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -84171,6 +84186,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
@@ -87446,6 +87462,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -90955,6 +90972,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
@@ -95513,6 +95531,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
@@ -107632,6 +107651,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -110153,6 +110173,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
@@ -110467,6 +110488,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -121187,6 +121209,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
@@ -122019,6 +122042,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
@@ -125882,6 +125906,7 @@ MonoBehaviour:
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _reader: {fileID: 658567156}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0

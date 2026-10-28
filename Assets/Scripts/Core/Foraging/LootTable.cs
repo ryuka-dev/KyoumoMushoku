@@ -87,6 +87,28 @@ namespace KyoumoMushoku.Core.Foraging
             return LootDraw.Empty;
         }
 
+        /// <summary>
+        /// 重みを品ごとに掛け直し、候補を足した新しい表を返す（元の表は変えない）。空振りの重みと食品の状態の確率はそのまま。
+        /// 抽選の前に表を作り直すだけなので、引いた中身は叩く前に確定したまま（第三節：嘘をつかない）。
+        /// 切片の「SAN が低いほど気を晴らす物が出やすい」（保底）に使う。
+        /// </summary>
+        public LootTable Reweighted(Func<ItemId, float> scale, IEnumerable<Entry> extra = null)
+        {
+            var entries = new List<Entry>(_entries.Length);
+            foreach (var entry in _entries)
+            {
+                var factor = scale != null ? scale(entry.Item) : 1f;
+                entries.Add(new Entry(entry.Item, entry.Weight * (factor < 0f ? 0f : factor)));
+            }
+
+            if (extra != null)
+            {
+                entries.AddRange(extra);
+            }
+
+            return new LootTable(entries, _emptyWeight, _foodOdds);
+        }
+
         FoodState RollState(ItemId item, IRng rng, IItemCatalog catalog)
         {
             if (catalog != null && catalog.TryGet(item, out var definition) && definition.IsFood)

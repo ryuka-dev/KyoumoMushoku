@@ -79,6 +79,22 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("小銭入れの中身（円）。掴んだ瞬間に、この中から一つが同じ確からしさで決まる。")]
         [SerializeField] int[] _purseYen = { 100, 200, 300, 500, 800 };
 
+        [Header("SAN の保底（Docs/切片の品目.md 第十節）")]
+        [Tooltip("SAN が低いほど出やすくなる、気を晴らす品。ゴミ箱の中身を引き直すとき（夜への切り替わり・日付の変わり目）だけ効く。")]
+        [SerializeField] string[] _pityItemIds = { "cigarette", "weekly_mag", "paperback", "sweet_bun", "can_coffee" };
+
+        [Tooltip("SAN がこの値を下回ると、上の品の重みにこの倍率を掛ける。下の段ほど低い SAN にする（一番低い段が勝つ）。")]
+        [SerializeField] List<PityBand> _pityBands = new List<PityBand>
+        {
+            new PityBand { belowSanity = 50f, scale = 1.5f },
+            new PityBand { belowSanity = 30f, scale = 2.5f },
+        };
+
+        [Tooltip("落ちぶれると拾うようになる品（吸い殻）。SAN がこの値を下回ったときだけ、ゴミ箱の表に加わる。")]
+        [SerializeField] string _buttItemId = "cig_butt";
+        [SerializeField, Range(0f, 100f)] float _buttBelowSanity = 50f;
+        [SerializeField, Min(0f)] float _buttWeight = 8f;
+
         [Header("段ボール（Docs/切片の品目.md 第五節）")]
         [Tooltip("背負っている間の歩きの速さの倍率。走れない（GameDesign 第十一節）。")]
         [SerializeField, Range(0.1f, 1f)] float _carrySpeedMultiplier = 0.75f;
@@ -128,6 +144,61 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             return LootTier.Common;
+        }
+
+        [Serializable]
+        public struct PityBand
+        {
+            [Range(0f, 100f)] public float belowSanity;
+            [Min(0f)] public float scale;
+        }
+
+        /// <summary>吸い殻（落ちぶれると拾うようになる品）か。</summary>
+        public bool IsButt(ItemId item) => item.Value == _buttItemId;
+
+        /// <summary>
+        /// ゴミ箱の表を、叩く人の SAN に合わせて作り直す（保底）。気を晴らす品の重みを上げ、低ければ吸い殻を加える。
+        /// 確率を上げるだけで、出ることは約束しない。読めなさ（HitTellSight）はそのまま＝助けはあるが、どの箱かは見えない。
+        /// </summary>
+        public LootTable AdjustForSanity(LootTable table, float sanity)
+        {
+            if (table == null)
+            {
+                return null;
+            }
+
+            var scale = 1f;
+            var lowest = float.MaxValue;
+            foreach (var band in _pityBands)
+            {
+                if (sanity < band.belowSanity && band.belowSanity < lowest)
+                {
+                    lowest = band.belowSanity;
+                    scale = band.scale;
+                }
+            }
+
+            var addButt = sanity < _buttBelowSanity && _buttWeight > 0f && !string.IsNullOrEmpty(_buttItemId);
+            if (Mathf.Approximately(scale, 1f) && !addButt)
+            {
+                return table;
+            }
+
+            var extra = addButt ? new[] { new LootTable.Entry(new ItemId(_buttItemId), _buttWeight) } : null;
+            return table.Reweighted(item => IsPityItem(item) ? scale : 1f, extra);
+        }
+
+        bool IsPityItem(ItemId item)
+        {
+            foreach (var id in _pityItemIds)
+            {
+                if (id == item.Value)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         [Serializable]

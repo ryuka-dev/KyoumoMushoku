@@ -349,3 +349,17 @@ MonoBehaviour:
     buyPriceYen: 0
     capacityBonus: 0
     carriedOnBack: 0
+  - id: cig_butt
+    displayName: "\u5438\u3044\u6BBB"
+    category: 4
+    slots: 1
+    hp: -1
+    thirst: 0
+    hunger: 0
+    sanity: 2
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
+    carriedOnBack: 0

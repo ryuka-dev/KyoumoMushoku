@@ -40,8 +40,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField] Material _itemMaterial;
         [SerializeField] TMP_FontAsset _font;
 
-        [Tooltip("品の段（珍しさ）の出典。")]
+        [Tooltip("品の段（珍しさ）と、SAN の保底の出典。")]
         [SerializeField] SliceTuningAsset _slice;
+
+        [Tooltip("叩く人の状態。中身を引き直すとき、その SAN で表を作り直す（保底）。")]
+        [SerializeField] ProtoVitals _reader;
 
         [Tooltip("1回ふたが開いたときに引く回数。本編の1日分の湧きに当たる。飛び出す数が鞄より多いと、掴む判断が生まれる。")]
         [SerializeField, Min(1)] int _drawsPerOpen = 3;
@@ -229,6 +232,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             _drawnForNight = _dayNight != null && _dayNight.IsNight;
             var table = _loot.TableFor(_kind, _drawnForNight);
+            // 保底：SAN が低いほど気を晴らす物が出やすい（切片の品目 第十節）。引くのはここだけなので、叩く前に中身は決まっている。
+            if (_slice != null && _reader != null && _reader.Vitals != null)
+            {
+                table = _slice.AdjustForSanity(table, _reader.Vitals.Sanity);
+            }
+
             for (var i = 0; i < _drawsPerOpen; i++)
             {
                 _contents.Add(table.Draw(_rng, _catalog));

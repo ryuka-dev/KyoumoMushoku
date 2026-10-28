@@ -72,6 +72,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         InputAction _use;
         InputAction _unload;
+        bool _saidFirstButt;
         Transform _hand;
         GameObject _fist;
         GameObject _open;
@@ -317,6 +318,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 _caught++;
                 Say(ProtoText.Caught(loot.DisplayName));
+                if (!_saidFirstButt && _slice != null && _slice.IsButt(loot.Item.ItemId))
+                {
+                    // 保底が世界の中で見える最初の瞬間（第十四節：見えない状態は誰かが説明する）。
+                    _saidFirstButt = true;
+                    Say(ProtoText.FirstButt);
+                }
+
                 Grabbed?.Invoke(loot.Item);
                 _audio.pitch = loot.Tier >= KyoumoMushoku.Core.Foraging.LootTier.Rare ? 1.4f : 1f;
                 _audio.PlayOneShot(ProtoSounds.Grab, 1f);
