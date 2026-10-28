@@ -12,7 +12,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 消えるまでの間に掴めば鞄へ入る。何が出たかは叩く前に確定していた中身そのものである。
     ///
     /// 見た目は品の段（<see cref="LootTier"/>）で変わる。色と形の辞書は <see cref="ProtoTierLook"/>：
-    /// やや珍しい＝緑に静かに光る・珍しい＝紫で、まわりに小さな菱形が瞬く・大当たり＝虹で、後ろに回る虹の後光（<see cref="ProtoJackpotHalo"/>）が
+    /// 品そのものは塗らず、段の色の縁取りで語る：やや珍しい＝緑の縁・珍しい＝紫の縁で、まわりに小さな菱形が瞬く・大当たり＝虹に流れる縁で、後ろに回る虹の後光（<see cref="ProtoJackpotHalo"/>）が
     /// ついて回り、ときどき虹の星が弾け、名前が一字ずつ虹に流れる。
     /// （開いた瞬間の虹の輪と星の弾けは <see cref="ProtoTrashCan"/> が出す。）
     /// 宙の物は目の前に見えている事実なので、段の演出そのものは SAN で消さない。色は街と一緒に退色するが、形は残る。
@@ -26,7 +26,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         Rigidbody _body;
         Renderer[] _renderers;
-        Material[] _bodyMaterials = Array.Empty<Material>();
+        Renderer[] _outlines = Array.Empty<Renderer>();
         ProtoJackpotHalo _halo;
         Material _sparkBase;
         Vector3 _extents;
@@ -106,23 +106,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
             loot._lifetime = lifetime;
             loot._baseScale = go.transform.localScale.x;
             loot._labelHeight = labelHeight;
-            loot._renderers = go.GetComponentsInChildren<Renderer>();
             loot._extents = extents;
             loot._sparkBase = baseMaterial;
 
-            // 段の色で品そのものを光らせる：材質を個体ごとに複製する（共有の調色板材質は書き換えない）。
-            if (tier != LootTier.Common)
-            {
-                loot._bodyMaterials = new Material[loot._renderers.Length];
-                for (var i = 0; i < loot._renderers.Length; i++)
-                {
-                    var glowing = new Material(loot._renderers[i].sharedMaterial);
-                    glowing.EnableKeyword("_EMISSION");
-                    glowing.SetColor("_EmissionColor", ProtoTierLook.Of(tier, 0f) * ProtoTierLook.BodyEmission(tier));
-                    loot._renderers[i].sharedMaterial = glowing;
-                    loot._bodyMaterials[i] = glowing;
-                }
-            }
+            // 段は縁取りの色で語る。品そのものは塗らず、元の材質（模型の色）をそのまま見せる。
+            loot._outlines = ProtoTierLook.AddOutline(go.transform, tier);
+            loot._renderers = go.GetComponentsInChildren<Renderer>();
 
             if (tier == LootTier.Jackpot)
             {
@@ -194,10 +183,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 }
             }
 
-            foreach (var material in _bodyMaterials)
-            {
-                Destroy(material);
-            }
         }
 
         /// <summary>名前の描画順。演出（<see cref="ProtoTierLook.EffectSortingOrder"/>）より後に描く。</summary>
@@ -289,9 +274,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         void UpdateRainbow()
         {
             var color = ProtoTierLook.Rainbow(Time.time);
-            foreach (var material in _bodyMaterials)
+            foreach (var outline in _outlines)
             {
-                material.SetColor("_EmissionColor", color * ProtoTierLook.BodyEmission(LootTier.Jackpot));
+                ProtoTierLook.TintOutline(outline, color, ProtoTierLook.OutlineWidth(LootTier.Jackpot));
             }
 
             if (_label != null)

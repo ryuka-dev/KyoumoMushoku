@@ -42,14 +42,131 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _ => Color.white,
         };
 
-        /// <summary>品そのものの発光の強さ。白飛びして形が読めなくならない程度に抑える。</summary>
-        public static float BodyEmission(LootTier tier) => tier switch
+        /// <summary>段の縁取りの太さ（画面のピクセル）。品そのものは塗らず、元の材質を見せる。並は縁を持たない。</summary>
+        public static float OutlineWidth(LootTier tier) => tier switch
         {
-            LootTier.Jackpot => 0.8f,
-            LootTier.Rare => 0.7f,
-            LootTier.Uncommon => 0.45f,
+            LootTier.Jackpot => 3.5f,
+            LootTier.Rare => 3f,
+            LootTier.Uncommon => 2.5f,
             _ => 0f,
         };
+
+        static readonly int OutlineColorId = Shader.PropertyToID("_Color");
+        static readonly int OutlineWidthId = Shader.PropertyToID("_Width");
+        static readonly System.Collections.Generic.Dictionary<Mesh, Mesh> _shells = new System.Collections.Generic.Dictionary<Mesh, Mesh>();
+        static Material _outlineMaterial;
+
+        /// <summary>
+        /// 品の縁取り：模型の各部品に裏返しの殻を重ね、段の色で縁を描く（触れる物の縁と同じシェーダー `ProtoOutline`）。
+        /// 元は `Assets/Prototype/Resources/ProtoTierOutline.mat`。殻の網は模型ごとに一度だけ作って使い回す（模型の FBX は読み取り可にしてある）。
+        /// 返すのは殻の描画（大当たりの虹は毎こま <see cref="TintOutline"/> で塗り直す）。
+        /// </summary>
+        public static Renderer[] AddOutline(Transform root, LootTier tier)
+        {
+            if (tier == LootTier.Common)
+            {
+                return System.Array.Empty<Renderer>();
+            }
+
+            _outlineMaterial ??= Resources.Load<Material>("ProtoTierOutline");
+            if (_outlineMaterial == null)
+            {
+                return System.Array.Empty<Renderer>();
+            }
+
+            var shells = new System.Collections.Generic.List<Renderer>();
+            foreach (var filter in root.GetComponentsInChildren<MeshFilter>())
+            {
+                var mesh = filter.sharedMesh;
+                if (mesh == null || !mesh.isReadable)
+                {
+                    continue;
+                }
+
+                var go = new GameObject("TierOutline");
+                go.transform.SetParent(filter.transform, false);
+                go.AddComponent<MeshFilter>().sharedMesh = ShellOf(mesh);
+                var renderer = go.AddComponent<MeshRenderer>();
+                renderer.sharedMaterial = _outlineMaterial;
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
+                TintOutline(renderer, Of(tier, 0f), OutlineWidth(tier));
+                shells.Add(renderer);
+            }
+
+            return shells.ToArray();
+        }
+
+        /// <summary>縁の色と太さを、共有の材質を書き換えずに塗る。</summary>
+        public static void TintOutline(Renderer renderer, Color color, float width)
+        {
+            _block ??= new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(_block);
+            _block.SetColor(OutlineColorId, color);
+            _block.SetFloat(OutlineWidthId, width);
+            renderer.SetPropertyBlock(_block);
+        }
+
+        /// <summary>
+        /// 殻の網：同じ位置にある頂点の法線を平均する（角で殻が割れない）。編集の道具 SliceOutlineBaker の殻と同じ作り方。
+        /// </summary>
+        static Mesh ShellOf(Mesh source)
+        {
+            if (_shells.TryGetValue(source, out var cached))
+            {
+                return cached;
+            }
+
+            var vertices = source.vertices;
+            var normals = source.normals;
+            var sums = new System.Collections.Generic.Dictionary<Vector3Int, System.Collections.Generic.List<Vector3>>();
+            Vector3Int Key(Vector3 v) => new Vector3Int(Mathf.RoundToInt(v.x * 10000f), Mathf.RoundToInt(v.y * 10000f), Mathf.RoundToInt(v.z * 10000f));
+            for (var i = 0; i < vertices.Length; i++)
+            {
+                var n = normals.Length == vertices.Length ? normals[i] : Vector3.up;
+                if (!sums.TryGetValue(Key(vertices[i]), out var list))
+                {
+                    list = new System.Collections.Generic.List<Vector3>();
+                    sums.Add(Key(vertices[i]), list);
+                }
+
+                // 向きの同じ法線は一度だけ数える（同じ面の頂点が多い所に引っ張られない）。
+                var known = false;
+                foreach (var existing in list)
+                {
+                    known |= Vector3.Dot(existing, n) > 0.999f;
+                }
+
+                if (!known)
+                {
+                    list.Add(n);
+                }
+            }
+
+            var smooth = new Vector3[vertices.Length];
+            for (var i = 0; i < vertices.Length; i++)
+            {
+                var sum = Vector3.zero;
+                foreach (var n in sums[Key(vertices[i])])
+                {
+                    sum += n;
+                }
+
+                smooth[i] = sum.sqrMagnitude > 1e-8f ? sum.normalized : Vector3.up;
+            }
+
+            var triangles = new System.Collections.Generic.List<int>();
+            for (var s = 0; s < source.subMeshCount; s++)
+            {
+                triangles.AddRange(source.GetTriangles(s));
+            }
+
+            var shell = new Mesh { name = source.name + "_TierOutline", vertices = vertices, normals = smooth };
+            shell.SetTriangles(triangles, 0);
+            shell.RecalculateBounds();
+            _shells[source] = shell;
+            return shell;
+        }
 
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
