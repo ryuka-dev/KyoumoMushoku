@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.SliceTuningAsset
   _startingSanity: 60
   _lateNightStartSeconds: 20
-  _lateNightRampPerSecond: 0.015
-  _lateNightMaxDrainPerSecond: 0.4
+  _lateNightRampPerSecond: 0.003
+  _lateNightMaxDrainPerSecond: 0.08
   _jobShiftsPerDay: 1
   _jobCursorSpeed: 1.1
   _jobHalfBand: 0.14

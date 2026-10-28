@@ -27,10 +27,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField, Min(0f)] float _lateNightStartSeconds = 20f;
 
         [Tooltip("夜更かしが始まってから、1 秒ごとに増える SAN の減り（/秒）。遅くなるほど急になる。")]
-        [SerializeField, Min(0f)] float _lateNightRampPerSecond = 0.015f;
+        [SerializeField, Min(0f)] float _lateNightRampPerSecond = 0.003f;
 
         [Tooltip("夜更かしによる SAN の減りの上限（/秒）。")]
-        [SerializeField, Min(0f)] float _lateNightMaxDrainPerSecond = 0.4f;
+        [SerializeField, Min(0f)] float _lateNightMaxDrainPerSecond = 0.08f;
 
         [Header("バイト（レジ打ちのタイミングバー）")]
         [Tooltip("1日に入れるシフトの数。寝て日付が変わると戻る。")]
