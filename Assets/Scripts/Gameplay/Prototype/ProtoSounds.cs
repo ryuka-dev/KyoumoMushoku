@@ -39,41 +39,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>レジのバーコードを読んだ音。</summary>
         public static AudioClip Beep => _beep ??= Noise("ProtoBeep", 0.1f, decay: 12f, lowPass: 1f, tone: 2000f, toneMix: 0.98f);
 
-        static AudioClip _whistle;
         static AudioClip _step;
         static AudioClip _voice;
 
-        /// <summary>警官の呼子（追い始めの合図）。短く二度、鋭く吹く。</summary>
-        public static AudioClip Whistle => _whistle ??= Pipe("ProtoWhistle");
-
-        /// <summary>靴音（追ってくる足音）。</summary>
-        public static AudioClip Step => _step ??= Noise("ProtoStep", 0.09f, decay: 40f, lowPass: 0.18f, tone: 110f, toneMix: 0.25f);
+        /// <summary>靴音（追ってくる足音）。素材集に足音が無いための代用。柔らかく鈍い、短い音。</summary>
+        public static AudioClip Step => _step ??= Noise("ProtoStep", 0.08f, decay: 45f, lowPass: 0.08f, tone: 90f, toneMix: 0.3f);
 
         /// <summary>警官が口を開いた合図の短い声（言葉ではない、低いうなり）。どちらから声がしたかを耳で知らせる。</summary>
         public static AudioClip Voice => _voice ??= Noise("ProtoVoice", 0.16f, decay: 14f, lowPass: 0.12f, tone: 190f, toneMix: 0.7f);
-
-        /// <summary>呼子：2.9kHz 前後で震える笛の音を、間を置いて二度。</summary>
-        static AudioClip Pipe(string name)
-        {
-            const float seconds = 0.62f;
-            var length = Mathf.CeilToInt(SampleRate * seconds);
-            var data = new float[length];
-            var random = new System.Random(name.GetHashCode());
-            var phase = 0f;
-            for (var i = 0; i < length; i++)
-            {
-                var t = i / (float)SampleRate;
-                var on = t < 0.22f || (t > 0.3f && t < 0.6f);
-                var hz = 2900f * (1f + 0.03f * Mathf.Sin(2f * Mathf.PI * 38f * t));
-                phase += 2f * Mathf.PI * hz / SampleRate;
-                var breath = (float)(random.NextDouble() * 2.0 - 1.0) * 0.15f;
-                data[i] = on ? (Mathf.Sin(phase) + breath) * 0.4f : 0f;
-            }
-
-            var clip = AudioClip.Create(name, length, 1, SampleRate, false);
-            clip.SetData(data, 0);
-            return clip;
-        }
 
         /// <summary>
         /// 合成の「キュイン」（素材が入るまでの代用）。0.12 秒で一気に駆け上がり、上で細かく揺れながら伸び、こだまが残る。

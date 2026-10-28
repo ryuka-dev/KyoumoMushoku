@@ -89,6 +89,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>見張っている相手（体の向き・頭の向きを決める側が読む）。</summary>
         public ProtoHands Player => _player;
 
+        /// <summary>切片の数値（警官の音を鳴らす側も読む）。</summary>
+        public SliceTuningAsset Slice => _slice;
+
         /// <summary>頭の上の位置。台詞と目の印はここに出る（<see cref="ProtoPoliceOverlay"/>）。</summary>
         public Vector3 HeadPosition => transform.position + Vector3.up * HeadHeight;
 
@@ -467,7 +470,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var camera = _player.ViewCamera != null ? _player.ViewCamera.transform : null;
             var rest = camera != null ? camera.localPosition : Vector3.zero;
 
-            AudioSource.PlayClipAtPoint(ProtoSounds.Thud, _player.transform.position, 1f);
+            // 掴まれた一打。素材集の鈍い音（SliceTuning）、無ければ合成の音。耳元で鳴るよう、目の位置で鳴らす。
+            var hit = _slice != null && _slice.CaptureHit != null ? _slice.CaptureHit : ProtoSounds.Thud;
+            var hitVolume = _slice != null ? _slice.CaptureHitVolume : 0.8f;
+            AudioSource.PlayClipAtPoint(hit, camera != null ? camera.position : _player.transform.position, hitVolume);
             var seized = Confiscate(out var seizedNames);
             Say(seized > 0 ? ProtoText.PoliceSeize : ProtoText.PoliceTakeAway);
 

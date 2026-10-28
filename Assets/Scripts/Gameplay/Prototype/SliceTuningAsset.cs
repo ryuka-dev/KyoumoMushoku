@@ -152,6 +152,24 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField, Min(0f)] float _escortMinSeconds = 10f;
         [SerializeField, Min(0f)] float _escortMaxSeconds = 45f;
 
+        [Header("警官の音（素材集 Assets/ThirdParty から選ぶ。耳で選び直してよい）")]
+        [Tooltip("追い始めの合図。警官の位置から立体音で鳴る。空なら鳴らさない。")]
+        [SerializeField] AudioClip _policeAlarm;
+        [SerializeField, Range(0f, 1f)] float _policeAlarmVolume = 0.6f;
+
+        [Tooltip("捕まった瞬間の鈍い一打。空なら合成の音（ProtoSounds.Thud）。")]
+        [SerializeField] AudioClip _captureHit;
+        [SerializeField, Range(0f, 1f)] float _captureHitVolume = 0.8f;
+
+        [Tooltip("追ってくる足音の大きさ（合成。素材集に足音が無いため）。追っている間だけ鳴る。")]
+        [SerializeField, Range(0f, 1f)] float _policeStepVolume = 0.22f;
+
+        public AudioClip PoliceAlarm => _policeAlarm;
+        public float PoliceAlarmVolume => _policeAlarmVolume;
+        public AudioClip CaptureHit => _captureHit;
+        public float CaptureHitVolume => _captureHitVolume;
+        public float PoliceStepVolume => _policeStepVolume;
+
         public int ClinicFeeYen => _clinicFeeYen;
 
         /// <summary>道のり（m）を連れて行かれるのにかかる時間（秒）。</summary>
