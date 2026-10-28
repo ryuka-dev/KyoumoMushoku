@@ -16,6 +16,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         static AudioClip _grab;
         static AudioClip _chime;
         static AudioClip _beep;
+        static AudioClip _jackpot;
 
         /// <summary>中身の詰まった鈍い音。</summary>
         public static AudioClip Thud => _thud ??= Noise("ProtoThud", 0.22f, decay: 18f, lowPass: 0.06f, tone: 70f, toneMix: 0.6f);
@@ -31,6 +32,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         /// <summary>珍しい物のきらめき。</summary>
         public static AudioClip Chime => _chime ??= Noise("ProtoChime", 0.6f, decay: 5f, lowPass: 1f, tone: 1320f, toneMix: 0.95f);
+
+        /// <summary>大当たりの低い響き。鈴に重ねて鳴らす。</summary>
+        public static AudioClip Jackpot => _jackpot ??= Noise("ProtoJackpot", 1.2f, decay: 2.5f, lowPass: 1f, tone: 330f, toneMix: 0.97f);
 
         /// <summary>レジのバーコードを読んだ音。</summary>
         public static AudioClip Beep => _beep ??= Noise("ProtoBeep", 0.1f, decay: 12f, lowPass: 1f, tone: 2000f, toneMix: 0.98f);

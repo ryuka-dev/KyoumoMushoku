@@ -262,7 +262,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 _caught++;
                 Say(ProtoText.Caught(loot.DisplayName));
-                _audio.pitch = loot.Rarity == ProtoRarity.Rare ? 1.4f : 1f;
+                _audio.pitch = loot.Tier >= KyoumoMushoku.Core.Foraging.LootTier.Rare ? 1.4f : 1f;
                 _audio.PlayOneShot(ProtoSounds.Grab, 1f);
             }
             else

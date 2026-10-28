@@ -19,6 +19,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 叩いた時の揺れ・音・漏れる光は、その確定済みの中身から作る。再抽選しないので、反応は嘘をつかない。
     /// 抽選は本編と同じ Core の <see cref="LootTable"/>。表は切片用に複製した <c>Assets/Config/TrashCanLoot_Slice.asset</c>（タバコを減らしてある）。
     ///
+    /// 手応えをどこまで読めるかは叩いた人の SAN で決まる（<see cref="HitTellSight"/>・`Docs/切片の品目.md` 第三節）。
+    /// 上機嫌なら漏れる光の色で珍しいか大当たりかまで、崩壊していればどの箱も同じ手応えになる。読めないときは合図が消えるだけで、
+    /// 偽の合図は出さない。街に響く音（警官の耳）は中身どおりのまま（変わるのは本人の受け取り方だけ）。
+    ///
     /// ふたの無いゴミ袋にも使う（<c>_hasLid</c> を外し、一打で破れる少量の袋にする）。
     ///
     /// 中身が戻るのは本編と同じ二つの契機：日付が変わったとき（就寝）と、夜になったとき（<see cref="ForageRefillTracker"/>）。
@@ -36,6 +40,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField] Material _itemMaterial;
         [SerializeField] TMP_FontAsset _font;
 
+        [Tooltip("品の段（珍しさ）の出典。")]
+        [SerializeField] SliceTuningAsset _slice;
+
         [Tooltip("1回ふたが開いたときに引く回数。本編の1日分の湧きに当たる。飛び出す数が鞄より多いと、掴む判断が生まれる。")]
         [SerializeField, Min(1)] int _drawsPerOpen = 3;
 
@@ -48,16 +55,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("飛び出した物が消えるまでの秒数。")]
         [SerializeField, Min(1f)] float _lootLifetime = 6f;
 
-        [Tooltip("この割合以下の確率でしか出ない品を「珍しい」とする。")]
-        [SerializeField, Range(0f, 1f)] float _rareShare = 0.06f;
-
-        [Tooltip("この割合以下を「やや珍しい」とする。")]
-        [SerializeField, Range(0f, 1f)] float _uncommonShare = 0.12f;
-
         readonly List<LootDraw> _contents = new List<LootDraw>();
         readonly ForageRefillTracker _refill = new ForageRefillTracker();
         IRng _rng;
-        Func<ItemId, float> _disposalShare;
         AudioSource _audio;
         Transform _lid;
         Vector3 _lidLocalPosition;
@@ -86,8 +86,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public string Prompt => _hasLid ? ProtoText.TrashCanPrompt : ProtoText.TrashBagPrompt;
 
         public void Configure(TrashCanKind kind, TrashCanLootAsset loot, ItemDatabaseAsset catalog,
-            ProtoDayNight dayNight, Material itemMaterial, TMP_FontAsset font)
+            ProtoDayNight dayNight, Material itemMaterial, TMP_FontAsset font, SliceTuningAsset slice)
         {
+            _slice = slice;
             _kind = kind;
             _loot = loot;
             _catalog = catalog;
@@ -130,25 +131,32 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _hits++;
             var weight = ContentWeight();
             var empty = weight <= 0;
+            var heaviness = Mathf.Clamp01(weight / 6f);
+            var tell = HitTellSight.Read(vitals != null ? vitals.Sanity : SanityScale.Max);
 
             // 軽い（空の）箱ほど大きく揺れて甲高く鳴る。詰まった箱ほど鈍く、揺れない。
-            var heaviness = Mathf.Clamp01(weight / 6f);
-            var kick = empty ? 1f : Mathf.Lerp(0.6f, 0.2f, heaviness);
+            // 崩壊していると、どの箱も同じ中ほどの手応えに感じる（読めない・第三節）。
+            var feelsWeight = HitTellSight.FeelsWeight(tell);
+            var feltEmpty = feelsWeight && empty;
+            var feltHeaviness = feelsWeight ? heaviness : 0.4f;
+            var kick = feltEmpty ? 1f : Mathf.Lerp(0.6f, 0.2f, feltHeaviness);
             var local = transform.InverseTransformDirection(direction);
             _tiltVelocity += new Vector2(local.z, -local.x) * (kick * 260f);
             _squash = 1f;
 
-            _audio.pitch = empty ? UnityEngine.Random.Range(1.1f, 1.3f) : Mathf.Lerp(1.15f, 0.7f, heaviness);
-            _audio.PlayOneShot(empty ? ProtoSounds.Clang : ProtoSounds.Thud, 0.9f);
+            _audio.pitch = feltEmpty ? UnityEngine.Random.Range(1.1f, 1.3f) : Mathf.Lerp(1.15f, 0.7f, feltHeaviness);
+            _audio.PlayOneShot(feltEmpty ? ProtoSounds.Clang : ProtoSounds.Thud, 0.9f);
 
             // 叩く音は街に響き、警官の耳に届く。空の箱ほどうるさい（ふたが飛ぶ一打は最もうるさい）。
+            // 警官が聞くのは本当の音なので、ここは叩いた人の SAN に関係なく中身どおり。
             var opening = _hits >= _hitsToOpen;
             ProtoNoise.Emit(transform.position, loudness * (opening || empty ? 1f : Mathf.Lerp(0.8f, 0.4f, heaviness)));
 
-            // 珍しい物が入っているときだけ、叩くたびにふたの隙間から光が漏れる（廃棄の袋も同じ）。
-            if (BestRarity() == ProtoRarity.Rare)
+            // 珍しい物が入っていて、それが読めるときだけ、叩くたびにふたの隙間から光が漏れる（廃棄の袋も同じ）。
+            var glint = HitTellSight.Glint(tell, BestTier());
+            if (glint != HitGlint.None)
             {
-                LeakGlint();
+                LeakGlint(glint);
             }
 
             if (_hits < _hitsToOpen)
@@ -182,7 +190,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             StopAllCoroutines();
             _disposal = false;
-            _disposalShare = null;
             _spewInterval = 0f;
             _opened = false;
             _hits = 0;
@@ -193,9 +200,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>
         /// 店員が廃棄の袋を入れた（<see cref="ProtoDisposal"/>）。中身を差し替え、ふたを閉じ直す。
         /// 開けると一度に飛び出さず、<paramref name="spewInterval"/> 秒おきに噴き出し続ける（第 5 分の山場）。
-        /// 珍しさは廃棄の表での出やすさ（<paramref name="shareOf"/>）から、ゴミ箱と同じ境で決める。
         /// </summary>
-        public void LoadDisposal(IReadOnlyList<LootDraw> draws, float spewInterval, Func<ItemId, float> shareOf)
+        public void LoadDisposal(IReadOnlyList<LootDraw> draws, float spewInterval)
         {
             // 夜になった補充が、同じフレームで後から廃棄を上書きしないよう、先に契機を読んで済ませておく。
             ObserveRefill();
@@ -203,7 +209,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _contents.Clear();
             _contents.AddRange(draws);
             _disposal = true;
-            _disposalShare = shareOf;
             _spewInterval = Mathf.Max(0.05f, spewInterval);
             _opened = false;
             _hits = 0;
@@ -247,22 +252,20 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             var anyItem = false;
-            var anyRare = false;
+            var best = LootTier.Common;
             foreach (var draw in _contents)
             {
                 if (draw.HasItem)
                 {
                     anyItem = true;
-                    anyRare |= RarityOf(draw.Item) == ProtoRarity.Rare;
+                    var tier = TierOf(draw.Item);
+                    best = tier > best ? tier : best;
                 }
 
                 Throw(draw, toPlayer);
             }
 
-            if (anyRare)
-            {
-                _audio.PlayOneShot(ProtoSounds.Chime, 0.8f);
-            }
+            PlayTierSound(best);
 
             toast = anyItem ? (_hasLid ? ProtoText.Opened : ProtoText.BagRipped) : ProtoText.Nothing;
         }
@@ -273,9 +276,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
             foreach (var draw in draws)
             {
                 Throw(draw, toPlayer);
-                if (draw.HasItem && RarityOf(draw.Item) == ProtoRarity.Rare)
+                if (draw.HasItem)
                 {
-                    _audio.PlayOneShot(ProtoSounds.Chime, 0.8f);
+                    PlayTierSound(TierOf(draw.Item));
                 }
 
                 _squash = 1f;
@@ -298,7 +301,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
-            var rarity = RarityOf(draw.Item);
+            var tier = TierOf(draw.Item);
             var name = draw.Item.Value;
             var slots = 1;
             var category = ItemCategory.Salvage;
@@ -309,16 +312,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 category = definition.Category;
             }
 
-            if (rarity == ProtoRarity.Rare)
+            var tierName = ProtoText.TierName(tier);
+            if (tierName != null)
             {
-                name = ProtoText.WithRarity(name, ProtoText.Rare);
-            }
-            else if (rarity == ProtoRarity.Uncommon)
-            {
-                name = ProtoText.WithRarity(name, ProtoText.Uncommon);
+                name = ProtoText.WithRarity(name, tierName);
             }
 
-            ProtoLoot.Spawn(new ItemInstance(draw.Item, draw.State), name, slots, rarity, ColorOf(category),
+            ProtoLoot.Spawn(new ItemInstance(draw.Item, draw.State), name, slots, tier, ColorOf(category),
                 _itemMaterial, _font, top, velocity, _lootLifetime);
         }
 
@@ -357,17 +357,17 @@ namespace KyoumoMushoku.Gameplay.Prototype
             return weight;
         }
 
-        ProtoRarity BestRarity()
+        LootTier BestTier()
         {
-            var best = ProtoRarity.Common;
+            var best = LootTier.Common;
             foreach (var draw in _contents)
             {
                 if (draw.HasItem)
                 {
-                    var rarity = RarityOf(draw.Item);
-                    if (rarity > best)
+                    var tier = TierOf(draw.Item);
+                    if (tier > best)
                     {
-                        best = rarity;
+                        best = tier;
                     }
                 }
             }
@@ -375,17 +375,21 @@ namespace KyoumoMushoku.Gameplay.Prototype
             return best;
         }
 
-        ProtoRarity RarityOf(ItemId item)
-        {
-            var share = _disposal && _disposalShare != null
-                ? _disposalShare(item)
-                : _loot != null ? _loot.ShareOf(_kind, _drawnForNight, item) : 1f;
-            if (share <= _rareShare)
-            {
-                return ProtoRarity.Rare;
-            }
+        LootTier TierOf(ItemId item) => _slice != null ? _slice.TierOf(item) : LootTier.Common;
 
-            return share <= _uncommonShare ? ProtoRarity.Uncommon : ProtoRarity.Common;
+        /// <summary>珍しい物は鈴、大当たりは鈴に低い響きを重ねる。</summary>
+        void PlayTierSound(LootTier tier)
+        {
+            if (tier == LootTier.Jackpot)
+            {
+                _audio.pitch = 1f;
+                _audio.PlayOneShot(ProtoSounds.Chime, 1f);
+                _audio.PlayOneShot(ProtoSounds.Jackpot, 1f);
+            }
+            else if (tier == LootTier.Rare)
+            {
+                _audio.PlayOneShot(ProtoSounds.Chime, 0.8f);
+            }
         }
 
         static Color ColorOf(ItemCategory category) => category switch
@@ -491,18 +495,26 @@ namespace KyoumoMushoku.Gameplay.Prototype
             rb.angularVelocity = UnityEngine.Random.insideUnitSphere * 15f;
         }
 
-        void LeakGlint()
+        void LeakGlint(HitGlint glint)
         {
             var spark = GameObject.CreatePrimitive(PrimitiveType.Cube);
             spark.name = "Glint";
             Destroy(spark.GetComponent<Collider>());
             spark.transform.position = TopPoint()
                 + Vector3.ProjectOnPlane(UnityEngine.Random.insideUnitSphere, Vector3.up) * 0.3f;
-            spark.transform.localScale = Vector3.one * 0.05f;
+            // 上機嫌なら色が段を語る（金＝珍しい・白く強い＝大当たり）。「何か良い物」までしか読めないときは淡い黄の一色。
+            var jackpot = glint == HitGlint.Jackpot;
+            spark.transform.localScale = Vector3.one * (jackpot ? 0.08f : 0.05f);
+            var color = glint switch
+            {
+                HitGlint.Jackpot => new Color(0.75f, 0.92f, 1f),
+                HitGlint.Rare => new Color(1f, 0.8f, 0.2f),
+                _ => new Color(1f, 0.95f, 0.7f),
+            };
             var material = new Material(_itemMaterial);
             material.EnableKeyword("_EMISSION");
-            material.SetColor("_BaseColor", new Color(1f, 0.85f, 0.3f));
-            material.SetColor("_EmissionColor", new Color(1f, 0.8f, 0.2f) * 4f);
+            material.SetColor("_BaseColor", color);
+            material.SetColor("_EmissionColor", color * (jackpot ? 7f : 4f));
             spark.GetComponent<Renderer>().sharedMaterial = material;
             var rb = spark.AddComponent<Rigidbody>();
             rb.useGravity = false;

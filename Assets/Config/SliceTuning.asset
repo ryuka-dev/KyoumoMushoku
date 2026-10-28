@@ -50,4 +50,37 @@ MonoBehaviour:
     freshWeight: 4
     staleWeight: 6
     rottenWeight: 0
+  _itemTiers:
+  - id: umbrella_broken
+    tier: 1
+  - id: sweet_bun
+    tier: 1
+  - id: weekly_mag
+    tier: 1
+  - id: cigarette
+    tier: 1
+  - id: copper_wire
+    tier: 1
+  - id: can_coffee
+    tier: 1
+  - id: karaage
+    tier: 1
+  - id: scratch
+    tier: 1
+  - id: paperback
+    tier: 2
+  - id: brand_box
+    tier: 2
+  - id: coin_purse
+    tier: 2
+  - id: work_gloves
+    tier: 2
+  - id: cap
+    tier: 2
+  - id: game_soft
+    tier: 2
+  - id: wristwatch
+    tier: 3
+  - id: handheld
+    tier: 3
   _finalDay: 3

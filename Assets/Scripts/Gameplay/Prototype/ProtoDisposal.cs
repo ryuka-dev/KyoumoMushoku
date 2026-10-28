@@ -16,7 +16,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 鞄に入りきらない量なので、何を掴み、何を捨てて入れ替えるかが問われる。噴くたびに鳴るので、警官の耳にも届く。
     ///
     /// 毎晩は出ない。出るかどうかは日付が変わった時点で決まる（<see cref="SliceTuningAsset.DisposalChance"/>）。
-    /// 中身は店の物なら何でも混じり、品ごとの出やすさ（＝珍しさ）は <see cref="SliceTuningAsset.DisposalTable"/> が決める。
+    /// 中身は店の物なら何でも混じり、品ごとの出やすさは <see cref="SliceTuningAsset.DisposalTable"/>、珍しさは品の段（<see cref="SliceTuningAsset.TierOf"/>）が決める。
     ///
     /// 予告は世界の中で、事前に行う（第十四節）：夕方、店の近くにいると店員のぼやきが聞こえる。昼の間に店に入れば、
     /// 店員が今夜の廃棄の多い少ないをこぼす（<see cref="ProtoShopPanel"/>）。出ない夜は、出ないと言う（嘘をつかない）。
@@ -134,7 +134,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                     {
                         _phase = Phase.Dropping;
                         _dropTimer = _dropSeconds;
-                        _bin.LoadDisposal(Bags(), _spewInterval, ShareOf);
+                        _bin.LoadDisposal(Bags(), _spewInterval);
                         if (PlayerWithin(_earshot))
                         {
                             Say(ProtoText.ClerkDropsDisposal);
@@ -215,7 +215,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
         }
 
         /// <summary>廃棄の1回の抽選で、その品が出る確率。ゴミ箱は珍しさをこれで決める。</summary>
-        float ShareOf(ItemId item) => _slice != null ? TrashCanLootAsset.ShareOf(_slice.DisposalTable, item) : 1f;
 
         /// <summary>店員（出ていなければ入口）の声が届く所にいるか。</summary>
         bool PlayerWithin(float distance)

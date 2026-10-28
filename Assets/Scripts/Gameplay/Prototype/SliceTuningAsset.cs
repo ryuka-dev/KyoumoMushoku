@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using KyoumoMushoku.Core.Foraging;
+using KyoumoMushoku.Core.Items;
 using KyoumoMushoku.Gameplay.Foraging;
 using UnityEngine;
 
@@ -48,8 +51,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("一度の廃棄で噴き出す回数（抽選の回数）。")]
         [SerializeField, Min(1)] int _disposalDraws = 8;
 
-        [Tooltip("廃棄の中身。重みが出やすさ。全体に対する割合が小さい品ほど「珍しい」と出る（ゴミ箱と同じ境）。")]
+        [Tooltip("廃棄の中身。重みが出やすさ。珍しさは品の段（下の「品の珍しさ」）で決まる。")]
         [SerializeField] TrashCanLootAsset.Table _disposalTable = DefaultDisposalTable();
+
+        [Header("品の珍しさ（Docs/切片の品目.md 第三節）")]
+        [Tooltip("品ごとの段。ここに無い品は「並」。出やすさからは導かない（同じ品が表によって珍しくなったり並になったりしない）。")]
+        [SerializeField] List<ItemTierEntry> _itemTiers = DefaultItemTiers();
 
         [Header("終わり")]
         [Tooltip("この日の夜に寝たら、翌朝に切片の結算を見せて終える。")]
@@ -67,6 +74,44 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public float DisposalChance => _disposalChance;
         public int DisposalDraws => _disposalDraws;
         public TrashCanLootAsset.Table DisposalTable => _disposalTable;
+
+        [Serializable]
+        public struct ItemTierEntry
+        {
+            public string id;
+            public LootTier tier;
+        }
+
+        /// <summary>品の段。表に無い品は並。</summary>
+        public LootTier TierOf(ItemId item)
+        {
+            foreach (var entry in _itemTiers)
+            {
+                if (entry.id == item.Value)
+                {
+                    return entry.tier;
+                }
+            }
+
+            return LootTier.Common;
+        }
+
+        static List<ItemTierEntry> DefaultItemTiers()
+        {
+            var list = new List<ItemTierEntry>();
+            void Add(LootTier tier, params string[] ids)
+            {
+                foreach (var id in ids)
+                {
+                    list.Add(new ItemTierEntry { id = id, tier = tier });
+                }
+            }
+
+            Add(LootTier.Uncommon, "umbrella_broken", "sweet_bun", "weekly_mag", "cigarette", "copper_wire", "can_coffee", "karaage", "scratch");
+            Add(LootTier.Rare, "paperback", "brand_box", "coin_purse", "work_gloves", "cap", "game_soft");
+            Add(LootTier.Jackpot, "wristwatch", "handheld");
+            return list;
+        }
 
         /// <summary>
         /// 廃棄の叩き台。食べ物が中心だが、店の物は何でも混じる。宿の鍵とバックパックは入れない（三日の目標を廃棄で飛ばさない）。

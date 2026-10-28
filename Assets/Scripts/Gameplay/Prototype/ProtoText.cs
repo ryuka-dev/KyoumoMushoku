@@ -99,6 +99,16 @@ namespace KyoumoMushoku.Gameplay.Prototype
         // ── 珍しさ ───────────────────────────────────────────
         public static string Rare => "珍しい";
         public static string Uncommon => "やや珍しい";
+        public static string Jackpot => "大当たり";
+
+        /// <summary>宙の物の名前に添える段の名前。並なら null（何も添えない）。</summary>
+        public static string TierName(KyoumoMushoku.Core.Foraging.LootTier tier) => tier switch
+        {
+            KyoumoMushoku.Core.Foraging.LootTier.Jackpot => Jackpot,
+            KyoumoMushoku.Core.Foraging.LootTier.Rare => Rare,
+            KyoumoMushoku.Core.Foraging.LootTier.Uncommon => Uncommon,
+            _ => null,
+        };
         public static string WithRarity(string name, string rarity) => $"{name}（{rarity}）";
     }
 }

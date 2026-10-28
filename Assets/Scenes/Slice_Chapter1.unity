@@ -4088,12 +4088,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &69356828
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -11230,12 +11229,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &178309470
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -18828,12 +18826,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &309879577
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -30185,12 +30182,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &490699048
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -30612,12 +30608,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &495377772
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -33550,12 +33545,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!114 &537661949
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34498,12 +34492,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &549632150
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -34631,12 +34624,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &549672124
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -50842,12 +50834,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &838497702
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -58180,12 +58171,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!114 &970929356
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -72169,12 +72159,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &1179755139
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -73166,12 +73155,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &1191295533
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -78590,12 +78578,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &1280696408
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -80904,12 +80891,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &1320940595
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -82628,12 +82614,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &1341678828
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -83627,12 +83612,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &1351958949
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -86813,12 +86797,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &1410405375
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -90323,12 +90306,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &1480697974
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -94882,12 +94864,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &1558972890
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -106725,12 +106706,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &1765862992
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -109247,12 +109227,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &1842064543
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -109562,12 +109541,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &1848063442
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -120283,12 +120261,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 3
   _hitsToOpen: 4
   _hasLid: 1
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &2042767574
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -121116,12 +121093,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &2053670543
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -124980,12 +124956,11 @@ MonoBehaviour:
   _dayNight: {fileID: 1497018777}
   _itemMaterial: {fileID: 2100000, guid: 51aa3084c02da704f8569bbb1c2523bc, type: 2}
   _font: {fileID: 11400000, guid: 57da282a9cd7c1842a6bb1d9d697ae59, type: 2}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _drawsPerOpen: 2
   _hitsToOpen: 1
   _hasLid: 0
   _lootLifetime: 6
-  _rareShare: 0.06
-  _uncommonShare: 0.12
 --- !u!65 &2123930424
 BoxCollider:
   m_ObjectHideFlags: 0
