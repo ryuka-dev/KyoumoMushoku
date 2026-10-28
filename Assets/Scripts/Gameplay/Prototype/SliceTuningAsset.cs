@@ -176,6 +176,27 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("追ってくる足音の大きさ（合成。素材集に足音が無いため）。追っている間だけ鳴る。")]
         [SerializeField, Range(0f, 1f)] float _policeStepVolume = 0.22f;
 
+        [Header("音楽（Tools/Audio/slice_music.py が作る。一曲流したら黙り、次の一曲はそのときの時間帯で選ぶ）")]
+        [Tooltip("昼（と夕方）の曲。空なら昼は鳴らさない。")]
+        [SerializeField] AudioClip _dayMusic;
+        [Tooltip("夜の曲。空なら夜は鳴らさない。")]
+        [SerializeField] AudioClip _nightMusic;
+        [Tooltip("音楽の大きさ。効果音（叩く音・警官の合図）は聞いて判断する情報なので、それより十分小さく。")]
+        [SerializeField, Range(0f, 1f)] float _musicVolume = 0.32f;
+        [Tooltip("一曲が終わってから次の曲までの黙る秒数。黙る間も一人きりの間になる。")]
+        [SerializeField, Min(0f)] float _musicSilenceSeconds = 40f;
+        [Tooltip("遊び始めてから最初の一曲までの秒数。")]
+        [SerializeField, Min(0f)] float _musicStartDelaySeconds = 4f;
+        [Tooltip("店に入る・朝の区切りなど、遊びが止まっている間の音楽の大きさ（倍率）。")]
+        [SerializeField, Range(0f, 1f)] float _musicDuckWhilePaused = 0.5f;
+
+        public AudioClip DayMusic => _dayMusic;
+        public AudioClip NightMusic => _nightMusic;
+        public float MusicVolume => _musicVolume;
+        public float MusicSilenceSeconds => _musicSilenceSeconds;
+        public float MusicStartDelaySeconds => _musicStartDelaySeconds;
+        public float MusicDuckWhilePaused => _musicDuckWhilePaused;
+
         public AudioClip PoliceAlarm => _policeAlarm;
         public float PoliceAlarmVolume => _policeAlarmVolume;
         public AudioClip CaptureHit => _captureHit;

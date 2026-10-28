@@ -233,6 +233,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 Ears = gameObject.AddComponent<ProtoEars>();
                 Ears.Configure(_slice);
             }
+
+            // BGM も耳と同じくプレイヤーに付ける。時間帯は街に一つの ProtoDayNight から読む。
+            if (GetComponent<ProtoMusic>() == null)
+            {
+                gameObject.AddComponent<ProtoMusic>().Configure(_slice, FindFirstObjectByType<ProtoDayNight>());
+            }
             _use = new InputAction("Use", InputActionType.Button, "<Mouse>/leftButton");
             _unload = new InputAction("Unload", InputActionType.Button, "<Keyboard>/g");
             _audio = gameObject.AddComponent<AudioSource>();

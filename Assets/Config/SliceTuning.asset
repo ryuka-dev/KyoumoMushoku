@@ -219,3 +219,9 @@ MonoBehaviour:
   _captureHitVolume: 0.8
   _captureHitPitch: 0.85
   _policeStepVolume: 0.22
+  _dayMusic: {fileID: 8300000, guid: 731bc7d251f94a540b634c5f8b5d4060, type: 3}
+  _nightMusic: {fileID: 8300000, guid: ddd6f8a139376b74c9196bd6b5e770a1, type: 3}
+  _musicVolume: 0.32
+  _musicSilenceSeconds: 40
+  _musicStartDelaySeconds: 4
+  _musicDuckWhilePaused: 0.5
