@@ -122,11 +122,21 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             var state = bag[index].Freshness;
-            var result = Consumption.TryConsume(bag, index, _vitals.Vitals, out var consumed);
+            var wasRottenFood = state == FoodState.Rotten && bag.TryGetDefinition(index, out var food) && food.IsFood;
+
+            // 鉄の胃袋（第六節）を持つなら腐敗の代償が半減する（本編の PlayerConsumer と同じ）。
+            var knacks = _hands.Knacks;
+            var result = Consumption.TryConsume(bag, index, _vitals.Vitals, out var consumed, knacks != null ? knacks.Book : null);
             switch (result)
             {
                 case ConsumeResult.Consumed:
                     _hands.Say(AfterUse(consumed, state));
+                    // 腐った物を食べて、それでも生きていたら覚える。代償で倒れたなら覚えない。覚えた独り言が上の一言に代わる。
+                    if (wasRottenFood && _vitals.Vitals.IsAlive && knacks != null)
+                    {
+                        knacks.RecordSurvivedRotten();
+                    }
+
                     break;
                 case ConsumeResult.NotConsumable:
                     if (bag.TryGetDefinition(index, out var definition))

@@ -61,6 +61,16 @@ namespace KyoumoMushoku.Core.Foraging
             return sanity >= SanityScale.ElatedThreshold ? HitTell.Detailed : HitTell.SomethingGood;
         }
 
+        /// <summary>
+        /// コツ `あたりの見分け方`（第六節）を持つ人の読み。知っていることが集中の不足を一段だけ補う：
+        /// 重さしか分からない SAN で光が見え、光しか見えない SAN で色まで分かる。崩壊帯は補えない（絶望が情報を奪う）。
+        /// </summary>
+        public static HitTell Read(float sanity, bool spotDuds)
+        {
+            var tell = Read(sanity);
+            return spotDuds && tell != HitTell.Nothing && tell < HitTell.Detailed ? tell + 1 : tell;
+        }
+
         /// <summary>箱の中で一番良い品の段から、漏れる光を決める。珍しい物が無ければ、どの読みでも光らない。</summary>
         public static HitGlint Glint(HitTell tell, LootTier best)
         {

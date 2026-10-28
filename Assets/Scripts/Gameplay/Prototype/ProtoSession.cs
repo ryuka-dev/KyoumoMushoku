@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Survival;
 using KyoumoMushoku.Gameplay.World;
 using UnityEngine;
@@ -55,11 +57,25 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _body = body;
         }
 
+        /// <summary>前の朝の区切りから覚えたコツ（朝の区切りで見せる）。</summary>
+        public IReadOnlyList<KnackId> KnacksLearnedSinceMorning => _knacksSinceMorning;
+
+        /// <summary>この局で覚えたコツのすべて（結算で見せる）。</summary>
+        public IReadOnlyList<KnackId> KnacksLearned =>
+            _hands != null && _hands.Knacks != null ? _hands.Knacks.CaptureState().Acquired : new List<KnackId>();
+
+        readonly List<KnackId> _knacksSinceMorning = new List<KnackId>();
+
         void Start()
         {
             if (_vitals != null)
             {
                 _vitals.Died += OnCollapsed;
+            }
+
+            if (_hands != null && _hands.Knacks != null)
+            {
+                _hands.Knacks.Acquired += OnKnackAcquired;
             }
         }
 
@@ -68,6 +84,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
             if (_vitals != null)
             {
                 _vitals.Died -= OnCollapsed;
+            }
+
+            if (_hands != null && _hands.Knacks != null)
+            {
+                _hands.Knacks.Acquired -= OnKnackAcquired;
             }
 
             Time.timeScale = 1f;
@@ -116,13 +137,22 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
             else
             {
+                // 路上の寝方（第六節）：野外の寝床では回復が上がる。判定は覚える前の状態で行う＝覚えた次の晩から効く（本編と同じ）。
+                var knacks = _hands != null ? _hands.Knacks : null;
+                var outdoorBonus = knacks != null && knacks.Has(KnackId.StreetSleeper) ? KnackTuning.StreetSleeperRecoveryBonus : 0f;
                 vitals.Apply(new VitalsDelta
                 {
-                    Hp = recovery.hp,
+                    Hp = recovery.hp + outdoorBonus,
                     Thirst = recovery.thirst - vitals.Tuning.OvernightThirstDrain,
                     Hunger = recovery.hunger - vitals.Tuning.OvernightHungerDrain,
-                    Sanity = SanityScale.SleepRecovery(recovery.sanity, vitals.Sanity),
+                    Sanity = SanityScale.SleepRecovery(recovery.sanity + outdoorBonus, vitals.Sanity),
                 });
+
+                // 野外で寝た回数を数える。2 回で 路上の寝方 を覚える。
+                if (knacks != null)
+                {
+                    knacks.RecordOutdoorSleep();
+                }
             }
 
             _dayNight.BeginNextDay();
@@ -173,9 +203,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             if (State == SessionState.Morning)
             {
+                _knacksSinceMorning.Clear();
                 Enter(SessionState.Playing);
             }
         }
+
+        void OnKnackAcquired(KnackId id) => _knacksSinceMorning.Add(id);
 
         public void Restart()
         {

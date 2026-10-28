@@ -15,6 +15,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 目：視界の円錐の中で、建物に遮られずに見えているときだけ。路地や建物の陰に入れば見えない。
     /// 耳：ゴミ箱を叩く音（<see cref="ProtoNoise"/>）は、見えていなくても届く。うるさいほど遠くまで届き、注目度が上がる。
     /// 聞きつけた警官は音のした所へ見に来る。叩くたびに、手早く済ませるか、見つかる危険を取るかが問われる。
+    /// 警告されたら、見られている間はゴミ箱を叩けない（<see cref="AnyStopsHands"/>。本編の「警告で漁りが中断される」）。
     ///
     /// 追跡の速さはプレイヤーの走りより遅い。視線を切って逃げ切れる（本編の地下通路の代わり）。
     /// 街区は一つなので、ゾーンの警戒度（ZoneAlertLevels）は入れていない。
@@ -61,6 +62,31 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public PoliceStage Stage { get; private set; }
         public float Suspicion => _suspicion;
 
+        static readonly System.Collections.Generic.List<ProtoPolice> Active = new System.Collections.Generic.List<ProtoPolice>();
+
+        /// <summary>警告か追い出しの段で、いまプレイヤーを見ているか。</summary>
+        bool _stopsHands;
+
+        /// <summary>
+        /// 警告か追い出しの段の警官が、いまプレイヤーを見ているか。見られている間は手が止まる
+        /// （本編の「警告で漁りが中断される」。コツ `手を止めない` で止まらなくなる・<see cref="ProtoHands.HandsStopped"/>）。
+        /// </summary>
+        public static bool AnyStopsHands
+        {
+            get
+            {
+                foreach (var police in Active)
+                {
+                    if (police._stopsHands)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
         public void Configure(ProtoHands player, ItemDatabaseAsset catalog, Transform escortPoint, Vector3[] patrol)
         {
             _player = player;
@@ -75,9 +101,18 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _rng = new SystemRng();
         }
 
-        void OnEnable() => ProtoNoise.Made += OnNoise;
+        void OnEnable()
+        {
+            ProtoNoise.Made += OnNoise;
+            Active.Add(this);
+        }
 
-        void OnDisable() => ProtoNoise.Made -= OnNoise;
+        void OnDisable()
+        {
+            ProtoNoise.Made -= OnNoise;
+            Active.Remove(this);
+            _stopsHands = false;
+        }
 
         void Update()
         {
@@ -109,6 +144,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 Enter(next);
             }
 
+            _stopsHands = sees && Stage >= PoliceStage.Warning;
             Act(sees, delta);
         }
 
@@ -153,6 +189,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
                     break;
                 case PoliceStage.Warning when previous < PoliceStage.Warning:
                     Say(PoliceText.Warning);
+                    // 漁っている最中なら、手を止めない に向けて数える（判断は手が持つ）。
+                    _player.NotifyWarned();
                     break;
                 case PoliceStage.Pursuing:
                     _investigating = false;
@@ -348,6 +386,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _suspicion = 0f;
             Stage = PoliceStage.Unaware;
             _investigating = false;
+            _stopsHands = false;
         }
 
         void Say(string line) => _player.Say(ProtoText.PoliceSays(line));

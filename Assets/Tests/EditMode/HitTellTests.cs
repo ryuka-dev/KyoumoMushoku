@@ -21,6 +21,27 @@ namespace KyoumoMushoku.Core.Tests
             Assert.AreEqual(expected, HitTellSight.Read(sanity));
         }
 
+        [TestCase(100f, HitTell.Detailed)]
+        [TestCase(60f, HitTell.Detailed)]
+        [TestCase(50f, HitTell.Detailed)]
+        [TestCase(49.9f, HitTell.SomethingGood)]
+        [TestCase(20f, HitTell.SomethingGood)]
+        [TestCase(19.9f, HitTell.Nothing)]
+        [TestCase(0f, HitTell.Nothing)]
+        public void SpotDuds_ReadsOneBandHigher_ButNotInBreakdown(float sanity, HitTell expected)
+        {
+            Assert.AreEqual(expected, HitTellSight.Read(sanity, spotDuds: true));
+        }
+
+        [TestCase(100f)]
+        [TestCase(55f)]
+        [TestCase(30f)]
+        [TestCase(10f)]
+        public void WithoutSpotDuds_ReadsAsBefore(float sanity)
+        {
+            Assert.AreEqual(HitTellSight.Read(sanity), HitTellSight.Read(sanity, spotDuds: false));
+        }
+
         [Test]
         public void Detailed_TellsRareFromJackpot()
         {

@@ -42417,6 +42417,7 @@ GameObject:
   - component: {fileID: 658567152}
   - component: {fileID: 658567156}
   - component: {fileID: 658567157}
+  - component: {fileID: 658567158}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -42547,6 +42548,18 @@ MonoBehaviour:
   _vitals: {fileID: 658567156}
   _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _dayNight: {fileID: 1497018777}
+--- !u!114 &658567158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658567151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8ea50a7eff4d6748ae8eb0ed4bc2482, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Knacks.PlayerKnacks
 --- !u!1001 &659958397
 PrefabInstance:
   m_ObjectHideFlags: 0

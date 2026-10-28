@@ -229,12 +229,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
             if (final)
             {
                 title = ProtoText.FinalTitle(_session.FinalDay);
-                body = ProtoText.FinalBody(_session.FinalDay, _session.CaughtTotal, yen, _hands.Bag.Capacity, mood, _session.InnNights);
+                body = ProtoText.FinalBody(_session.FinalDay, _session.CaughtTotal, yen, _hands.Bag.Capacity, mood, _session.InnNights,
+                    ProtoText.KnacksLine(_session.KnacksLearned, learnedYesterday: false));
             }
             else if (morning)
             {
                 title = ProtoText.MorningTitle(day);
-                body = ProtoText.MorningBody(_session.CaughtYesterday, yen, mood);
+                body = ProtoText.MorningBody(_session.CaughtYesterday, yen, mood,
+                    ProtoText.KnacksLine(_session.KnacksLearnedSinceMorning, learnedYesterday: true));
             }
             else
             {
@@ -243,9 +245,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             GUI.Label(new Rect(0f, h * 0.24f, w, 48f), title, _title);
-            GUI.Label(new Rect(0f, h * 0.24f + 60f, w, 200f), body, _center);
+            // 結算は最大 8 行（安宿の泊数・覚えたコツを含む）。行の高さ約 30px ぶんを取る。
+            GUI.Label(new Rect(0f, h * 0.24f + 56f, w, 240f), body, _center);
 
-            var y = h * 0.24f + 280f;
+            var y = h * 0.24f + 300f;
             if (morning)
             {
                 if (GUI.Button(new Rect(w / 2f - 210f, y, 200f, 44f), ProtoText.ContinueButton, _button))

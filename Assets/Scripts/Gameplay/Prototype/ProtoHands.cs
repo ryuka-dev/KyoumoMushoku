@@ -1,7 +1,9 @@
 using System.Collections;
 using KyoumoMushoku.Core.Economy;
 using KyoumoMushoku.Core.Items;
+using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Gameplay.Items;
+using KyoumoMushoku.Gameplay.Knacks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,6 +22,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 模型は第三者素材 FPS_Psx_Hands（CC0）から <c>Tools/Models/gen/hand_psx.py</c> が作る。原点は肘、前は +Z。
     /// 鞄は本編と同じ Core の <see cref="Inventory"/>（容量制）。入らない物は掴めない。
     /// 試作ではプレイヤーの持ち物（鞄と所持金）をここが持つ。
+    /// コツ（第六節）は本編と同じ <see cref="PlayerKnacks"/> が持ち、ここは漁った・警告されたを申告し、覚えた瞬間を独り言にする。
     /// </summary>
     public sealed class ProtoHands : MonoBehaviour
     {
@@ -132,6 +135,23 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public event System.Action<ItemInstance> Grabbed;
         public Wallet Wallet { get; private set; }
 
+        /// <summary>コツ（生活の知恵・第六節）。触発の申告とルール変化の問い合わせは、ここを通す。</summary>
+        public PlayerKnacks Knacks { get; private set; }
+
+        /// <summary>
+        /// 警官に見られていて、ゴミ箱を叩けないか（警告か追い出しの段の警官がこちらを見ている）。
+        /// コツ `手を止めない` を覚えると、見られていても叩ける。
+        /// </summary>
+        public bool HandsStopped => ProtoPolice.AnyStopsHands && (Knacks == null || !Knacks.Has(KnackId.SteadyHands));
+
+        /// <summary>叩いてからこの秒数のうちに警告されたら「漁っている最中に警告された」と数える（手を止めない）。</summary>
+        const float ForagingWindowSeconds = 3f;
+
+        /// <summary>覚えた瞬間の独り言を出しておく秒数。</summary>
+        const float KnackToastSeconds = 6f;
+
+        float _lastForageAt = -10f;
+
         public enum AimState
         {
             None,
@@ -174,6 +194,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
             Back = new CarrySlot(_catalog);
             Wallet = new Wallet(_startingYen);
             Vitals = GetComponent<ProtoVitals>();
+            Knacks = GetComponent<PlayerKnacks>();
+            if (Knacks == null)
+            {
+                Knacks = gameObject.AddComponent<PlayerKnacks>();
+            }
+
+            // 手が止まっている間（朝の区切り・店の中）に覚えることもあるので、有効かどうかに関わらず聞く。
+            Knacks.Acquired += OnKnackAcquired;
             _use = new InputAction("Use", InputActionType.Button, "<Mouse>/leftButton");
             _unload = new InputAction("Unload", InputActionType.Button, "<Keyboard>/g");
             _audio = gameObject.AddComponent<AudioSource>();
@@ -197,6 +225,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         void OnDestroy()
         {
+            if (Knacks != null)
+            {
+                Knacks.Acquired -= OnKnackAcquired;
+            }
+
             _use?.Dispose();
             _unload?.Dispose();
         }
@@ -272,6 +305,18 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
+            // 警官に見られている間は手が止まる（本編の「警告で漁りが中断される」の一人称版）。叩かないので音も出ない。
+            if (!can.IsOpened && HandsStopped)
+            {
+                Say(ProtoText.HandsStopped);
+                return;
+            }
+
+            if (!can.IsOpened)
+            {
+                _lastForageAt = Time.unscaledTime;
+            }
+
             // 連打するほどうるさい。叩く回数は同じなので、連打すれば早く開くが、警官に聞こえやすい。
             var interval = Time.unscaledTime - _lastPunchAt;
             _lastPunchAt = Time.unscaledTime;
@@ -286,15 +331,19 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             var wasOpened = can.IsOpened;
             var strength = can.Hit(_camera.transform.forward, Mathf.Lerp(_calmLoudness, 1f, mash), Vitals != null ? Vitals.Vitals : null,
-                HasGloves, plant, out var plantedNow, out var toast);
+                Knacks.Has(KnackId.SpotDuds), HasGloves, plant, out var plantedNow, out var toast);
             _jackpotPlanted |= plantedNow;
-            if (!wasOpened && can.IsOpened)
-            {
-                _opensCompleted++;
-            }
             if (toast != null)
             {
                 Say(toast);
+            }
+
+            if (!wasOpened && can.IsOpened)
+            {
+                _opensCompleted++;
+                // 開け終えた箱と袋を数える。10 個で あたりの見分け方 を覚える（本編の「ゴミ箱を10個漁る」）。
+                // 覚えた独り言が開いた一言に代わるよう、一言の後に申告する。
+                Knacks.RecordRummage();
             }
 
             if (strength > 0f)
@@ -410,7 +459,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             if (inReach && can != null && !can.IsOpened)
             {
-                SetAim(can.Prompt);
+                // 案内と押して起きることを食い違わせない（第十七節）。見られている間は叩けないと言う。
+                SetAim(HandsStopped ? ProtoText.WatchedPrompt : can.Prompt);
                 AimedObject = can;
                 return;
             }
@@ -557,6 +607,23 @@ namespace KyoumoMushoku.Gameplay.Prototype
             Toast = text;
             ToastAge = 0f;
             ToastSeconds = seconds;
+        }
+
+        /// <summary>警官が警告に入った（<see cref="ProtoPolice"/>）。叩いてすぐなら「漁っている最中に警告された」と数える。</summary>
+        public void NotifyWarned()
+        {
+            if (Time.unscaledTime - _lastForageAt <= ForagingWindowSeconds)
+            {
+                Knacks.RecordForageWarned();
+            }
+        }
+
+        /// <summary>コツを覚えた瞬間は、はっきり知らせる（第六節）。主人公の独り言で、何が変わったかを言う。</summary>
+        void OnKnackAcquired(KnackId id)
+        {
+            Say(ProtoText.KnackLearned(id), KnackToastSeconds);
+            _audio.pitch = 1f;
+            _audio.PlayOneShot(ProtoSounds.Chime, 0.7f);
         }
 
         void SetOpen(bool open)

@@ -118,11 +118,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// 叩く。戻り値はヒットストップの強さ（0〜1）。開いた後は 0。
         /// <paramref name="loudness"/> は叩き方の音の大きさ（連打で 1、間を空けると小さい）。箱の中身による響きに掛かる。
         /// <paramref name="vitals"/> は叩いた人の状態。開けて漁った時間ぶん、渇きと空腹が減る。
+        /// <paramref name="spotDuds"/> なら（コツ あたりの見分け方）、手応えの読みが一段上がる（<see cref="HitTellSight"/>）。
         /// <paramref name="gloved"/> なら（軍手）、ふたが一打早く開く。
         /// <paramref name="planted"/> が空でなく、まだ一度も叩かれていない箱なら、最初の一打の手応えを作る前に中身の一つをその品に替える
         /// （最初の大当たり。手応えより先に中身を決めるので、漏れる光も揺れも嘘をつかない）。替えたら true を返す。
         /// </summary>
-        public float Hit(Vector3 direction, float loudness, Vitals vitals, bool gloved, ItemId planted, out bool plantedNow,
+        public float Hit(Vector3 direction, float loudness, Vitals vitals, bool spotDuds, bool gloved, ItemId planted, out bool plantedNow,
             out string toast)
         {
             plantedNow = false;
@@ -148,7 +149,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var weight = ContentWeight();
             var empty = weight <= 0;
             var heaviness = Mathf.Clamp01(weight / 6f);
-            var tell = HitTellSight.Read(vitals != null ? vitals.Sanity : SanityScale.Max);
+            var tell = HitTellSight.Read(vitals != null ? vitals.Sanity : SanityScale.Max, spotDuds);
 
             // 軽い（空の）箱ほど大きく揺れて甲高く鳴る。詰まった箱ほど鈍く、揺れない。
             // 崩壊していると、どの箱も同じ中ほどの手応えに感じる（読めない・第三節）。

@@ -1,3 +1,6 @@
+using KyoumoMushoku.Core.Knacks;
+using KyoumoMushoku.Gameplay.UI;
+
 namespace KyoumoMushoku.Gameplay.Prototype
 {
     /// <summary>
@@ -26,6 +29,33 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string TrashCanPrompt => "ゴミ箱：ふたが開くまで叩く";
         public static string TrashBagPrompt => "ゴミ袋：破れるまで叩く";
         public static string GrabPrompt(string name) => $"掴む：{name}";
+        public static string WatchedPrompt => "警官に見られている：いまは叩けない";
+
+        // ── コツ（生活の知恵・GameDesign 第六節）。覚えた瞬間の独り言と、朝の区切り・結算の一行 ──
+        public static string HandsStopped => "……見られている。いまは手が出せない。";
+        public static string KnackLearned(KnackId id) => id switch
+        {
+            KnackId.SpotDuds => "……叩いた手応えで、中身の見当がつくようになってきた。",
+            KnackId.SteadyHands => "……見られていても、もう手は止めない。止めたところで、どうせ追い払われる。",
+            KnackId.IronStomach => "……腹を壊さずに済んだ。胃袋が、この暮らしに慣れてきた。",
+            KnackId.StreetSleeper => "……ベンチでの眠り方が分かってきた。前より疲れが取れる。",
+            _ => "……この街の勝手が、少し分かってきた。",
+        } + $"（コツ：{GameTextLabels.Knack(id)}）";
+        public static string KnacksLine(System.Collections.Generic.IReadOnlyList<KnackId> knacks, bool learnedYesterday)
+        {
+            if (knacks == null || knacks.Count == 0)
+            {
+                return "";
+            }
+
+            var names = new System.Text.StringBuilder();
+            foreach (var id in knacks)
+            {
+                names.Append(names.Length > 0 ? "・" : "").Append(GameTextLabels.Knack(id));
+            }
+
+            return learnedYesterday ? $"コツを覚えた：{names}\n" : $"覚えたコツ：{names}\n";
+        }
 
         // ── 最初の一手（一日目だけの独り言） ──
         public static string FirstStepHungry => "……腹減った。ゴミ箱でも漁るか。";
@@ -97,12 +127,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string LateNightDrowsy => "……眠い。頭が回らなくなってきた。";
         public static string LateNightExhausted => "……まずい。目を開けているのがつらい。";
         public static string MorningTitle(int day) => $"{day}日目の朝";
-        public static string MorningBody(int caught, int yen, string mood) =>
-            $"昨日はゴミ箱から {caught} 個を掴んだ。\n所持金 {yen}円　気分 {mood}\n\n今日も無職。";
+        public static string MorningBody(int caught, int yen, string mood, string knacksLine) =>
+            $"昨日はゴミ箱から {caught} 個を掴んだ。\n所持金 {yen}円　気分 {mood}\n{knacksLine}\n今日も無職。";
         public static string FinalTitle(int days) => $"{days}日目の夜が明けた";
-        public static string FinalBody(int days, int caught, int yen, int capacity, string mood, int innNights) =>
+        public static string FinalBody(int days, int caught, int yen, int capacity, string mood, int innNights, string knacksLine) =>
             $"{days}日間で、ゴミ箱から {caught} 個を掴んだ。\n所持金 {yen}円　カバン {capacity}マス　気分 {mood}\n"
             + (innNights > 0 ? $"安宿に {innNights} 泊した。\n" : "")
+            + knacksLine
             + "\n今日も無職。\n\n（体験版はここまで）";
         public static string CollapsedTitle => "倒れた";
         public static string CollapsedBody(int day) => $"{day}日目。路上で意識が途切れた。";
