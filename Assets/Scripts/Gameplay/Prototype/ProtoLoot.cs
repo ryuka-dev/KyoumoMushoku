@@ -151,6 +151,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
             loot._body.linearVelocity = velocity;
             loot._body.angularVelocity = UnityEngine.Random.insideUnitSphere * 12f;
             loot._body.interpolation = RigidbodyInterpolation.Interpolate;
+            // 高く飛んで速く落ちる小さな物なので、一こまで薄い地面を飛び越えないよう連続で当てる（地面の下へ抜けていた）。
+            loot._body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             return loot;
         }
 
@@ -183,6 +185,37 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 }
             }
 
+        }
+
+        /// <summary>これより下へ落ちたら、地面の下へ抜けたとみなす（m）。</summary>
+        const float FallenBelow = -3f;
+
+        /// <summary>
+        /// 万一地面の下へ抜けたら、真上から地面を探して、その上へ戻す。下に何も無ければ消す（虚空へ落ち続けさせない）。
+        /// 連続の当たり判定と厚い地面で防いでいるので、ここは最後の守り。
+        /// </summary>
+        void RescueIfFallen()
+        {
+            if (transform.position.y > FallenBelow)
+            {
+                return;
+            }
+
+            var p = transform.position;
+            foreach (var hit in Physics.RaycastAll(new Vector3(p.x, 30f, p.z), Vector3.down, 60f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.collider.attachedRigidbody != null)
+                {
+                    continue;
+                }
+
+                transform.position = hit.point + Vector3.up * (_extents.y + 0.3f);
+                _body.linearVelocity = Vector3.zero;
+                _body.angularVelocity = Vector3.zero;
+                return;
+            }
+
+            Destroy(gameObject);
         }
 
         /// <summary>名前の描画順。演出（<see cref="ProtoTierLook.EffectSortingOrder"/>）より後に描く。</summary>
@@ -323,6 +356,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
+            RescueIfFallen();
             _age += Time.deltaTime;
             if (_age > _lifetime)
             {
