@@ -446,6 +446,14 @@ def apartment(x, seed=3):
                 km.box(bm, -w / 2 + 1.0 + i * 3.0, corridor - 0.03, 1.0 + floor * 2.8, 0.8, 0.06, 1.9)
 
     part(root, "Doors", doors, const("indigo", 2))
+
+    # 共用廊下の灯り：各戸の扉の上の壁に付けた小さな器具（台座と光るカバー）。夜の外廊下が真っ暗にならないように。
+    lamp_xs = [-w / 2 + 1.0 + i * 3.0 for i in range(3)]
+    lamp_zs = [2.25, 2.25 + 2.8]
+    part(root, "LampFixture", lambda bm: [km.box(bm, lx, corridor - 0.02, lz, 0.34, 0.04, 0.12) for lx in lamp_xs for lz in lamp_zs],
+         const("steel", 1))
+    part(root, "GlowCorridorLamp", lambda bm: [km.box(bm, lx, corridor - 0.08, lz, 0.3, 0.08, 0.09) for lx in lamp_xs for lz in lamp_zs],
+         const("concrete", 4))  # 蛍光灯の白（門灯の暖色とは分ける）
     f = Facade(root, seed)
     for floor in (0, 1):
         for i in range(3):
