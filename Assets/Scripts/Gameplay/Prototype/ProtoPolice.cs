@@ -196,7 +196,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             _body = GetComponent<CharacterController>();
             _rng = new SystemRng();
+            // 道は街に一つの歩ける所から求める（無ければまっすぐ歩く）。
+            _nav = FindFirstObjectByType<ProtoStreetNav>();
+            _path = new ProtoNavPath();
         }
+
+        ProtoStreetNav _nav;
+        ProtoNavPath _path;
 
         void OnEnable()
         {
@@ -382,7 +388,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
         }
 
-        /// <summary>目標へ歩く。着いていれば true。</summary>
+        /// <summary>目標へ歩く（建物を回り込む道を <see cref="ProtoStreetNav"/> で求める）。着いていれば true。</summary>
         bool MoveTowards(Vector3 target, float speed, float stopDistance)
         {
             var offset = Flat(target - transform.position);
@@ -392,7 +398,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return true;
             }
 
-            var direction = offset.normalized;
+            var waypoint = Flat(_path.Steer(_nav, transform.position, target, Time.time) - transform.position);
+            var direction = waypoint.sqrMagnitude > 0.0001f ? waypoint.normalized : offset.normalized;
             _body.SimpleMove(direction * speed);
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction),
                 1f - Mathf.Exp(-8f * Time.deltaTime));
@@ -619,6 +626,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             var from = _player.transform.position;
             var to = _escortPoint.position;
+            // 連れて行かれた道のり（時計が進む長さ）は、まっすぐではなく歩いた道で測る。
+            var walked = _nav != null ? _nav.RouteLength(from, to) : Flat(to - from).magnitude;
             _player.TeleportTo(to, _escortPoint.rotation);
             var view = _player.GetComponent<ProtoFirstPersonController>();
             if (view != null)
@@ -630,7 +639,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _body.enabled = false;
             transform.SetPositionAndRotation(to + forward * EscortFacingDistance, Quaternion.LookRotation(-forward));
             _body.enabled = true;
-            return Flat(to - from).magnitude;
+            _path.Invalidate();
+            return walked;
         }
 
         const float EscortFacingDistance = 1.8f;
