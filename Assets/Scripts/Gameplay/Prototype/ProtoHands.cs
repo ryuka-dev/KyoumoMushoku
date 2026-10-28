@@ -73,6 +73,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
         InputAction _use;
         InputAction _unload;
         bool _saidFirstButt;
+
+        /// <summary>この局で開け終えた箱と袋の数（最初の大当たりを数える）。</summary>
+        int _opensCompleted;
+
+        /// <summary>最初の大当たりをもう入れたか（一局に一度）。</summary>
+        bool _jackpotPlanted;
         Transform _hand;
         GameObject _fist;
         GameObject _open;
@@ -270,8 +276,22 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var interval = Time.unscaledTime - _lastPunchAt;
             _lastPunchAt = Time.unscaledTime;
             var mash = 1f - Mathf.Clamp01((interval - _mashInterval) / Mathf.Max(0.01f, _calmInterval - _mashInterval));
+            // 最初の大当たり：決めた数だけ開け終えた後、次に初めて叩く箱に入れる（SliceTuning）。
+            var plant = default(ItemId);
+            if (!_jackpotPlanted && _slice != null && _slice.GuaranteedJackpotAfterOpens > 0
+                && _opensCompleted >= _slice.GuaranteedJackpotAfterOpens)
+            {
+                plant = _slice.GuaranteedJackpotItem(UnityEngine.Random.value * 0.9999f);
+            }
+
+            var wasOpened = can.IsOpened;
             var strength = can.Hit(_camera.transform.forward, Mathf.Lerp(_calmLoudness, 1f, mash), Vitals != null ? Vitals.Vitals : null,
-                HasGloves, out var toast);
+                HasGloves, plant, out var plantedNow, out var toast);
+            _jackpotPlanted |= plantedNow;
+            if (!wasOpened && can.IsOpened)
+            {
+                _opensCompleted++;
+            }
             if (toast != null)
             {
                 Say(toast);

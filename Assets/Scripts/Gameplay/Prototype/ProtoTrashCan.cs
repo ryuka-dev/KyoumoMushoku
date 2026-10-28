@@ -119,9 +119,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <paramref name="loudness"/> は叩き方の音の大きさ（連打で 1、間を空けると小さい）。箱の中身による響きに掛かる。
         /// <paramref name="vitals"/> は叩いた人の状態。開けて漁った時間ぶん、渇きと空腹が減る。
         /// <paramref name="gloved"/> なら（軍手）、ふたが一打早く開く。
+        /// <paramref name="planted"/> が空でなく、まだ一度も叩かれていない箱なら、最初の一打の手応えを作る前に中身の一つをその品に替える
+        /// （最初の大当たり。手応えより先に中身を決めるので、漏れる光も揺れも嘘をつかない）。替えたら true を返す。
         /// </summary>
-        public float Hit(Vector3 direction, float loudness, Vitals vitals, bool gloved, out string toast)
+        public float Hit(Vector3 direction, float loudness, Vitals vitals, bool gloved, ItemId planted, out bool plantedNow,
+            out string toast)
         {
+            plantedNow = false;
             toast = null;
             if (_opened)
             {
@@ -130,6 +134,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 _audio.PlayOneShot(ProtoSounds.Clang, 0.3f);
                 ProtoNoise.Emit(transform.position, 0.3f * loudness);
                 return 0f;
+            }
+
+            if (!planted.IsEmpty && _hits == 0 && !_disposal && _contents.Count > 0)
+            {
+                // 空振りの一つがあればそこを、無ければ最初の一つを替える（他の当たりは残す）。
+                var slot = _contents.FindIndex(draw => !draw.HasItem);
+                _contents[slot >= 0 ? slot : 0] = LootDraw.Of(planted, FoodState.Fresh);
+                plantedNow = true;
             }
 
             _hits++;

@@ -105,6 +105,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("キャップがあるときの、警官の目に気づかれる速さの倍率。")]
         [SerializeField, Range(0.1f, 1f)] float _capNoticeMultiplier = 0.6f;
 
+        [Header("最初の大当たり（切片の演出）")]
+        [Tooltip("ゲームを始めてから、この数だけ箱や袋を開け終えた後、次に初めて叩く箱へ大当たりを一つ入れておく（つまり 10 なら 10 個目）。0 なら入れない。一局に一度だけ。")]
+        [SerializeField, Min(0)] int _guaranteedJackpotAfterOpens = 9;
+
+        [Tooltip("入れる大当たりの品（この中から一つ）。")]
+        [SerializeField] string[] _guaranteedJackpotItems = { "wristwatch", "handheld" };
+
         [Header("宙の物が消えるまで（段ごと・秒）")]
         [Tooltip("珍しい物ほど長く地面に残る（取り逃しても、大当たりなら走って戻れる）。")]
         [SerializeField, Min(1f)] float _commonLifetime = 3f;
@@ -147,6 +154,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public TrashCanLootAsset.Table DisposalTable => _disposalTable;
         public float CarrySpeedMultiplier => _carrySpeedMultiplier;
         public AudioClip JackpotSound => _jackpotSound;
+        public int GuaranteedJackpotAfterOpens => _guaranteedJackpotAfterOpens;
+
+        /// <summary>最初の大当たりに入れる品を、0 以上 1 未満の <paramref name="roll01"/> で選ぶ。無ければ空の id。</summary>
+        public ItemId GuaranteedJackpotItem(double roll01) =>
+            _guaranteedJackpotItems == null || _guaranteedJackpotItems.Length == 0
+                ? default
+                : new ItemId(_guaranteedJackpotItems[Mathf.Clamp((int)(roll01 * _guaranteedJackpotItems.Length), 0, _guaranteedJackpotItems.Length - 1)]);
 
         /// <summary>宙の物が消えるまでの秒数。珍しい物ほど長い。</summary>
         public float LootLifetimeOf(LootTier tier) => tier switch

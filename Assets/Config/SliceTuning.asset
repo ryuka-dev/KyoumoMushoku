@@ -136,6 +136,10 @@ MonoBehaviour:
   _glovesItemId: work_gloves
   _capItemId: cap
   _capNoticeMultiplier: 0.6
+  _guaranteedJackpotAfterOpens: 9
+  _guaranteedJackpotItems:
+  - wristwatch
+  - handheld
   _commonLifetime: 3
   _uncommonLifetime: 6
   _rareLifetime: 10
