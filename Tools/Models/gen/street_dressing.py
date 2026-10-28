@@ -7,6 +7,7 @@
 - のぼり（Banner_Red / _Indigo）：腕と旗。
 - 室外機（AirConditioner）・植木鉢（PlantPot）・物干し（LaundryStand）・自転車（Bicycle）
 - シャッター（Shutter）・袖看板（SignBlade）・立て看板（SignStand）・暖簾（Noren）・カーブミラー（CurveMirror）
+- 児童公園：ブランコ（Swing）・すべり台（Slide）・砂場（Sandbox）・車止め（CarStop）・公園の時計（ParkClock）
 
 背景の道具なので実寸（PROP_SCALE は掛けない。叩く・掴む物ではない）。正面は Blender の -Y。
 
@@ -662,6 +663,164 @@ def beer_crate(x):
     return root
 
 
+# ── 児童公園の遊具 ─────────────────────────────────────
+
+def pipe(bm, a, b, radius, sides=6):
+    """a から b へ向かう丸パイプ（両端は閉じる）。"""
+    a, b = Vector(a), Vector(b)
+    d = b - a
+    verts = cylinder(bm, sides, radius, radius, -d.length / 2, d.length / 2)
+    rot = d.normalized().to_track_quat("Z", "Y").to_matrix()
+    bmesh.ops.rotate(bm, verts=verts, cent=Vector((0, 0, 0)), matrix=rot)
+    move(bm, verts, (a + b) / 2)
+    return verts
+
+
+def slab(bm, a, b, width, thickness):
+    """a から b へ（YZ 面内で）傾いた板。幅は X 方向。滑り台の滑走面・側板に使う。"""
+    a, b = Vector(a), Vector(b)
+    d = b - a
+    verts = km.box(bm, 0.0, 0.0, 0.0, width, d.length, thickness)
+    rotate(bm, verts, "X", math.degrees(math.atan2(d.z, d.y)))
+    move(bm, verts, (a + b) / 2)
+    return verts
+
+
+def swing(x):
+    """ブランコ（二人乗り）。鉄の門形の枠・二本の鎖・ゴムの座板と、前に黄色の安全柵。正面（-Y）へ漕ぐ。"""
+    root = km.new_root("Swing", x)
+    half, top = 1.6, 2.4
+
+    def frame(bm):
+        for sx in (-half, half):
+            for sy in (-0.9, 0.9):
+                pipe(bm, (sx, sy, 0.0), (sx, 0.0, top), 0.04)
+            pipe(bm, (sx, -0.6, 0.8), (sx, 0.6, 0.8), 0.025)   # 脚をつなぐ横棒
+        pipe(bm, (-half - 0.08, 0.0, top), (half + 0.08, 0.0, top), 0.05)
+
+    part(root, "Frame", frame, shade("indigo", 3, 3, 2))
+
+    def chains(bm):
+        for cx in (-0.75, 0.75):
+            for dx in (-0.2, 0.2):
+                km.box(bm, cx + dx, 0.0, (top + 0.45) / 2, 0.02, 0.02, top - 0.45)
+
+    part(root, "Chains", chains, const("steel", 3))
+    part(root, "Seats", lambda bm: [km.box(bm, cx, 0.0, 0.43, 0.46, 0.17, 0.04) for cx in (-0.75, 0.75)], const("black", 3))
+
+    def fence(bm):
+        for sx in (-half - 0.2, half + 0.2):
+            pipe(bm, (sx, -1.9, 0.0), (sx, -1.9, 0.62), 0.035)
+        pipe(bm, (-half - 0.2, -1.9, 0.62), (half + 0.2, -1.9, 0.62), 0.035)
+        pipe(bm, (-half - 0.2, -1.9, 0.32), (half + 0.2, -1.9, 0.32), 0.025)
+
+    part(root, "Fence", fence, shade("caution", 4, 3, 2))
+    return root
+
+
+def slide(x):
+    """すべり台。後ろ（+Y）の梯子で高さ 1.5m の踊り場へ上がり、前（-Y）へステンレスの滑走面で下りる。"""
+    root = km.new_root("Slide", x)
+    deck, half = 1.5, 0.35
+
+    def frame(bm):
+        for sx in (-half, half):
+            for sy in (-half, half):
+                pipe(bm, (sx, sy, 0.0), (sx, sy, deck + 0.75), 0.035)          # 柱（手すりの高さまで）
+            pipe(bm, (sx, half + 0.95, 0.0), (sx, half, deck), 0.03)            # 梯子の桁
+            pipe(bm, (sx, -half, deck + 0.75), (sx, half, deck + 0.75), 0.03)  # 踊り場の手すり
+        for i in range(1, 6):                                                   # 踏み桟
+            t = i / 6
+            pipe(bm, (-half, half + 0.95 * (1 - t), deck * t), (half, half + 0.95 * (1 - t), deck * t), 0.022)
+
+    part(root, "Frame", frame, shade("caution", 4, 3, 2))
+    part(root, "Deck", lambda bm: km.box(bm, 0.0, 0.0, deck - 0.03, 2 * half, 2 * half, 0.06), shade("sign_red", 3, 2, 1))
+
+    def chute(bm):
+        top, low, end = (0.0, -half, deck), (0.0, -2.4, 0.32), (0.0, -2.9, 0.3)
+        slab(bm, top, low, 0.5, 0.03)
+        slab(bm, low, end, 0.5, 0.03)
+        for sx in (-0.27, 0.27):
+            for a, b in ((top, low), (low, end)):
+                verts = slab(bm, (0.0, a[1], a[2] + 0.08), (0.0, b[1], b[2] + 0.08), 0.03, 0.16)
+                move(bm, verts, (sx, 0.0, 0.0))
+
+    part(root, "Chute", chute, shade("steel", 4, 3, 2))
+
+    def chute_legs(bm):
+        for sx in (-0.2, 0.2):
+            pipe(bm, (sx, -2.6, 0.0), (sx, -2.6, 0.28), 0.03)
+            pipe(bm, (sx, -1.4, 0.0), (sx, -1.4, 0.88), 0.03)
+
+    part(root, "ChuteLegs", chute_legs, shade("caution", 4, 3, 2))
+    return root
+
+
+def sandbox(x):
+    """砂場。コンクリートの縁石で囲った 2.4m × 2.0m の砂。"""
+    root = km.new_root("Sandbox", x)
+    w, d, t, h = 2.4, 2.0, 0.15, 0.25
+
+    def curb(bm):
+        km.box(bm, 0.0, -d / 2 + t / 2, h / 2, w, t, h)
+        km.box(bm, 0.0, d / 2 - t / 2, h / 2, w, t, h)
+        km.box(bm, -w / 2 + t / 2, 0.0, h / 2, t, d - 2 * t, h)
+        km.box(bm, w / 2 - t / 2, 0.0, h / 2, t, d - 2 * t, h)
+
+    part(root, "Curb", curb, shade("concrete", 3, 2, 1))
+    part(root, "Sand", lambda bm: km.box(bm, 0.0, 0.0, 0.08, w - 2 * t, d - 2 * t, 0.12), shade("grime", 4, 3, 2))
+    # 忘れ物のバケツ（子供の遊び場の生活感）
+    part(root, "Bucket", lambda bm: move(bm, cylinder(bm, 8, 0.09, 0.11, 0.14, 0.32), (0.55, 0.3, 0.0)), shade("sign_red", 4, 3, 2))
+    return root
+
+
+def car_stop(x):
+    """車止め（U 字のパイプ）。公園の入口に並べる。幅 0.9m・高さ 0.8m。"""
+    root = km.new_root("CarStop", x)
+
+    def u(bm):
+        for sx in (-0.45, 0.45):
+            pipe(bm, (sx, 0.0, 0.0), (sx, 0.0, 0.8), 0.04)
+        pipe(bm, (-0.49, 0.0, 0.8), (0.49, 0.0, 0.8), 0.04)
+
+    part(root, "Pipe", u, shade("caution", 4, 3, 2))
+    part(root, "Bands", lambda bm: [move(bm, cylinder(bm, 6, 0.043, 0.043, z, z + 0.08, caps=False), (sx, 0.0, 0.0))
+                                    for z in (0.45, 0.62) for sx in (-0.45, 0.45)], const("black", 2))
+    return root
+
+
+def park_clock(x):
+    """公園の時計。高さ 3m の柱の上に両面の丸い文字盤。"""
+    root = km.new_root("ParkClock", x)
+    top = 3.0
+    part(root, "Pole", lambda bm: pipe(bm, (0.0, 0.0, 0.0), (0.0, 0.0, top - 0.3), 0.06, sides=8), shade("concrete", 4, 3, 2))
+
+    def case(bm):
+        verts = cylinder(bm, 12, 0.32, 0.32, -0.07, 0.07)
+        rotate(bm, verts, "X", 90)
+        move(bm, verts, (0.0, 0.0, top))
+
+    part(root, "Case", case, const("black", 3))
+
+    def faces(bm):
+        for sy in (-0.072, 0.072):
+            verts = cylinder(bm, 12, 0.27, 0.27, -0.004, 0.004)
+            rotate(bm, verts, "X", 90)
+            move(bm, verts, (0.0, sy, top))
+
+    part(root, "Face", faces, const("siding", 4))
+
+    def hands(bm):
+        for sy in (-0.08, 0.08):
+            km.box(bm, 0.0, sy, top + 0.09, 0.02, 0.004, 0.18)                   # 長針（12 時）
+            verts = km.box(bm, 0.0, 0.0, 0.0, 0.025, 0.004, 0.13)                # 短針（4 時ごろ）
+            rotate(bm, verts, "Y", 120)
+            move(bm, verts, (0.056, sy, top - 0.032))
+
+    part(root, "Hands", hands, const("black", 1))
+    return root
+
+
 # ── 組み立てと書き出し ─────────────────────────────────
 
 km.clear_scene()
@@ -688,6 +847,11 @@ roots = [
     gutter_cover(53.0),
     gutter_grate(55.0),
     beer_crate(57.0),
+    swing(60.0),
+    slide(65.0),
+    sandbox(69.0),
+    car_stop(72.0),
+    park_clock(74.0),
 ]
 
 # Blender の中では見比べるために横へ並べてあるので、書き出す間だけ原点へ戻す（FBX の原点＝底面の中心）。
