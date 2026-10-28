@@ -1,12 +1,13 @@
-// ゴミ箱にたかる蠅。一匹は画面上で _PixelSize ピクセル四方の点。距離によらず同じ大きさ。
-// 一匹ごとに四頂点を同じ位置に置き、uv（-0.5〜0.5 の角）の向きへ画面のピクセル単位で広げる。
-// 点の図形（MeshTopology.Points）は 1 ピクセル固定で、SMAA で半分ほど薄まるので、大きさを決められる四角で描く。
-// 色と透明度は頂点色で受け取る（ProtoFlies が一匹ごとの淡入・淡出を書き込む）。
+// ゴミ箱にたかる蠅。一匹は画素絵のような三つの四角：真ん中に黒い胴、左右に半透明の灰色の翅（胴より少し高い）。
+// 一匹ごとに全頂点を同じ位置（蠅の中心）に置き、uv（胴の幅を 1 とした蠅の中での位置）の分だけ画面に向けて広げる。
+// 大きさは世界の寸法（_BodySize m）で、近いほど大きく見える。遠くても胴が _MinBodyPixels ピクセルより小さくはならない。
+// 色と透明度は頂点色で受け取る（ProtoFlies が淡入・淡出と、翅の羽ばたきを書き込む）。
 Shader "KyoumoMushoku/ProtoFlies"
 {
     Properties
     {
-        _PixelSize ("Pixel Size", Float) = 1
+        _BodySize ("Body Size (m)", Float) = 0.01
+        _MinBodyPixels ("Min Body Pixels", Float) = 1.5
     }
 
     SubShader
@@ -28,13 +29,14 @@ Shader "KyoumoMushoku/ProtoFlies"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
-                float _PixelSize;
+                float _BodySize;
+                float _MinBodyPixels;
             CBUFFER_END
 
             struct Attributes
             {
                 float4 positionOS : POSITION;
-                float2 corner : TEXCOORD0;
+                float2 offset : TEXCOORD0;
                 half4 color : COLOR;
             };
 
@@ -48,7 +50,12 @@ Shader "KyoumoMushoku/ProtoFlies"
             {
                 Varyings output;
                 float4 positionCS = TransformObjectToHClip(input.positionOS.xyz);
-                positionCS.xy += input.corner * _PixelSize * 2.0 * positionCS.w / _ScreenParams.xy;
+                float4x4 projection = GetViewToHClipMatrix();
+                float2 scale = abs(float2(projection[0][0], projection[1][1]));
+                // 胴の幅（m）。遠くて画面上で小さくなりすぎるときは、最小のピクセル数に当たる幅まで広げる。
+                float minimum = _MinBodyPixels * 2.0 * positionCS.w / (_ScreenParams.y * scale.y);
+                float size = max(_BodySize, minimum);
+                positionCS.xy += input.offset * size * scale;
                 output.positionCS = positionCS;
                 output.color = input.color;
                 return output;

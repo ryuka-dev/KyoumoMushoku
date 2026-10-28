@@ -4,7 +4,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
 {
     /// <summary>
     /// 開いていないゴミ箱にたかる蠅。遠くからでも「あそこに何かある」と分かる、世界の中の目印。
-    /// 一匹は画面上で <see cref="_pixelSize"/> ピクセル四方の点（<c>KyoumoMushoku/ProtoFlies</c>、既定 2）。
+    /// 一匹は画素絵のような三つの四角（<c>KyoumoMushoku/ProtoFlies</c>）：真ん中に黒い胴、左右に半透明の灰色の翅（胴より少し高い）。
+    /// 大きさは世界の寸法なので近いほど大きい。飛んでいる間は翅が細かく上下し、止まると翅をたたんで薄くなる。
     /// 見た目だけで、遊びの状態には触れない。
     ///
     /// 動き：ふたの上の空間で、短く飛んでは急に向きを変える（狙う点を 0.1〜0.35 秒ごとに選び直し、強く加速する）。
@@ -15,7 +16,15 @@ namespace KyoumoMushoku.Gameplay.Prototype
     [RequireComponent(typeof(ProtoTrashCan))]
     public sealed class ProtoFlies : MonoBehaviour
     {
-        static readonly int PixelSizeId = Shader.PropertyToID("_PixelSize");
+        static readonly int BodySizeId = Shader.PropertyToID("_BodySize");
+        static readonly int MinBodyPixelsId = Shader.PropertyToID("_MinBodyPixels");
+
+        // 一匹の形（胴の幅を 1 とした位置）。0：胴、1：左の翅、2：右の翅。翅は胴より少し高い。
+        static readonly Rect Body = new Rect(-0.5f, -0.5f, 1f, 1f);
+        static readonly Rect LeftWing = new Rect(-1.4f, -0.15f, 0.9f, 0.9f);
+        static readonly Rect RightWing = new Rect(0.5f, -0.15f, 0.9f, 0.9f);
+        const int QuadsPerFly = 3;
+        const int VertsPerFly = QuadsPerFly * 4;
 
         enum Mode
         {
@@ -41,8 +50,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField] Material _material;
         [SerializeField, Range(1, 12)] int _count = 4;
         [SerializeField] Color _color = new Color(0.03f, 0.03f, 0.035f, 1f);
-        [Tooltip("一匹の画面上の大きさ（ピクセル）。距離によらず同じ。1 だと SMAA で半分ほどに薄まり、ほとんど見えない（2026-10-28 に測った）。")]
-        [SerializeField, Range(0.5f, 4f)] float _pixelSize = 2f;
+        [Tooltip("翅の色（半透明の灰色）。")]
+        [SerializeField] Color _wingColor = new Color(0.55f, 0.55f, 0.58f, 0.5f);
+        [Tooltip("胴の幅（m）。翅を広げた全幅はこの約 2.8 倍。")]
+        [SerializeField, Min(0.001f)] float _bodySize = 0.01f;
+        [Tooltip("遠くても、胴はこのピクセル数より小さく描かない（消えてしまわないように）。")]
+        [SerializeField, Min(0f)] float _minBodyPixels = 1.5f;
+        [Tooltip("羽ばたきの速さ（回/秒）と、翅が上下する幅（胴の幅を 1 として）。")]
+        [SerializeField] Vector2 _flap = new Vector2(24f, 0.18f);
         [Tooltip("この距離より遠いと描かず、動かしもしない。")]
         [SerializeField, Min(1f)] float _visibleDistance = 25f;
 
@@ -66,6 +81,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         MeshRenderer _renderer;
         Vector3[] _vertices;
         Color[] _colors;
+        Vector2[] _offsets;
         MaterialPropertyBlock _block;
         bool _wasOpened;
         int _lastHits;
@@ -75,33 +91,29 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _can = GetComponent<ProtoTrashCan>();
             _collider = GetComponent<Collider>();
             _flies = new Fly[_count];
-            _vertices = new Vector3[_count * 4];
-            _colors = new Color[_count * 4];
+            _vertices = new Vector3[_count * VertsPerFly];
+            _colors = new Color[_count * VertsPerFly];
+            _offsets = new Vector2[_count * VertsPerFly];
             _block = new MaterialPropertyBlock();
 
             // 箱は叩かれて傾き・縮むので、蠅は箱の子にせず、世界に置いた一つの網で描く。
-            // 一匹は同じ位置の四頂点で、角（uv）の向きへシェーダーが画面のピクセル単位で広げる。
+            // 一匹の全頂点は蠅の中心に置き、uv（蠅の中での位置）の分だけシェーダーが画面に向けて広げる。
             _view = new GameObject(name + "_Flies");
             _mesh = new Mesh { name = "Flies" };
             _mesh.MarkDynamic();
-            var corners = new Vector2[_count * 4];
-            var triangles = new int[_count * 6];
-            for (var i = 0; i < _count; i++)
+            var triangles = new int[_count * QuadsPerFly * 6];
+            for (var q = 0; q < _count * QuadsPerFly; q++)
             {
-                corners[i * 4] = new Vector2(-0.5f, -0.5f);
-                corners[i * 4 + 1] = new Vector2(0.5f, -0.5f);
-                corners[i * 4 + 2] = new Vector2(0.5f, 0.5f);
-                corners[i * 4 + 3] = new Vector2(-0.5f, 0.5f);
-                triangles[i * 6] = i * 4;
-                triangles[i * 6 + 1] = i * 4 + 2;
-                triangles[i * 6 + 2] = i * 4 + 1;
-                triangles[i * 6 + 3] = i * 4;
-                triangles[i * 6 + 4] = i * 4 + 3;
-                triangles[i * 6 + 5] = i * 4 + 2;
+                triangles[q * 6] = q * 4;
+                triangles[q * 6 + 1] = q * 4 + 2;
+                triangles[q * 6 + 2] = q * 4 + 1;
+                triangles[q * 6 + 3] = q * 4;
+                triangles[q * 6 + 4] = q * 4 + 3;
+                triangles[q * 6 + 5] = q * 4 + 2;
             }
 
             _mesh.vertices = _vertices;
-            _mesh.uv = corners;
+            _mesh.uv = _offsets;
             _mesh.colors = _colors;
             _mesh.triangles = triangles;
             _view.AddComponent<MeshFilter>().sharedMesh = _mesh;
@@ -176,20 +188,54 @@ namespace KyoumoMushoku.Gameplay.Prototype
             for (var i = 0; i < _flies.Length; i++)
             {
                 Step(ref _flies[i], dt, opened, top);
-                var c = _color;
-                c.a *= _flies[i].Mode == Mode.Away ? 0f : _flies[i].Alpha;
-                for (var k = 0; k < 4; k++)
-                {
-                    _vertices[i * 4 + k] = _flies[i].Position;
-                    _colors[i * 4 + k] = c;
-                }
+                WriteFly(i);
             }
 
             _mesh.vertices = _vertices;
+            _mesh.uv = _offsets;
             _mesh.colors = _colors;
             _mesh.bounds = new Bounds(top, Vector3.one * 8f);
-            _block.SetFloat(PixelSizeId, _pixelSize);
+            _block.SetFloat(BodySizeId, _bodySize);
+            _block.SetFloat(MinBodyPixelsId, _minBodyPixels);
             _renderer.SetPropertyBlock(_block);
+        }
+
+        /// <summary>一匹分の三つの四角を書く。飛んでいれば翅を羽ばたかせ、止まっていれば翅をたたんで薄くする。</summary>
+        void WriteFly(int i)
+        {
+            var fly = _flies[i];
+            var alpha = fly.Mode == Mode.Away ? 0f : fly.Alpha;
+            var resting = fly.Mode == Mode.Resting && fly.Landed;
+
+            // 羽ばたき：一匹ごとに位相をずらす（皆が同じ拍子で動かないように）。
+            var flap = resting ? 0f : Mathf.Sin((Time.time * _flap.x + i * 0.37f) * Mathf.PI * 2f) * _flap.y;
+            // 止まると翅をたたむ（幅を詰めて胴に寄せる）。
+            var wingWidth = LeftWing.width * (resting ? 0.55f : 1f);
+            var left = new Rect(Body.xMin - wingWidth, LeftWing.y + flap, wingWidth, LeftWing.height);
+            var right = new Rect(Body.xMax, RightWing.y + flap, wingWidth, RightWing.height);
+
+            var body = _color;
+            body.a *= alpha;
+            var wing = _wingColor;
+            wing.a *= alpha * (resting ? 0.6f : 1f);
+
+            var v = i * VertsPerFly;
+            WriteQuad(v, fly.Position, Body, body);
+            WriteQuad(v + 4, fly.Position, left, wing);
+            WriteQuad(v + 8, fly.Position, right, wing);
+        }
+
+        void WriteQuad(int start, Vector3 position, Rect shape, Color color)
+        {
+            _offsets[start] = new Vector2(shape.xMin, shape.yMin);
+            _offsets[start + 1] = new Vector2(shape.xMax, shape.yMin);
+            _offsets[start + 2] = new Vector2(shape.xMax, shape.yMax);
+            _offsets[start + 3] = new Vector2(shape.xMin, shape.yMax);
+            for (var k = 0; k < 4; k++)
+            {
+                _vertices[start + k] = position;
+                _colors[start + k] = color;
+            }
         }
 
         void Step(ref Fly fly, float dt, bool opened, Vector3 top)
