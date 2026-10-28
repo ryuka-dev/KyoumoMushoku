@@ -21,6 +21,24 @@
 
 [Releases ページ](https://github.com/ryuka-dev/KyoumoMushoku/releases) にあるのは、2026-07 の 2D 横スクロール版の体験版です。一人称版はまだ公開していません。
 
+## ソースコードについて
+
+Unity 6000.3.6f1 で開きます。一人称版のシーンは `Assets/Scenes/Slice_Chapter1.unity`、提出版の書き出しはメニューの `KyoumoMushoku/Build Submission (Windows)` です。
+
+Unity Asset Store の素材は、利用規約により元のファイルを配れないので、このリポジトリには入れていません（`Assets/ThirdParty/` を外しています）。そのため、そのまま開くと街並みと小物の一部が欠け、効果音の一部が鳴りません。プログラムはすべて読めます。完全な状態で遊ぶには、書き出したゲーム（Windows 版）を使ってください。
+
+含めていない素材（どれも Unity Asset Store で入手できます。`Assets/ThirdParty/AssetStore/` の下に置くと元どおりになります）：
+
+| 置き場所 | 素材 |
+| --- | --- |
+| `BrokenVector/` | Low Poly Storage Pack（BrokenVector） |
+| `Pandazole_Ultimate_Pack/` | Simple Game Low Poly Pack（Pandazole） |
+| `Low Poly Simple Urban City 3D Asset Pack/` | Free Low Poly Simple Urban City 3D Asset Pack |
+| `CelerisLab/` | The Complete UI Sound Effects Library（CelerisLab） |
+| `Vefects/` | Stylized VFX Bundle（Vefects） |
+
+素材ごとの出自と、どこに使っているかは [`Docs/素材台帳.md`](Docs/%E7%B4%A0%E6%9D%90%E5%8F%B0%E5%B8%B3.md) にあります。
+
 ## ゲームデザイン資料
 
 企画と設計は [`Docs/GameDesign.md`](Docs/GameDesign.md)、一人称版の試作の記録は [`Docs/一人称試作.md`](Docs/%E4%B8%80%E4%BA%BA%E7%A7%B0%E8%A9%A6%E4%BD%9C.md) にまとめています。
