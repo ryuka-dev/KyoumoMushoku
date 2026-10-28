@@ -1,5 +1,6 @@
 using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Gameplay.UI;
+using UnityEngine;
 
 namespace KyoumoMushoku.Gameplay.Prototype
 {
@@ -11,7 +12,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
     public static class ProtoText
     {
         public static string Controls =>
-            "WASD 移動／Shift 走る／マウス 視点／左クリック 叩く・掴む・使う／数字キー 飲食／Q＋数字 捨てる／Esc カーソル";
+            "WASD 移動／Shift 走る／マウス 視点／左クリック 叩く・掴む・使う／数字キー 飲食／Q＋数字 捨てる／Esc ポーズ";
+
+        // ── ポーズ（Esc。音量とマウスの感度もここで変える） ──
+        public static string PauseTitle => "ポーズ";
+        public static string MasterVolumeLine(float v) => $"音量　{Mathf.RoundToInt(v * 100f)}%";
+        public static string MusicVolumeLine(float v) => $"音楽　{Mathf.RoundToInt(v * 100f)}%";
+        public static string LookSensitivityLine(float v) => $"マウスの感度　×{v:0.00}";
+        public static string PauseHint => "Esc で戻る";
 
         public static string Status(int day, string phase, int yen, string mood) =>
             $"{day}日目　{phase}\n所持金 {yen}円\n気分 {mood}";

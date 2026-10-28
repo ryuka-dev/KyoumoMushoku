@@ -1,11 +1,12 @@
 using KyoumoMushoku.Core.DayCycle;
+using KyoumoMushoku.Gameplay.App;
 using UnityEngine;
 
 namespace KyoumoMushoku.Gameplay.Prototype
 {
     /// <summary>
     /// 切片の BGM。昼と夜の二曲を、一曲流したら黙り、次の一曲はそのときの時間帯で選ぶ（順番は Core の <see cref="MusicSchedule"/>）。
-    /// 曲と大きさは <see cref="SliceTuningAsset"/> の「音楽」。プレイヤーに付く（<see cref="ProtoHands"/> が足す）。
+    /// 曲と大きさは <see cref="SliceTuningAsset"/> の「音楽」、それにプレイヤーの音楽の音量（<see cref="PlayerOptions"/>）を掛ける。プレイヤーに付く（<see cref="ProtoHands"/> が足す）。
     ///
     /// 時刻は実時間（店の中・朝の区切りで Time.timeScale = 0 になっても曲は止めない。大きさだけ落とす）。
     /// 立体音にはしない（どこから鳴っているかは意味を持たない）。
@@ -64,7 +65,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             // 遊びが止まっている間（店・区切り・捕まった後の暗幕）は小さく。
             var target = Time.timeScale < 0.5f ? _slice.MusicDuckWhilePaused : 1f;
             _duck = Mathf.MoveTowards(_duck, target, Time.unscaledDeltaTime / FadeSeconds);
-            _source.volume = _slice.MusicVolume * _duck;
+            _source.volume = _slice.MusicVolume * PlayerOptions.MusicVolume * _duck;
         }
     }
 }

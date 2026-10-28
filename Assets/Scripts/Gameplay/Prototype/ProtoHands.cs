@@ -629,7 +629,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 yield return null;
             }
 
-            Time.timeScale = 1f;
+            // 手が止められていたら（ポーズ・店・区切り）、時間は止めた側が持つ。ここで 1 に戻すと、止まった画面の裏で時間が流れる。
+            if (enabled)
+            {
+                Time.timeScale = 1f;
+            }
+
             _hitStopRunning = false;
         }
 

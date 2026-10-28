@@ -3,8 +3,10 @@ using KyoumoMushoku.Core.Knacks;
 using KyoumoMushoku.Core.Police;
 using KyoumoMushoku.Core.Randomness;
 using KyoumoMushoku.Core.Survival;
+using KyoumoMushoku.Gameplay.App;
 using KyoumoMushoku.Gameplay.World;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 namespace KyoumoMushoku.Gameplay.Prototype
@@ -56,6 +58,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         bool _modalOpen;
 
+        /// <summary>店などの場面を閉じたこま。同じ Esc で店を出て、そのままポーズが開かないようにする。</summary>
+        int _modalClosedFrame = -1;
+
+        InputAction _pauseKey;
+
+        /// <summary>遊んでいる最中に Esc で開くポーズ画面（続ける・最初から・やめる・音量・マウスの感度）。</summary>
+        public bool IsPaused { get; private set; }
+
         /// <summary>眠る前の一日に掴んだ物の数（朝の区切りで見せる）。</summary>
         public int CaughtYesterday { get; private set; }
 
@@ -86,6 +96,15 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         readonly List<KnackId> _knacksSinceMorning = new List<KnackId>();
 
+        void Awake()
+        {
+            _pauseKey = new InputAction("Pause", InputActionType.Button, "<Keyboard>/escape");
+        }
+
+        void OnEnable() => _pauseKey.Enable();
+
+        void OnDisable() => _pauseKey.Disable();
+
         void Start()
         {
             if (_vitals != null)
@@ -111,6 +130,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 _hands.Knacks.Acquired -= OnKnackAcquired;
             }
 
+            _pauseKey?.Dispose();
             Time.timeScale = 1f;
         }
 
@@ -215,6 +235,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             _modalOpen = false;
+            _modalClosedFrame = Time.frameCount;
             if (State == SessionState.Playing)
             {
                 SetPlayerActive(true);
@@ -247,6 +268,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         public void Restart()
         {
+            PlayerOptions.Save();
             Time.timeScale = 1f;
             var scene = SceneManager.GetActiveScene();
 #if UNITY_EDITOR
@@ -259,6 +281,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         public void Quit()
         {
+            PlayerOptions.Save();
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -289,6 +312,31 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 TransportPending = false;
                 TransportToClinic();
             }
+
+            if (_pauseKey.WasPressedThisFrame())
+            {
+                if (IsPaused)
+                {
+                    Resume();
+                }
+                else if (Time.frameCount != _modalClosedFrame && TryOpenModal())
+                {
+                    IsPaused = true;
+                }
+            }
+        }
+
+        /// <summary>ポーズ画面を閉じて遊びに戻る。設定はここで一度だけ書き出す。</summary>
+        public void Resume()
+        {
+            if (!IsPaused)
+            {
+                return;
+            }
+
+            IsPaused = false;
+            PlayerOptions.Save();
+            CloseModal();
         }
 
         /// <summary>診療所へ運ぶ。規則は本編の GameSession.OnPlayerDied と同じ。</summary>

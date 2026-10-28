@@ -1,4 +1,5 @@
 using System.Text;
+using KyoumoMushoku.Gameplay.App;
 using KyoumoMushoku.Gameplay.UI;
 using UnityEngine;
 
@@ -65,6 +66,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
             if (_session != null && _session.State != ProtoSession.SessionState.Playing)
             {
                 DrawPanel(w, h);
+                return;
+            }
+
+            if (_session != null && _session.IsPaused)
+            {
+                DrawPause(w, h);
                 return;
             }
 
@@ -270,6 +277,51 @@ namespace KyoumoMushoku.Gameplay.Prototype
             texture.SetPixels32(pixels);
             texture.Apply();
             return texture;
+        }
+
+        /// <summary>ポーズ画面：音量・音楽・マウスの感度のつまみと、続ける・最初から・やめる。値の持ち主は <see cref="PlayerOptions"/>。</summary>
+        void DrawPause(float w, float h)
+        {
+            var previous = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.72f);
+            GUI.DrawTexture(new Rect(0f, 0f, w, h), _white);
+            GUI.color = previous;
+
+            var top = h * 0.2f;
+            GUI.Label(new Rect(0f, top, w, 48f), ProtoText.PauseTitle, _title);
+
+            var x = w / 2f - 260f;
+            var y = top + 90f;
+            PlayerOptions.SetMasterVolume(Slider(x, y, ProtoText.MasterVolumeLine(PlayerOptions.MasterVolume),
+                PlayerOptions.MasterVolume, PlayerOptions.VolumeMin, PlayerOptions.VolumeMax));
+            PlayerOptions.SetMusicVolume(Slider(x, y + 56f, ProtoText.MusicVolumeLine(PlayerOptions.MusicVolume),
+                PlayerOptions.MusicVolume, PlayerOptions.VolumeMin, PlayerOptions.VolumeMax));
+            PlayerOptions.SetLookSensitivity(Slider(x, y + 112f, ProtoText.LookSensitivityLine(PlayerOptions.LookSensitivity),
+                PlayerOptions.LookSensitivity, PlayerOptions.LookMin, PlayerOptions.LookMax));
+
+            var by = y + 200f;
+            if (GUI.Button(new Rect(w / 2f - 320f, by, 200f, 44f), ProtoText.ContinueButton, _button))
+            {
+                _session.Resume();
+            }
+
+            if (GUI.Button(new Rect(w / 2f - 100f, by, 200f, 44f), ProtoText.RestartButton, _button))
+            {
+                _session.Restart();
+            }
+
+            if (GUI.Button(new Rect(w / 2f + 120f, by, 200f, 44f), ProtoText.QuitButton, _button))
+            {
+                _session.Quit();
+            }
+
+            GUI.Label(new Rect(0f, by + 64f, w, 32f), ProtoText.PauseHint, _center);
+        }
+
+        float Slider(float x, float y, string label, float value, float min, float max)
+        {
+            GUI.Label(new Rect(x, y, 240f, 32f), label, _style);
+            return GUI.HorizontalSlider(new Rect(x + 250f, y + 10f, 270f, 20f), value, min, max);
         }
 
         void DrawPanel(float w, float h)

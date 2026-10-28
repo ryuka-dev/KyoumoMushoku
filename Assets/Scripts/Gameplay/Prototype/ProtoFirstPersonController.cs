@@ -1,3 +1,4 @@
+using KyoumoMushoku.Gameplay.App;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,7 +21,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
         InputAction _move;
         InputAction _look;
         InputAction _run;
-        InputAction _toggleCursor;
         float _pitch;
         float _verticalVelocity;
         ProtoVitals _vitals;
@@ -63,7 +63,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             _look = new InputAction("Look", InputActionType.Value, "<Mouse>/delta");
             _run = new InputAction("Run", InputActionType.Button, "<Keyboard>/leftShift");
-            _toggleCursor = new InputAction("ToggleCursor", InputActionType.Button, "<Keyboard>/escape");
         }
 
         void OnEnable()
@@ -71,7 +70,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _move.Enable();
             _look.Enable();
             _run.Enable();
-            _toggleCursor.Enable();
             LockCursor(true);
         }
 
@@ -80,7 +78,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _move.Disable();
             _look.Disable();
             _run.Disable();
-            _toggleCursor.Disable();
             LockCursor(false);
         }
 
@@ -89,20 +86,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _move?.Dispose();
             _look?.Dispose();
             _run?.Dispose();
-            _toggleCursor?.Dispose();
         }
 
         void Update()
         {
-            if (_toggleCursor.WasPressedThisFrame())
-            {
-                LockCursor(Cursor.lockState != CursorLockMode.Locked);
-            }
-
             // ヒットストップ中（timeScale 0）も視点だけは動かせると手応えが途切れない。
             if (Cursor.lockState == CursorLockMode.Locked)
             {
-                var look = _look.ReadValue<Vector2>() * _lookSensitivity;
+                var look = _look.ReadValue<Vector2>() * (_lookSensitivity * PlayerOptions.LookSensitivity);
                 transform.Rotate(0f, look.x, 0f, Space.Self);
                 _pitch = Mathf.Clamp(_pitch - look.y, -80f, 80f);
                 if (_head != null)
