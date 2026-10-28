@@ -76,6 +76,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string AlreadyCarrying(string name) => $"もう背負っている。{name}は担げない。（G で降ろす）";
         public static string Unloaded(string name) => $"{name}を降ろした。";
         public static string CarryingLine(string name) => $"背負っている：{name}（ベンチで寝ると敷く・G で降ろす）";
+        public static string GlovesFound => "軍手だ。これなら、ふたを叩くのも一回少なくて済む。";
+        public static string CapFound => "キャップだ。目深にかぶれば、少しは目立たない。";
+        public static string EquipmentInBag(string name) => $"{name}は、カバンにあるあいだ役に立つ。";
         public static string FirstButt => "……前の俺なら、こんな物は拾わなかった。";
         public static string PurseOpened(int yen) => $"小銭入れだ。中に{yen}円入っていた。";
 

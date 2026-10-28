@@ -118,8 +118,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// 叩く。戻り値はヒットストップの強さ（0〜1）。開いた後は 0。
         /// <paramref name="loudness"/> は叩き方の音の大きさ（連打で 1、間を空けると小さい）。箱の中身による響きに掛かる。
         /// <paramref name="vitals"/> は叩いた人の状態。開けて漁った時間ぶん、渇きと空腹が減る。
+        /// <paramref name="gloved"/> なら（軍手）、ふたが一打早く開く。
         /// </summary>
-        public float Hit(Vector3 direction, float loudness, Vitals vitals, out string toast)
+        public float Hit(Vector3 direction, float loudness, Vitals vitals, bool gloved, out string toast)
         {
             toast = null;
             if (_opened)
@@ -152,7 +153,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             // 叩く音は街に響き、警官の耳に届く。空の箱ほどうるさい（ふたが飛ぶ一打は最もうるさい）。
             // 警官が聞くのは本当の音なので、ここは叩いた人の SAN に関係なく中身どおり。
-            var opening = _hits >= _hitsToOpen;
+            var hitsToOpen = _hasLid && gloved ? Mathf.Max(1, _hitsToOpen - 1) : _hitsToOpen;
+            var opening = _hits >= hitsToOpen;
             ProtoNoise.Emit(transform.position, loudness * (opening || empty ? 1f : Mathf.Lerp(0.8f, 0.4f, heaviness)));
 
             // 珍しい物が入っていて、それが読めるときだけ、叩くたびにふたの隙間から光が漏れる（廃棄の袋も同じ）。
@@ -162,7 +164,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 LeakGlint(glint);
             }
 
-            if (_hits < _hitsToOpen)
+            if (_hits < hitsToOpen)
             {
                 return 0.4f;
             }
@@ -470,16 +472,18 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
+            // 同じフレームでまた開くこともある（補充の直後に叩く）ので、その場で消す。
+            // Destroy はフレームの終わりまで残り、次の AddComponent<Rigidbody> が null を返す。
             var rb = _lid.GetComponent<Rigidbody>();
             if (rb != null)
             {
-                Destroy(rb);
+                DestroyImmediate(rb);
             }
 
             var col = _lid.GetComponent<Collider>();
             if (col != null)
             {
-                Destroy(col);
+                DestroyImmediate(col);
             }
 
             _lid.SetParent(_lidParent, false);

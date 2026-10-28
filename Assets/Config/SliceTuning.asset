@@ -133,6 +133,9 @@ MonoBehaviour:
   _buttItemId: cig_butt
   _buttBelowSanity: 50
   _buttWeight: 8
+  _glovesItemId: work_gloves
+  _capItemId: cap
+  _capNoticeMultiplier: 0.6
   _carrySpeedMultiplier: 0.75
   _carryNoticeMultiplier: 1.5
   _cardboardBedding:

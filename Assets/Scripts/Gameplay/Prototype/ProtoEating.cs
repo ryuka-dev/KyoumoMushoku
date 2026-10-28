@@ -131,7 +131,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 case ConsumeResult.NotConsumable:
                     if (bag.TryGetDefinition(index, out var definition))
                     {
-                        _hands.Say(ProtoText.NotEdible(definition.DisplayName));
+                        _hands.Say(definition.Category == ItemCategory.Equipment
+                            ? ProtoText.EquipmentInBag(definition.DisplayName)
+                            : ProtoText.NotEdible(definition.DisplayName));
                     }
 
                     break;

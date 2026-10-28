@@ -95,6 +95,16 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField, Range(0f, 100f)] float _buttBelowSanity = 50f;
         [SerializeField, Min(0f)] float _buttWeight = 8f;
 
+        [Header("道具（Docs/切片の品目.md 第四節）")]
+        [Tooltip("軍手の品の id。鞄にある間、ふたのあるゴミ箱が一打早く開く（速く、静か）。")]
+        [SerializeField] string _glovesItemId = "work_gloves";
+
+        [Tooltip("キャップの品の id。鞄にある間、警官の目に気づかれるのが遅い。")]
+        [SerializeField] string _capItemId = "cap";
+
+        [Tooltip("キャップがあるときの、警官の目に気づかれる速さの倍率。")]
+        [SerializeField, Range(0.1f, 1f)] float _capNoticeMultiplier = 0.6f;
+
         [Header("段ボール（Docs/切片の品目.md 第五節）")]
         [Tooltip("背負っている間の歩きの速さの倍率。走れない（GameDesign 第十一節）。")]
         [SerializeField, Range(0.1f, 1f)] float _carrySpeedMultiplier = 0.75f;
@@ -122,6 +132,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public int DisposalDraws => _disposalDraws;
         public TrashCanLootAsset.Table DisposalTable => _disposalTable;
         public float CarrySpeedMultiplier => _carrySpeedMultiplier;
+        public float CapNoticeMultiplier => _capNoticeMultiplier;
+        public bool IsGloves(ItemId item) => item.Value == _glovesItemId;
+        public bool IsCap(ItemId item) => item.Value == _capItemId;
         public float CarryNoticeMultiplier => _carryNoticeMultiplier;
         public SleepTuningAsset.Recovery CardboardBedding => _cardboardBedding;
 

@@ -104,8 +104,23 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>走れるか。段ボールを背負っていると走れない。</summary>
         public bool CanRun => Back == null || !Back.IsOccupied;
 
-        /// <summary>警官の目に気づかれる速さの倍率。段ボールを背負っていると目立つ。</summary>
-        public float NoticeMultiplier => Back != null && Back.IsOccupied && _slice != null ? _slice.CarryNoticeMultiplier : 1f;
+        /// <summary>警官の目に気づかれる速さの倍率。段ボールを背負っていると目立ち、キャップを持っていると目立たない。</summary>
+        public float NoticeMultiplier
+        {
+            get
+            {
+                if (_slice == null)
+                {
+                    return 1f;
+                }
+
+                var multiplier = Back != null && Back.IsOccupied ? _slice.CarryNoticeMultiplier : 1f;
+                return HasInBag(_slice.IsCap) ? multiplier * _slice.CapNoticeMultiplier : multiplier;
+            }
+        }
+
+        /// <summary>軍手を持っているか。ふたのあるゴミ箱が一打早く開く。</summary>
+        public bool HasGloves => _slice != null && HasInBag(_slice.IsGloves);
 
         /// <summary>宙の物を掴んで鞄に入れた。拾った物に反応する世界の側（独り言など）が聞く。</summary>
         public event System.Action<ItemInstance> Grabbed;
@@ -255,7 +270,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var interval = Time.unscaledTime - _lastPunchAt;
             _lastPunchAt = Time.unscaledTime;
             var mash = 1f - Mathf.Clamp01((interval - _mashInterval) / Mathf.Max(0.01f, _calmInterval - _mashInterval));
-            var strength = can.Hit(_camera.transform.forward, Mathf.Lerp(_calmLoudness, 1f, mash), Vitals != null ? Vitals.Vitals : null, out var toast);
+            var strength = can.Hit(_camera.transform.forward, Mathf.Lerp(_calmLoudness, 1f, mash), Vitals != null ? Vitals.Vitals : null,
+                HasGloves, out var toast);
             if (toast != null)
             {
                 Say(toast);
@@ -323,6 +339,15 @@ namespace KyoumoMushoku.Gameplay.Prototype
                     // 保底が世界の中で見える最初の瞬間（第十四節：見えない状態は誰かが説明する）。
                     _saidFirstButt = true;
                     Say(ProtoText.FirstButt);
+                }
+                else if (_slice != null && _slice.IsGloves(loot.Item.ItemId))
+                {
+                    // 道具の効き目は、拾った瞬間の独り言で伝える。
+                    Say(ProtoText.GlovesFound);
+                }
+                else if (_slice != null && _slice.IsCap(loot.Item.ItemId))
+                {
+                    Say(ProtoText.CapFound);
                 }
 
                 Grabbed?.Invoke(loot.Item);
@@ -392,6 +417,24 @@ namespace KyoumoMushoku.Gameplay.Prototype
         }
 
         bool IsPurse(ItemInstance item) => _slice != null && _slice.IsPurse(item.ItemId);
+
+        bool HasInBag(System.Func<ItemId, bool> match)
+        {
+            if (Bag == null)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < Bag.Count; i++)
+            {
+                if (match(Bag[i].ItemId))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         /// <summary>担いで運ぶ物（段ボール）。鞄でなく背負い枠に入る。</summary>
         bool IsCarriedOnBack(ItemInstance item) =>

@@ -40,6 +40,8 @@ MonoBehaviour:
         weight: 1.5
       - id: game_soft
         weight: 1
+      - id: cap
+        weight: 1
       freshWeight: 25
       staleWeight: 45
       rottenWeight: 30
@@ -65,6 +67,8 @@ MonoBehaviour:
       - id: coin_purse
         weight: 2
       - id: game_soft
+        weight: 1
+      - id: cap
         weight: 1
       freshWeight: 20
       staleWeight: 45
@@ -146,6 +150,8 @@ MonoBehaviour:
         weight: 0.8
       - id: handheld
         weight: 0.4
+      - id: work_gloves
+        weight: 1.5
       freshWeight: 8
       staleWeight: 32
       rottenWeight: 60
@@ -174,6 +180,8 @@ MonoBehaviour:
         weight: 1
       - id: handheld
         weight: 0.6
+      - id: work_gloves
+        weight: 1.5
       freshWeight: 8
       staleWeight: 32
       rottenWeight: 60
