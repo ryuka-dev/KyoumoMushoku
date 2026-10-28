@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using KyoumoMushoku.Core.Knacks;
+using KyoumoMushoku.Core.Police;
+using KyoumoMushoku.Core.Randomness;
 using KyoumoMushoku.Core.Survival;
 using KyoumoMushoku.Gameplay.World;
 using UnityEngine;
@@ -15,7 +17,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 結算の後も続けて遊べる（2026-10-28 決定）。四日目からの昼夜の長さは三日目のまま（DaySchedule は最後の日を使い続ける）。
     /// 日付の変わり目は就寝の瞬間だけに起こる（第二節）。時計・店の帳簿・ゴミ箱の中身は、ここから一度に新しい一日へ進める。
     ///
-    /// 倒れたら局を終える。本編の病院（搬送・医療費・SAN の代償）は切片には入れていない。
+    /// 倒れても局は終わらない（2026-10-28 決定・本編の病院と同じ規則）。西の外れの診療所（<see cref="ProtoClinic"/>）へ運ばれ、
+    /// HP だけが全回復し、渇きと空腹は倒れる前のまま。医療費を取られ（足りなければあるだけ・借金はしない）、
+    /// 倒れる前の SAN が高いほど気分が沈み（Core の <see cref="DeathPenalty"/>）、腐った物は警官と同じ規則で取り上げられる。
+    /// 時計は進まず、その日がそのまま続く。何が起きたかは区切りの画面で、世界の言葉で言う（第十四節）。倒れることはセーブ地点ではない。
     /// </summary>
     public sealed class ProtoSession : MonoBehaviour
     {
@@ -33,8 +38,21 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField] ProtoHands _hands;
         [SerializeField] ProtoFirstPersonController _body;
         [SerializeField] SliceTuningAsset _slice;
+        [SerializeField] ProtoClinic _clinic;
 
         public SessionState State { get; private set; }
+
+        /// <summary>この局で診療所に運ばれた回数（結算で見せる）。</summary>
+        public int ClinicVisits { get; private set; }
+
+        /// <summary>直前に運ばれたときの医療費の額と、実際に払えた額。倒れた区切りで見せる。</summary>
+        public int LastClinicFeeYen { get; private set; }
+        public int LastClinicPaidYen { get; private set; }
+
+        /// <summary>直前に運ばれたとき、腐った物を取り上げられたか。</summary>
+        public bool LastClinicSeizedRotten { get; private set; }
+
+        readonly IRng _rng = new SystemRng();
 
         bool _modalOpen;
 
@@ -48,9 +66,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public int FinalDay => _slice != null ? _slice.FinalDay : 3;
 
         public void Configure(ProtoVitals vitals, ProtoDayNight dayNight, ProtoStore store, ProtoHands hands,
-            ProtoFirstPersonController body, SliceTuningAsset slice)
+            ProtoFirstPersonController body, SliceTuningAsset slice, ProtoClinic clinic = null)
         {
             _slice = slice;
+            _clinic = clinic;
             _vitals = vitals;
             _dayNight = dayNight;
             _store = store;
@@ -213,6 +232,15 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 _knacksSinceMorning.Clear();
                 Enter(SessionState.Playing);
             }
+            else if (State == SessionState.Collapsed && !TransportPending)
+            {
+                // 運ばれた後は、同じ日のまま診療所の前から続ける。
+                Enter(SessionState.Playing);
+                if (_hands != null)
+                {
+                    _hands.Say(ProtoText.WokeUpAtClinic);
+                }
+            }
         }
 
         void OnKnackAcquired(KnackId id) => _knacksSinceMorning.Add(id);
@@ -238,7 +266,71 @@ namespace KyoumoMushoku.Gameplay.Prototype
 #endif
         }
 
-        void OnCollapsed() => Enter(SessionState.Collapsed);
+        /// <summary>倒れて、まだ運び終えていない。区切りの画面はこの間、本文を出さない。</summary>
+        public bool TransportPending { get; private set; }
+
+        float _sanityAtCollapse;
+
+        /// <summary>
+        /// 倒れた瞬間。手と足を止め、運ぶのは次の Update に回す。倒れたのは飲み食いや捕まった最中の HP の変更の内側なので、
+        /// ここで鞄を書き換えると、呼んだ側がまだ使っている索引がずれる（腐った物を食べて倒れると、別の品が消える）。
+        /// </summary>
+        void OnCollapsed()
+        {
+            _sanityAtCollapse = _vitals.Vitals.Sanity;
+            TransportPending = true;
+            Enter(SessionState.Collapsed);
+        }
+
+        void Update()
+        {
+            if (TransportPending)
+            {
+                TransportPending = false;
+                TransportToClinic();
+            }
+        }
+
+        /// <summary>診療所へ運ぶ。規則は本編の GameSession.OnPlayerDied と同じ。</summary>
+        void TransportToClinic()
+        {
+            var vitals = _vitals.Vitals;
+            var fee = _clinic != null ? _clinic.FeeYen : 0;
+            LastClinicFeeYen = fee;
+            LastClinicPaidYen = _hands != null && _hands.Wallet != null ? _hands.Wallet.SeizeUpTo(fee) : 0;
+
+            // SAN の代償は倒れる直前の値で決まる。渇き・空腹は倒れる前のまま、HP だけが戻る。
+            vitals.Apply(new VitalsDelta { Sanity = -DeathPenalty.SanityLoss(_sanityAtCollapse) });
+            vitals.Revive();
+
+            // 腐った物の没収は警官と同じ規則（取り上げられるという同じ出来事に、二つの規則を持たせない）。
+            LastClinicSeizedRotten = Confiscate() > 0;
+            ClinicVisits++;
+
+            ProtoPolice.ForgetPlayer();
+            if (_hands != null && _clinic != null)
+            {
+                _hands.TeleportTo(_clinic.WakePosition, _clinic.WakeRotation);
+            }
+        }
+
+        int Confiscate()
+        {
+            var bag = _hands != null ? _hands.Bag : null;
+            if (bag == null || _hands.Catalog == null)
+            {
+                return 0;
+            }
+
+            var seized = Confiscation.SelectSeized(bag.Items, _hands.Catalog, _rng);
+            // 索引は降順なので、この順に抜けばずれない。
+            foreach (var index in seized)
+            {
+                bag.TryRemoveAt(index, out _);
+            }
+
+            return seized.Count;
+        }
 
         void Enter(SessionState state)
         {

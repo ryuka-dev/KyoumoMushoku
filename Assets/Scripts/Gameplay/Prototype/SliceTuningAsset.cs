@@ -137,9 +137,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [SerializeField] SleepTuningAsset.Recovery _cardboardBedding = new SleepTuningAsset.Recovery { hp = 10f, sanity = 12f };
 
         [Header("終わり")]
-        [Tooltip("この日の夜に寝たら、翌朝に切片の結算を見せて終える。")]
+        [Tooltip("この日の夜に寝たら、翌朝に三日間の結算を見せる（その後も続けて遊べる）。")]
         [SerializeField, Min(1)] int _finalDay = 3;
 
+        [Header("診療所（倒れたら運ばれる・GameDesign 第三節）")]
+        [Tooltip("運ばれたときの医療費。足りなければあるだけ取られ、借金はしない。生きているときに手当てを受ける値段も同じ。")]
+        [SerializeField, Min(0)] int _clinicFeeYen = 500;
+
+        public int ClinicFeeYen => _clinicFeeYen;
         public float StartingSanity => _startingSanity;
         public float LateNightStartSeconds => _lateNightStartSeconds;
         public float LateNightRampPerSecond => _lateNightRampPerSecond;

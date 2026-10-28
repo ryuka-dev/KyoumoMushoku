@@ -130,13 +130,34 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string MorningBody(int caught, int yen, string mood, string knacksLine) =>
             $"昨日はゴミ箱から {caught} 個を掴んだ。\n所持金 {yen}円　気分 {mood}\n{knacksLine}\n今日も無職。";
         public static string FinalTitle(int days) => $"{days}日目の夜が明けた";
-        public static string FinalBody(int days, int caught, int yen, int capacity, string mood, int innNights, string knacksLine) =>
+        public static string FinalBody(int days, int caught, int yen, int capacity, string mood, int innNights, int clinicVisits,
+            string knacksLine) =>
             $"{days}日間で、ゴミ箱から {caught} 個を掴んだ。\n所持金 {yen}円　カバン {capacity}マス　気分 {mood}\n"
-            + (innNights > 0 ? $"安宿に {innNights} 泊した。\n" : "")
+            + NightsLine(innNights, clinicVisits)
             + knacksLine
             + "\n今日も無職。\n\n（体験版はここで一区切り。続けて遊ぶこともできる）";
+        static string NightsLine(int innNights, int clinicVisits)
+        {
+            var inn = innNights > 0 ? $"安宿に {innNights} 泊した。" : "";
+            var clinic = clinicVisits > 0 ? $"診療所に {clinicVisits} 度運ばれた。" : "";
+            return inn.Length + clinic.Length > 0 ? inn + clinic + "\n" : "";
+        }
+
+        // ── 診療所（倒れたら運ばれる・生きていれば手当てを受けられる） ──
+        public static string ClinicSign => "内科・外科　みなみ診療所";
+        public static string ClinicPrompt(string price) => $"診療所：手当てを受ける（{price}・体力が全回復する）";
+        public static string ClinicNotNeeded => "どこも悪くない。";
+        public static string ClinicCannotAfford => "金が足りない。";
+        public static string ClinicTreated => "手当てを受けた。体が軽い。";
         public static string CollapsedTitle => "倒れた";
-        public static string CollapsedBody(int day) => $"{day}日目。路上で意識が途切れた。";
+        public static string CollapsedBody(int day, int feeYen, int paidYen, bool seizedRotten)
+        {
+            var paid = paidYen >= feeYen ? $"医療費 {paidYen}円を払った。" : $"医療費は {feeYen}円。持ち合わせの {paidYen}円を、あるだけ払った。";
+            return $"{day}日目。路上で意識が途切れた。\n気がつくと、診療所のベッドの上だった。\n{paid}\n"
+                   + (seizedRotten ? "腐った物は、捨てられていた。\n" : "")
+                   + "体は戻ったが、気分は沈んだ。喉と腹は、倒れる前のまま。";
+        }
+        public static string WokeUpAtClinic => "……診療所の前に出された。向かいの公園に、水道がある。";
         public static string ContinueButton => "続ける";
         public static string RestartButton => "最初から";
         public static string QuitButton => "終わる";

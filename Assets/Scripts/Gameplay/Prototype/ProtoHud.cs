@@ -230,7 +230,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 title = ProtoText.FinalTitle(_session.FinalDay);
                 body = ProtoText.FinalBody(_session.FinalDay, _session.CaughtTotal, yen, _hands.Bag.Capacity, mood, _session.InnNights,
-                    ProtoText.KnacksLine(_session.KnacksLearned, learnedYesterday: false));
+                    _session.ClinicVisits, ProtoText.KnacksLine(_session.KnacksLearned, learnedYesterday: false));
             }
             else if (morning)
             {
@@ -240,8 +240,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
             else
             {
+                // 運び終えるまで（一こま）は本文を出さない。
                 title = ProtoText.CollapsedTitle;
-                body = ProtoText.CollapsedBody(day);
+                body = _session.TransportPending
+                    ? ""
+                    : ProtoText.CollapsedBody(day, _session.LastClinicFeeYen, _session.LastClinicPaidYen, _session.LastClinicSeizedRotten);
             }
 
             GUI.Label(new Rect(0f, h * 0.24f, w, 48f), title, _title);
@@ -270,16 +273,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
-            if (morning)
+            // 朝の区切りも、運ばれた後も、同じ「続ける」で戻る。
+            if (GUI.Button(new Rect(w / 2f - 210f, y, 200f, 44f), ProtoText.ContinueButton, _button))
             {
-                if (GUI.Button(new Rect(w / 2f - 210f, y, 200f, 44f), ProtoText.ContinueButton, _button))
-                {
-                    _session.Continue();
-                }
-            }
-            else if (GUI.Button(new Rect(w / 2f - 210f, y, 200f, 44f), ProtoText.RestartButton, _button))
-            {
-                _session.Restart();
+                _session.Continue();
             }
 
             if (GUI.Button(new Rect(w / 2f + 10f, y, 200f, 44f), ProtoText.QuitButton, _button))

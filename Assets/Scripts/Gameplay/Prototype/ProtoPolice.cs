@@ -87,6 +87,15 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
         }
 
+        /// <summary>プレイヤーが運ばれて街から消えた。どの警官も追うのをやめ、遭遇を終える。</summary>
+        public static void ForgetPlayer()
+        {
+            foreach (var police in Active)
+            {
+                police.ResetEncounter();
+            }
+        }
+
         public void Configure(ProtoHands player, ItemDatabaseAsset catalog, Transform escortPoint, Vector3[] patrol)
         {
             _player = player;

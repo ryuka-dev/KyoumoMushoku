@@ -135,6 +135,25 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public event System.Action<ItemInstance> Grabbed;
         public Wallet Wallet { get; private set; }
 
+        /// <summary>品のデータ（没収の規則が品の種類を読む）。</summary>
+        public ItemDatabaseAsset Catalog => _catalog;
+
+        /// <summary>体ごと別の場所へ移す（運ばれる・連れて行かれる）。歩きの当たり判定を一度切ってから置く。</summary>
+        public void TeleportTo(Vector3 position, Quaternion rotation)
+        {
+            var body = GetComponent<CharacterController>();
+            if (body != null)
+            {
+                body.enabled = false;
+            }
+
+            transform.SetPositionAndRotation(position, Quaternion.Euler(0f, rotation.eulerAngles.y, 0f));
+            if (body != null)
+            {
+                body.enabled = true;
+            }
+        }
+
         /// <summary>コツ（生活の知恵・第六節）。触発の申告とルール変化の問い合わせは、ここを通す。</summary>
         public PlayerKnacks Knacks { get; private set; }
 
