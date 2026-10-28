@@ -223,10 +223,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
                     if (Tier == LootTier.Jackpot)
                     {
                         // 地面にある間は静かに：ときどき一つだけ虹の星が弾ける。
-                        _sparkTimer = 1.1f;
-                        var side = UnityEngine.Random.insideUnitCircle.normalized * 0.6f;
+                        _sparkTimer = 0.4f;
+                        var side = UnityEngine.Random.insideUnitCircle.normalized * 0.7f;
                         ProtoRainbowFx.Star(_sparkBase, transform.position + Vector3.up * _extents.y,
-                            new Vector3(side.x, 1.6f, side.y), 0.12f, 0.8f);
+                            new Vector3(side.x, 1.9f, side.y), UnityEngine.Random.Range(0.12f, 0.18f), 0.9f);
                     }
                     else
                     {

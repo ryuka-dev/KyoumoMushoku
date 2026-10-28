@@ -330,13 +330,20 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             ProtoLoot.Spawn(new ItemInstance(draw.Item, draw.State), name, slots, tier, ColorOf(category),
-                _itemMaterial, _font, top, velocity, _lootLifetime, _slice != null ? _slice.ModelOf(draw.Item) : null);
+                _itemMaterial, _font, top, velocity, _slice != null ? _slice.LootLifetimeOf(tier) : _lootLifetime,
+                _slice != null ? _slice.ModelOf(draw.Item) : null);
             if (tier == LootTier.Jackpot)
             {
-                // 大当たりが飛び出した瞬間：足もとに虹の輪が広がり、虹の星が弾ける（ProtoTierLook の形）。
+                // 大当たりが飛び出した瞬間：放射する虹の光・足もとに広がる虹の輪・弾ける虹の星（ProtoTierLook の形）。
                 var ground = _collider != null ? _collider.bounds.min.y : transform.position.y;
+                ProtoRainbowFx.Rays(_itemMaterial, top + Vector3.up * 0.4f);
                 ProtoRainbowFx.Ripple(_itemMaterial, new Vector3(top.x, ground, top.z));
-                ProtoRainbowFx.Burst(_itemMaterial, top, 6);
+                ProtoRainbowFx.Burst(_itemMaterial, top, 12);
+            }
+            else if (tier == LootTier.Rare)
+            {
+                // 珍しい：紫の菱形が弾ける（星は大当たりだけの形）。
+                ProtoRainbowFx.Diamonds(_itemMaterial, top, ProtoTierLook.Rare, 6);
             }
         }
 
@@ -400,8 +407,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             if (tier == LootTier.Jackpot)
             {
+                var clip = _slice != null && _slice.JackpotSound != null ? _slice.JackpotSound : ProtoSounds.Jackpot;
                 _audio.pitch = 1f;
-                _audio.PlayOneShot(ProtoSounds.Jackpot, 0.9f);
+                _audio.PlayOneShot(clip, 1f);
             }
             else if (tier == LootTier.Rare)
             {

@@ -34,26 +34,44 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static AudioClip Chime => _chime ??= Noise("ProtoChime", 0.6f, decay: 5f, lowPass: 1f, tone: 1320f, toneMix: 0.95f);
 
         /// <summary>大当たりの「キュイン」（パチンコの当たりの上がる音）。短く一度だけ。</summary>
-        public static AudioClip Jackpot => _jackpot ??= Sweep("ProtoJackpot", 0.45f, 700f, 2600f);
+        public static AudioClip Jackpot => _jackpot ??= Kyuin("ProtoJackpot");
 
         /// <summary>レジのバーコードを読んだ音。</summary>
         public static AudioClip Beep => _beep ??= Noise("ProtoBeep", 0.1f, decay: 12f, lowPass: 1f, tone: 2000f, toneMix: 0.98f);
 
-        /// <summary>音の高さが下から上へ滑る音。細かく揺らして電子音らしくする。</summary>
-        static AudioClip Sweep(string name, float seconds, float fromHz, float toHz)
+        /// <summary>
+        /// 合成の「キュイン」（素材が入るまでの代用）。0.12 秒で一気に駆け上がり、上で細かく揺れながら伸び、こだまが残る。
+        /// わずかにずらした二つの声を重ねて、うなり（電子音の厚み）を作る。
+        /// </summary>
+        static AudioClip Kyuin(string name)
         {
+            const float seconds = 1.3f;
             var length = Mathf.CeilToInt(SampleRate * seconds);
-            var data = new float[length];
-            var phase = 0f;
+            var dry = new float[length];
+            var phaseA = 0f;
+            var phaseB = 0f;
             for (var i = 0; i < length; i++)
             {
                 var t = i / (float)SampleRate;
-                var k = t / seconds;
-                // 前半で一気に上がり、後半は高いところで鳴り続ける。
-                var hz = Mathf.Lerp(fromHz, toHz, 1f - (1f - k) * (1f - k)) * (1f + 0.02f * Mathf.Sin(2f * Mathf.PI * 30f * t));
-                phase += 2f * Mathf.PI * hz / SampleRate;
-                var envelope = Mathf.Clamp01(t / 0.02f) * Mathf.Clamp01((seconds - t) / 0.12f);
-                data[i] = (Mathf.Sin(phase) * 0.7f + Mathf.Sin(phase * 2f) * 0.2f) * envelope * 0.6f;
+                var rise = Mathf.Clamp01(t / 0.12f);
+                var hz = Mathf.Lerp(380f, 1560f, 1f - (1f - rise) * (1f - rise) * (1f - rise))
+                         * (1f + 0.035f * Mathf.Sin(2f * Mathf.PI * 11f * t) * Mathf.Clamp01((t - 0.1f) * 8f))
+                         * (1f + 0.04f * Mathf.Clamp01((t - 0.6f) / 0.6f));
+                phaseA += 2f * Mathf.PI * hz / SampleRate;
+                phaseB += 2f * Mathf.PI * hz * 1.012f / SampleRate;
+                // 奇数倍音を足した角の立った波（矩形寄り）。
+                var a = Mathf.Sin(phaseA) + Mathf.Sin(phaseA * 3f) / 3f + Mathf.Sin(phaseA * 5f) / 5f;
+                var b = Mathf.Sin(phaseB) + Mathf.Sin(phaseB * 3f) / 3f;
+                var envelope = Mathf.Clamp01(t / 0.01f) * (t < 0.75f ? 1f : Mathf.Clamp01((seconds - 0.25f - t) / 0.3f));
+                dry[i] = (a * 0.6f + b * 0.4f) * envelope * 0.35f;
+            }
+
+            // こだま（90ms おき・減衰 0.4）。
+            var data = new float[length];
+            var delay = Mathf.RoundToInt(SampleRate * 0.09f);
+            for (var i = 0; i < length; i++)
+            {
+                data[i] = dry[i] + (i >= delay ? data[i - delay] * 0.4f : 0f);
             }
 
             var clip = AudioClip.Create(name, length, 1, SampleRate, false);

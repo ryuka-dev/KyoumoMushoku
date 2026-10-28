@@ -105,6 +105,16 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("キャップがあるときの、警官の目に気づかれる速さの倍率。")]
         [SerializeField, Range(0.1f, 1f)] float _capNoticeMultiplier = 0.6f;
 
+        [Header("宙の物が消えるまで（段ごと・秒）")]
+        [Tooltip("珍しい物ほど長く地面に残る（取り逃しても、大当たりなら走って戻れる）。")]
+        [SerializeField, Min(1f)] float _commonLifetime = 3f;
+        [SerializeField, Min(1f)] float _uncommonLifetime = 6f;
+        [SerializeField, Min(1f)] float _rareLifetime = 10f;
+        [SerializeField, Min(1f)] float _jackpotLifetime = 20f;
+
+        [Tooltip("大当たりの音。空なら合成の「キュイン」で代用する。素材を買ったら Assets/ThirdParty/ に置いてここへ入れる（再配布できない素材は公開リポジトリに入れない）。")]
+        [SerializeField] AudioClip _jackpotSound;
+
         [Header("品の模型（Assets/Art/Models/Props/Items）")]
         [Tooltip("宙に飛ぶ品の見た目。ここに無い品は色付きの立方体で飛ぶ。")]
         [SerializeField] List<ItemModelEntry> _itemModels = new List<ItemModelEntry>();
@@ -136,6 +146,16 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public int DisposalDraws => _disposalDraws;
         public TrashCanLootAsset.Table DisposalTable => _disposalTable;
         public float CarrySpeedMultiplier => _carrySpeedMultiplier;
+        public AudioClip JackpotSound => _jackpotSound;
+
+        /// <summary>宙の物が消えるまでの秒数。珍しい物ほど長い。</summary>
+        public float LootLifetimeOf(LootTier tier) => tier switch
+        {
+            LootTier.Jackpot => _jackpotLifetime,
+            LootTier.Rare => _rareLifetime,
+            LootTier.Uncommon => _uncommonLifetime,
+            _ => _commonLifetime,
+        };
         public float CapNoticeMultiplier => _capNoticeMultiplier;
         public bool IsGloves(ItemId item) => item.Value == _glovesItemId;
         public bool IsCap(ItemId item) => item.Value == _capItemId;

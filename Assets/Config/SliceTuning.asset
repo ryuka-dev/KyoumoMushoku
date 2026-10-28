@@ -136,6 +136,11 @@ MonoBehaviour:
   _glovesItemId: work_gloves
   _capItemId: cap
   _capNoticeMultiplier: 0.6
+  _commonLifetime: 3
+  _uncommonLifetime: 6
+  _rareLifetime: 10
+  _jackpotLifetime: 20
+  _jackpotSound: {fileID: 0}
   _itemModels:
   - id: bento
     model: {fileID: 919132149155446097, guid: b34f995d2e71f1f488be11162ed5c86c, type: 3}

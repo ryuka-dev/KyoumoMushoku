@@ -13,11 +13,14 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             Ring,
             Star,
+            Rays,
+            Diamond,
         }
 
         const int RingSegments = 40;
 
         static Mesh _starMesh;
+        static Mesh _raysMesh;
 
         Kind _kind;
         Renderer _renderer;
@@ -30,15 +33,15 @@ namespace KyoumoMushoku.Gameplay.Prototype
         float _spin;
         float _scroll;
 
-        /// <summary>開いた瞬間：足もとから虹の輪が三重に広がる。</summary>
+        /// <summary>開いた瞬間：足もとから虹の輪が四重に広がる。</summary>
         public static void Ripple(Material baseMaterial, Vector3 ground)
         {
-            for (var i = 0; i < 3; i++)
+            for (var i = 0; i < 4; i++)
             {
                 var fx = Create(baseMaterial, "RainbowRing", ground + Vector3.up * (0.02f + 0.004f * i), Kind.Ring);
-                fx._delay = 0.12f * i;
-                fx._life = 0.7f;
-                fx._size = 2.2f - 0.4f * i;
+                fx._delay = 0.1f * i;
+                fx._life = 0.8f;
+                fx._size = 3.4f - 0.5f * i;
                 fx._ringMesh = new Mesh { name = "RainbowRing" };
                 fx.GetComponent<MeshFilter>().sharedMesh = fx._ringMesh;
                 fx.UpdateRing(0f);
@@ -51,8 +54,37 @@ namespace KyoumoMushoku.Gameplay.Prototype
             for (var i = 0; i < count; i++)
             {
                 var side = Quaternion.Euler(0f, 360f * i / count + Random.Range(-20f, 20f), 0f) * Vector3.forward;
-                Star(baseMaterial, center, side * Random.Range(1.2f, 2f) + Vector3.up * Random.Range(1.8f, 2.6f),
-                    Random.Range(0.18f, 0.26f), 0.9f);
+                Star(baseMaterial, center, side * Random.Range(1.4f, 2.6f) + Vector3.up * Random.Range(2f, 3.2f),
+                    Random.Range(0.22f, 0.34f), 1.1f);
+            }
+        }
+
+        /// <summary>開いた瞬間：品の後ろで虹の光が放射状に広がって回る（パチンコの当たりの集中線）。いつも視点を向く。</summary>
+        public static void Rays(Material baseMaterial, Vector3 center)
+        {
+            var fx = Create(baseMaterial, "RainbowRays", center, Kind.Rays);
+            fx.GetComponent<MeshFilter>().sharedMesh = RaysMesh();
+            fx._size = 2.6f;
+            fx._life = 0.9f;
+            fx._spin = 90f;
+            fx.transform.localScale = Vector3.zero;
+        }
+
+        /// <summary>珍しいの開いた瞬間：その色の菱形の粒がまわりへ弾ける。</summary>
+        public static void Diamonds(Material baseMaterial, Vector3 center, Color color, int count)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                var side = Quaternion.Euler(0f, 360f * i / count + Random.Range(-25f, 25f), 0f) * Vector3.forward;
+                var spark = ProtoTierLook.Spark(baseMaterial, center, 0f, color, 2.5f);
+                spark.name = "Diamond";
+                var fx = spark.AddComponent<ProtoRainbowFx>();
+                fx._kind = Kind.Diamond;
+                fx._renderer = spark.GetComponent<Renderer>();
+                fx._velocity = side * Random.Range(1f, 1.8f) + Vector3.up * Random.Range(1.6f, 2.4f);
+                fx._size = Random.Range(0.07f, 0.1f);
+                fx._life = 0.8f;
+                fx._spin = Random.Range(-360f, 360f);
             }
         }
 
@@ -98,6 +130,26 @@ namespace KyoumoMushoku.Gameplay.Prototype
             {
                 UpdateRing(t);
             }
+            else if (_kind == Kind.Rays)
+            {
+                // 一気に広がり、回りながら細く消える。
+                var grow = t < 0.2f ? t / 0.2f : 1f;
+                var fade = t > 0.5f ? 1f - (t - 0.5f) / 0.5f : 1f;
+                transform.localScale = new Vector3(_size * grow, _size * grow, 1f) * Mathf.Max(0.01f, fade);
+                var camera = Camera.main;
+                if (camera != null)
+                {
+                    transform.rotation = camera.transform.rotation * Quaternion.Euler(0f, 0f, _spin * _age);
+                }
+            }
+            else if (_kind == Kind.Diamond)
+            {
+                _velocity += Vector3.down * (5f * Time.deltaTime);
+                transform.position += _velocity * Time.deltaTime;
+                transform.Rotate(0f, _spin * Time.deltaTime, 0f, Space.World);
+                var pop = t < 0.15f ? t / 0.15f : 1f - (t - 0.15f) / 0.85f;
+                transform.localScale = Vector3.one * (_size * pop);
+            }
             else
             {
                 _velocity += Vector3.down * (4f * Time.deltaTime);
@@ -113,8 +165,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 }
             }
 
-            // 虹を流す（模様の色相がずれていく）。
-            ProtoTierLook.ScrollRainbow(_renderer, _scroll + Time.time * 0.8f);
+            // 虹を流す（模様の色相がずれていく）。菱形は一色なので流さない。
+            if (_kind != Kind.Diamond)
+            {
+                ProtoTierLook.ScrollRainbow(_renderer, _scroll + Time.time * 0.8f);
+            }
 
             if (_age >= _life)
             {
@@ -182,6 +237,44 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             _ringMesh.RecalculateBounds();
+        }
+
+        /// <summary>放射する光の筋（両面）。十六本の細い三角形で、筋ごとに色相がずれる。</summary>
+        static Mesh RaysMesh()
+        {
+            if (_raysMesh != null)
+            {
+                return _raysMesh;
+            }
+
+            const int rays = 16;
+            var vertices = new Vector3[rays * 3];
+            var uvs = new Vector2[vertices.Length];
+            var normals = new Vector3[vertices.Length];
+            var triangles = new int[rays * 6];
+            for (var i = 0; i < rays; i++)
+            {
+                var a = 2f * Mathf.PI * i / rays;
+                var width = i % 2 == 0 ? 0.05f : 0.03f;
+                var length = i % 2 == 0 ? 0.5f : 0.36f;
+                var dir = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f);
+                var side = new Vector3(-dir.y, dir.x, 0f);
+                vertices[i * 3] = dir * 0.08f + side * width;
+                vertices[i * 3 + 1] = dir * 0.08f - side * width;
+                vertices[i * 3 + 2] = dir * length;
+                for (var k = 0; k < 3; k++)
+                {
+                    uvs[i * 3 + k] = new Vector2(i / (float)rays, 0.5f);
+                    normals[i * 3 + k] = Vector3.back;
+                }
+
+                triangles[i * 6] = i * 3; triangles[i * 6 + 1] = i * 3 + 1; triangles[i * 6 + 2] = i * 3 + 2;
+                triangles[i * 6 + 3] = i * 3; triangles[i * 6 + 4] = i * 3 + 2; triangles[i * 6 + 5] = i * 3 + 1;
+            }
+
+            _raysMesh = new Mesh { name = "RainbowRays", vertices = vertices, uv = uvs, normals = normals, triangles = triangles };
+            _raysMesh.RecalculateBounds();
+            return _raysMesh;
         }
 
         /// <summary>五つの角の星（両面）。模様は斜めに走る虹（参考：虹色のグラデーションの星）。</summary>
