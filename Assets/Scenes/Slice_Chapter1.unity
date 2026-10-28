@@ -5669,6 +5669,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1096277797193120249, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9033079431662134138, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
       propertyPath: m_Name
       value: ArcadeRoof
@@ -6095,6 +6099,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 992438478855791008, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1096277797193120249, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9033079431662134138, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
@@ -15254,6 +15262,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1096277797193120249, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9033079431662134138, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
       propertyPath: m_Name
       value: ArcadeRoof
@@ -21524,6 +21536,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 992438478855791008, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1096277797193120249, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9033079431662134138, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
@@ -32229,6 +32245,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1096277797193120249, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9033079431662134138, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
       propertyPath: m_Name
       value: ArcadeRoof
@@ -33018,7 +33038,7 @@ Transform:
   m_GameObject: {fileID: 495377769}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.76604444, z: -0, w: -0.64278764}
-  m_LocalPosition: {x: 8.5, y: 0, z: -5.1}
+  m_LocalPosition: {x: 8.5, y: 0, z: -5.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -60189,6 +60209,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1096277797193120249, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9033079431662134138, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
       propertyPath: m_Name
       value: ArcadeRoof
@@ -73363,6 +73387,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 992438478855791008, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1096277797193120249, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9033079431662134138, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
@@ -94070,7 +94098,7 @@ Transform:
   m_GameObject: {fileID: 1410405372}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.9396926, z: -0, w: 0.34202015}
-  m_LocalPosition: {x: -12.5, y: 0, z: -5}
+  m_LocalPosition: {x: -12.5, y: 0, z: -7.647}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -121334,6 +121362,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1096277797193120249, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9033079431662134138, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
       propertyPath: m_Name
       value: ArcadeRoof
@@ -126150,6 +126182,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 992438478855791008, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1096277797193120249, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9033079431662134138, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
@@ -131790,6 +131826,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1096277797193120249, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9033079431662134138, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
       propertyPath: m_Name
       value: ArcadeRoof
@@ -135334,6 +135374,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 992438478855791008, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1096277797193120249, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9033079431662134138, guid: 3a52276fb17cf954d88841a0aa0b14b5, type: 3}
