@@ -13,14 +13,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
         {
             Ring,
             Star,
-            Rays,
             Diamond,
         }
 
         const int RingSegments = 40;
 
         static Mesh _starMesh;
-        static Mesh _raysMesh;
 
         Kind _kind;
         Renderer _renderer;
@@ -57,17 +55,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 Star(baseMaterial, center, side * Random.Range(1.4f, 2.6f) + Vector3.up * Random.Range(2f, 3.2f),
                     Random.Range(0.22f, 0.34f), 1.1f);
             }
-        }
-
-        /// <summary>開いた瞬間：品の後ろで虹の光が放射状に広がって回る（パチンコの当たりの集中線）。いつも視点を向く。</summary>
-        public static void Rays(Material baseMaterial, Vector3 center)
-        {
-            var fx = Create(baseMaterial, "RainbowRays", center, Kind.Rays);
-            fx.GetComponent<MeshFilter>().sharedMesh = RaysMesh();
-            fx._size = 2.6f;
-            fx._life = 0.9f;
-            fx._spin = 90f;
-            fx.transform.localScale = Vector3.zero;
         }
 
         /// <summary>珍しいの開いた瞬間：その色の菱形の粒がまわりへ弾ける。</summary>
@@ -110,6 +97,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             renderer.sharedMaterial = ProtoTierLook.RainbowMaterial(baseMaterial);
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             renderer.receiveShadows = false;
+            renderer.sortingOrder = ProtoTierLook.EffectSortingOrder;
             var fx = go.AddComponent<ProtoRainbowFx>();
             fx._kind = kind;
             fx._renderer = renderer;
@@ -129,18 +117,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
             if (_kind == Kind.Ring)
             {
                 UpdateRing(t);
-            }
-            else if (_kind == Kind.Rays)
-            {
-                // 一気に広がり、回りながら細く消える。
-                var grow = t < 0.2f ? t / 0.2f : 1f;
-                var fade = t > 0.5f ? 1f - (t - 0.5f) / 0.5f : 1f;
-                transform.localScale = new Vector3(_size * grow, _size * grow, 1f) * Mathf.Max(0.01f, fade);
-                var camera = Camera.main;
-                if (camera != null)
-                {
-                    transform.rotation = camera.transform.rotation * Quaternion.Euler(0f, 0f, _spin * _age);
-                }
             }
             else if (_kind == Kind.Diamond)
             {
@@ -237,44 +213,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             _ringMesh.RecalculateBounds();
-        }
-
-        /// <summary>放射する光の筋（両面）。十六本の細い三角形で、筋ごとに色相がずれる。</summary>
-        static Mesh RaysMesh()
-        {
-            if (_raysMesh != null)
-            {
-                return _raysMesh;
-            }
-
-            const int rays = 16;
-            var vertices = new Vector3[rays * 3];
-            var uvs = new Vector2[vertices.Length];
-            var normals = new Vector3[vertices.Length];
-            var triangles = new int[rays * 6];
-            for (var i = 0; i < rays; i++)
-            {
-                var a = 2f * Mathf.PI * i / rays;
-                var width = i % 2 == 0 ? 0.05f : 0.03f;
-                var length = i % 2 == 0 ? 0.5f : 0.36f;
-                var dir = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f);
-                var side = new Vector3(-dir.y, dir.x, 0f);
-                vertices[i * 3] = dir * 0.08f + side * width;
-                vertices[i * 3 + 1] = dir * 0.08f - side * width;
-                vertices[i * 3 + 2] = dir * length;
-                for (var k = 0; k < 3; k++)
-                {
-                    uvs[i * 3 + k] = new Vector2(i / (float)rays, 0.5f);
-                    normals[i * 3 + k] = Vector3.back;
-                }
-
-                triangles[i * 6] = i * 3; triangles[i * 6 + 1] = i * 3 + 1; triangles[i * 6 + 2] = i * 3 + 2;
-                triangles[i * 6 + 3] = i * 3; triangles[i * 6 + 4] = i * 3 + 2; triangles[i * 6 + 5] = i * 3 + 1;
-            }
-
-            _raysMesh = new Mesh { name = "RainbowRays", vertices = vertices, uv = uvs, normals = normals, triangles = triangles };
-            _raysMesh.RecalculateBounds();
-            return _raysMesh;
         }
 
         /// <summary>五つの角の星（両面）。模様は斜めに走る虹（参考：虹色のグラデーションの星）。</summary>

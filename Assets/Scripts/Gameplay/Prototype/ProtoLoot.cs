@@ -12,7 +12,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 消えるまでの間に掴めば鞄へ入る。何が出たかは叩く前に確定していた中身そのものである。
     ///
     /// 見た目は品の段（<see cref="LootTier"/>）で変わる。色と形の辞書は <see cref="ProtoTierLook"/>：
-    /// やや珍しい＝緑に静かに光る・珍しい＝紫で、まわりに小さな菱形が瞬く・大当たり＝虹で、ときどき虹の星が弾け、名前が一字ずつ虹に流れる。
+    /// やや珍しい＝緑に静かに光る・珍しい＝紫で、まわりに小さな菱形が瞬く・大当たり＝虹で、後ろに回る虹の後光（<see cref="ProtoJackpotHalo"/>）が
+    /// ついて回り、ときどき虹の星が弾け、名前が一字ずつ虹に流れる。
     /// （開いた瞬間の虹の輪と星の弾けは <see cref="ProtoTrashCan"/> が出す。）
     /// 宙の物は目の前に見えている事実なので、段の演出そのものは SAN で消さない。色は街と一緒に退色するが、形は残る。
     /// </summary>
@@ -26,6 +27,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         Rigidbody _body;
         Renderer[] _renderers;
         Material[] _bodyMaterials = Array.Empty<Material>();
+        ProtoJackpotHalo _halo;
         Material _sparkBase;
         Vector3 _extents;
         float _sparkTimer;
@@ -122,6 +124,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 }
             }
 
+            if (tier == LootTier.Jackpot)
+            {
+                loot._halo = ProtoJackpotHalo.Attach(go.transform);
+            }
+
             // 点光源は持たない：夜の暗い地面では弱い光でも色の水たまりになり、段が「光の量」の話になる。
             // 段は品の発光の色と、星・柱・火花の形で語る。
 
@@ -137,15 +144,17 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 loot._label.color = ProtoTierLook.Of(tier, 0f);
                 if (tier == LootTier.Jackpot)
                 {
-                    // パチンコの「大当り」の字：金の縁取り（文字の色は一字ずつ虹に塗る）。
+                    // パチンコの「大当り」の字：一字ずつ虹に塗り、濃い縁取りで後光の上でも読めるようにする。
                     loot._label.color = Color.white;
-                    loot._label.outlineColor = (Color32)ProtoTierLook.Gold;
-                    loot._label.outlineWidth = 0.12f;
+                    loot._label.outlineColor = new Color32(30, 12, 40, 255);
+                    loot._label.outlineWidth = 0.25f;
                     loot._label.fontStyle = FontStyles.Bold;
                     loot._label.ForceMeshUpdate();
                     ProtoTierLook.PaintRainbowText(loot._label, Time.time);
                 }
                 loot._label.rectTransform.sizeDelta = new Vector2(4f, 1f);
+                // 名前は演出（後光・星・輪）より後に描く：光の上に字が乗り、字が光で白く飛ばない。
+                loot._label.sortingOrder = LabelSortingOrder;
             }
 
             loot._body = go.AddComponent<Rigidbody>();
@@ -172,6 +181,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         void OnDestroy()
         {
+            if (_halo != null)
+            {
+                Destroy(_halo.gameObject);
+            }
+
             foreach (var spark in _sparks)
             {
                 if (spark.Transform != null)
@@ -185,6 +199,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 Destroy(material);
             }
         }
+
+        /// <summary>名前の描画順。演出（<see cref="ProtoTierLook.EffectSortingOrder"/>）より後に描く。</summary>
+        const int LabelSortingOrder = 10;
 
         /// <summary>模型の外形（容器の局所座標）。</summary>
         static Bounds LocalBounds(Transform container, GameObject shape)
@@ -299,6 +316,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             var blinking = _age > _lifetime - 1f;
             UpdateSparks(_pullTarget == null && !blinking);
+            if (_halo != null)
+            {
+                // 掴んで引き寄せる間は隠す。消える前の明滅には品と一緒に明滅する。
+                _halo.SetVisible(_pullTarget == null && (!blinking || Mathf.Repeat(_age * 8f, 1f) > 0.3f));
+            }
 
             if (_pullTarget != null)
             {

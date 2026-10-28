@@ -334,9 +334,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 _slice != null ? _slice.ModelOf(draw.Item) : null);
             if (tier == LootTier.Jackpot)
             {
-                // 大当たりが飛び出した瞬間：放射する虹の光・足もとに広がる虹の輪・弾ける虹の星（ProtoTierLook の形）。
+                // 大当たりが飛び出した瞬間：足もとに広がる虹の輪・弾ける虹の星（後光は品についていく。ProtoLoot）。
                 var ground = _collider != null ? _collider.bounds.min.y : transform.position.y;
-                ProtoRainbowFx.Rays(_itemMaterial, top + Vector3.up * 0.4f);
                 ProtoRainbowFx.Ripple(_itemMaterial, new Vector3(top.x, ground, top.z));
                 ProtoRainbowFx.Burst(_itemMaterial, top, 12);
             }

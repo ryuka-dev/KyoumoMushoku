@@ -78,6 +78,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
             renderer.SetPropertyBlock(_block);
         }
 
+        /// <summary>演出（後光・虹の星・輪・粒）の描画順。品の名前より先に描き、字を光で隠さない。</summary>
+        public const int EffectSortingOrder = -10;
+
         static readonly int BaseMapStId = Shader.PropertyToID("_BaseMap_ST");
         static Texture2D _rainbowTexture;
         static Material _rainbowMaterial;
@@ -93,6 +96,25 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return _rainbowMaterial;
             }
 
+            _rainbowMaterial = new Material(baseMaterial) { name = "ProtoRainbow" };
+            _rainbowMaterial.SetTexture("_BaseMap", RainbowTexture());
+            _rainbowMaterial.SetColor("_BaseColor", Color.white);
+            _rainbowMaterial.EnableKeyword("_EMISSION");
+            _rainbowMaterial.SetTexture("_EmissionMap", RainbowTexture());
+            _rainbowMaterial.SetColor("_EmissionColor", Color.white * 1.4f);
+            return _rainbowMaterial;
+        }
+
+        static Material _rainbowGlow;
+
+        /// <summary>色相を一周する細長い模様（繰り返し）。</summary>
+        static Texture2D RainbowTexture()
+        {
+            if (_rainbowTexture != null)
+            {
+                return _rainbowTexture;
+            }
+
             _rainbowTexture = new Texture2D(64, 1, TextureFormat.RGBA32, false)
             {
                 name = "ProtoRainbow",
@@ -105,13 +127,29 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
 
             _rainbowTexture.Apply();
-            _rainbowMaterial = new Material(baseMaterial) { name = "ProtoRainbow" };
-            _rainbowMaterial.SetTexture("_BaseMap", _rainbowTexture);
-            _rainbowMaterial.SetColor("_BaseColor", Color.white);
-            _rainbowMaterial.EnableKeyword("_EMISSION");
-            _rainbowMaterial.SetTexture("_EmissionMap", _rainbowTexture);
-            _rainbowMaterial.SetColor("_EmissionColor", Color.white * 1.4f);
-            return _rainbowMaterial;
+            return _rainbowTexture;
+        }
+
+        /// <summary>
+        /// 加算で光る虹の材質（大当たりの後光）。透ける光なので、頂点色の明るさで筋の先を淡く消せる。
+        /// 元の材質は `Assets/Prototype/Resources/ProtoRainbowGlow.mat`（URP の Particles/Unlit・加算。ビルドに含めるため Resources に置く）。
+        /// </summary>
+        public static Material RainbowGlowMaterial()
+        {
+            if (_rainbowGlow != null)
+            {
+                return _rainbowGlow;
+            }
+
+            var source = Resources.Load<Material>("ProtoRainbowGlow");
+            if (source == null)
+            {
+                return null;
+            }
+
+            _rainbowGlow = new Material(source) { name = "ProtoRainbowGlow" };
+            _rainbowGlow.SetTexture("_BaseMap", RainbowTexture());
+            return _rainbowGlow;
         }
 
         /// <summary>虹の模様を <paramref name="offset"/> だけずらす（共有の材質は書き換えない）。</summary>
@@ -143,7 +181,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 }
 
                 var colors = info.meshInfo[character.materialReferenceIndex].colors32;
-                var color = (Color32)Rainbow(time, -i * 0.06f);
+                // 字は細いので、品や輪より鮮やかにする（淡いと金の縁と光のにじみで白く見える）。
+                var color = (Color32)Color.HSVToRGB(Mathf.Repeat(time / RainbowPeriod - i * 0.06f, 1f), 0.95f, 1f);
                 for (var k = 0; k < 4; k++)
                 {
                     colors[character.vertexIndex + k] = color;
@@ -165,6 +204,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var renderer = spark.GetComponent<Renderer>();
             renderer.sharedMaterial = SparkMaterial(baseMaterial);
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.sortingOrder = EffectSortingOrder;
             Tint(renderer, color, emission);
             return spark;
         }
