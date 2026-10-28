@@ -57,6 +57,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("間を空けて叩いたときの音の大きさ（連打を 1 として）。")]
         [SerializeField, Range(0f, 1f)] float _calmLoudness = 0.45f;
 
+        [Header("案内")]
+        [Tooltip("この距離までの叩ける物・使える物は、届かなくても照準が薄く変わる（何かがあると分かる）。")]
+        [SerializeField, Min(0.5f)] float _hintReach = 6f;
+
         [Header("掴む")]
         [SerializeField, Min(1f)] float _grabReach = 14f;
         [SerializeField, Range(1f, 30f)] float _grabConeDegrees = 10f;
@@ -87,8 +91,24 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public ProtoVitals Vitals { get; private set; }
         public Wallet Wallet { get; private set; }
 
-        /// <summary>照準が使える物に合っているときの案内。無ければ null。</summary>
+        public enum AimState
+        {
+            None,
+            /// <summary>叩ける物・使える物を見ているが、まだ手が届かない。</summary>
+            Distant,
+            /// <summary>左クリックで何かが起きる。</summary>
+            InReach,
+        }
+
+        /// <summary>照準の先。HUD の照準の形を決める。</summary>
+        public AimState Aim { get; private set; }
+
+        /// <summary>照準の先の案内（押す操作は含まない）。<see cref="AimState.InReach"/> なら左クリックで起きること、
+        /// <see cref="AimState.Distant"/> なら状態の事実（開いた箱など）。無ければ null。</summary>
         public string AimPrompt { get; private set; }
+
+        /// <summary>手の届くところで照準が合っているゴミ箱（袋を含む）。無ければ null。</summary>
+        public ProtoTrashCan AimedTrashCan { get; private set; }
 
         /// <summary>前に <see cref="TakeCaughtCount"/> してから掴んで鞄に入れた数。</summary>
         int _caught;
@@ -136,8 +156,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         void Update()
         {
             ToastAge += Time.unscaledDeltaTime;
-            var usable = AimedUsable();
-            AimPrompt = usable != null ? usable.Prompt(this) : null;
+            UpdateAim();
 
             if (_use.WasPressedThisFrame())
             {
@@ -250,12 +269,69 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
         }
 
-        IProtoUsable AimedUsable()
+        /// <summary>
+        /// 照準の案内を決める。順番は <see cref="Use"/> の解釈と同じ（案内と、押して起きることを食い違わせない）：
+        /// 開いていないゴミ箱 → 使える物 → 宙の物 → 開いたゴミ箱。届かない距離の物は照準の形だけで知らせる。
+        /// </summary>
+        void UpdateAim()
         {
+            Aim = AimState.None;
+            AimPrompt = null;
+            AimedTrashCan = null;
+
             var ray = new Ray(_camera.transform.position, _camera.transform.forward);
-            return Physics.Raycast(ray, out var hit, _punchReach, ~0, QueryTriggerInteraction.Ignore)
-                ? hit.collider.GetComponentInParent<IProtoUsable>()
-                : null;
+            ProtoTrashCan can = null;
+            IProtoUsable usable = null;
+            var inReach = false;
+            if (Physics.Raycast(ray, out var hit, _hintReach, ~0, QueryTriggerInteraction.Ignore))
+            {
+                can = hit.collider.GetComponentInParent<ProtoTrashCan>();
+                usable = hit.collider.GetComponentInParent<IProtoUsable>();
+                inReach = hit.distance <= _punchReach;
+            }
+
+            if (inReach && can != null)
+            {
+                AimedTrashCan = can;
+            }
+
+            if (inReach && can != null && !can.IsOpened)
+            {
+                SetAim(can.Prompt);
+                return;
+            }
+
+            if (inReach && usable != null)
+            {
+                SetAim(usable.Prompt(this));
+                return;
+            }
+
+            var loot = _phase == GrabPhase.None ? FindGrabTarget() : null;
+            if (loot != null)
+            {
+                SetAim(ProtoText.GrabPrompt(loot.DisplayName));
+                return;
+            }
+
+            if (inReach && can != null)
+            {
+                // 開いた箱は叩いても何も起きないので、押す操作は付けず、照準も薄いままにする。
+                Aim = AimState.Distant;
+                AimPrompt = can.Prompt;
+                return;
+            }
+
+            if (can != null || usable != null)
+            {
+                Aim = AimState.Distant;
+            }
+        }
+
+        void SetAim(string prompt)
+        {
+            Aim = AimState.InReach;
+            AimPrompt = prompt;
         }
 
         /// <summary>掴んだ数を受け取り、数え直す。<see cref="ProtoSession"/> が一日の区切りで呼ぶ。</summary>
@@ -322,11 +398,18 @@ namespace KyoumoMushoku.Gameplay.Prototype
             _hitStopRunning = false;
         }
 
-        /// <summary>画面の一言。手の動作の結果のほか、飲食などほかの部品も使う。</summary>
-        public void Say(string text)
+        /// <summary>一言を出す既定の秒数。</summary>
+        public const float DefaultToastSeconds = 2.2f;
+
+        /// <summary>いまの一言を出しておく秒数。</summary>
+        public float ToastSeconds { get; private set; } = DefaultToastSeconds;
+
+        /// <summary>画面の一言。手の動作の結果のほか、飲食などほかの部品も使う。読ませたい独り言は長めに出す。</summary>
+        public void Say(string text, float seconds = DefaultToastSeconds)
         {
             Toast = text;
             ToastAge = 0f;
+            ToastSeconds = seconds;
         }
 
         void SetOpen(bool open)

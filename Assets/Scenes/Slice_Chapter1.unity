@@ -23356,6 +23356,7 @@ GameObject:
   - component: {fileID: 383865370}
   - component: {fileID: 383865369}
   - component: {fileID: 383865371}
+  - component: {fileID: 383865372}
   m_Layer: 0
   m_Name: Session
   m_TagString: Untagged
@@ -23411,6 +23412,23 @@ MonoBehaviour:
   _tuning: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _dayNight: {fileID: 1497018777}
   _player: {fileID: 658567152}
+--- !u!114 &383865372
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 383865368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cae09502df8a35e43b055e7a640bb9fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoFirstSteps
+  _hands: {fileID: 658567152}
+  _dayNight: {fileID: 1497018777}
+  _session: {fileID: 383865369}
+  _openingDelay: 1.5
+  _nudgeAfter: 35
 --- !u!1 &387035651
 GameObject:
   m_ObjectHideFlags: 0
@@ -39021,6 +39039,7 @@ MonoBehaviour:
   _mashInterval: 0.25
   _calmInterval: 0.9
   _calmLoudness: 0.45
+  _hintReach: 6
   _grabReach: 14
   _grabConeDegrees: 10
   _reachSeconds: 0.12
@@ -39033,7 +39052,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 658567151}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.1736482, z: 0, w: 0.9848078}
+  m_LocalRotation: {x: 0, y: 0.45842662, z: 0, w: 0.88873225}
   m_LocalPosition: {x: -3, y: 0.05, z: 2.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

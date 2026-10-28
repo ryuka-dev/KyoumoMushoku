@@ -75,6 +75,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>ふたが開いたか、またはもう何も出ない。</summary>
         public bool IsOpened => _opened;
 
+        /// <summary>照準の案内。開いた後は「もう何も出ない」とは言わない（廃棄の袋は開いた後も噴き出し続ける）。</summary>
+        public string Prompt => _opened
+            ? (_hasLid ? ProtoText.TrashCanOpenedPrompt : ProtoText.TrashBagOpenedPrompt)
+            : (_hasLid ? ProtoText.TrashCanPrompt : ProtoText.TrashBagPrompt);
+
         public void Configure(TrashCanKind kind, TrashCanLootAsset loot, ItemDatabaseAsset catalog,
             ProtoDayNight dayNight, Material itemMaterial, TMP_FontAsset font)
         {

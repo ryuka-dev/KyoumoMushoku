@@ -24,6 +24,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         GUIStyle _title;
         GUIStyle _button;
         Texture2D _white;
+        Texture2D _ring;
         ProtoPolice[] _police = new ProtoPolice[0];
         readonly StringBuilder _text = new StringBuilder();
 
@@ -43,6 +44,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
             if (_white != null)
             {
                 Destroy(_white);
+            }
+
+            if (_ring != null)
+            {
+                Destroy(_ring);
             }
         }
 
@@ -64,7 +70,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
-            GUI.Label(new Rect(w / 2f - 10f, h / 2f - 12f, 20f, 24f), "+", _center);
+            DrawCrosshair(w, h);
 
             // 左上：日付・所持金・気分、その下に HP・喉・空腹のバー。
             var clock = _dayNight != null ? _dayNight.Clock : null;
@@ -122,13 +128,79 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             if (!string.IsNullOrEmpty(_hands.AimPrompt))
             {
-                GUI.Label(new Rect(0f, h / 2f + 24f, w, 32f), _hands.AimPrompt, _center);
+                // 押して何かが起きるときだけ操作を添える。
+                DrawBackedLabel(h / 2f + 30f, w, _hands.Aim == ProtoHands.AimState.InReach
+                    ? ProtoText.ClickPrompt(_hands.AimPrompt)
+                    : _hands.AimPrompt);
             }
 
-            if (!string.IsNullOrEmpty(_hands.Toast) && _hands.ToastAge < 2.2f)
+            if (!string.IsNullOrEmpty(_hands.Toast) && _hands.ToastAge < _hands.ToastSeconds)
             {
-                GUI.Label(new Rect(0f, h * 0.68f, w, 40f), _hands.Toast, _center);
+                DrawBackedLabel(h * 0.68f, w, _hands.Toast);
             }
+        }
+
+        /// <summary>
+        /// 照準。何も無ければ小さな「+」。叩ける物・使える物を見ていれば輪になり、手が届けば暖色ではっきり、
+        /// 届かなければ薄く小さく出す（遠くからでも「あれは何かできる」と分かる。何ができるかは近づいてから言う）。
+        /// </summary>
+        void DrawCrosshair(float w, float h)
+        {
+            var center = new Vector2(w / 2f, h / 2f);
+            switch (_hands.Aim)
+            {
+                case ProtoHands.AimState.InReach:
+                    DrawRing(center, 40f, new Color(1f, 0.78f, 0.35f, 0.95f));
+                    break;
+                case ProtoHands.AimState.Distant:
+                    DrawRing(center, 26f, new Color(1f, 1f, 1f, 0.5f));
+                    break;
+                default:
+                    GUI.Label(new Rect(center.x - 10f, center.y - 12f, 20f, 24f), "+", _center);
+                    break;
+            }
+        }
+
+        /// <summary>画面中央に、薄暗い帯を敷いた一行（明るい壁や白いゴミ箱の上でも読めるように）。</summary>
+        void DrawBackedLabel(float y, float w, string text)
+        {
+            var content = new GUIContent(text);
+            var size = _center.CalcSize(content);
+            var back = new Rect((w - size.x) / 2f - 12f, y - 2f, size.x + 24f, size.y + 4f);
+            var previous = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.5f);
+            GUI.DrawTexture(back, _white);
+            GUI.color = previous;
+            GUI.Label(new Rect(0f, y, w, size.y), content, _center);
+        }
+
+        void DrawRing(Vector2 center, float size, Color color)
+        {
+            var previous = GUI.color;
+            GUI.color = color;
+            GUI.DrawTexture(new Rect(center.x - size / 2f, center.y - size / 2f, size, size), _ring);
+            GUI.color = previous;
+        }
+
+        static Texture2D BuildRing()
+        {
+            const int size = 64;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear };
+            var pixels = new Color32[size * size];
+            for (var y = 0; y < size; y++)
+            {
+                for (var x = 0; x < size; x++)
+                {
+                    var d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(size / 2f, size / 2f));
+                    // 半径 26・太さ 5 の輪（64px 中）。縁は 1px で滑らかに落とす。
+                    var a = Mathf.Clamp01(3.5f - Mathf.Abs(d - 26f));
+                    pixels[y * size + x] = new Color32(255, 255, 255, (byte)(a * 255f));
+                }
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            return texture;
         }
 
         void DrawPanel(float w, float h)
@@ -204,6 +276,11 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 _white = new Texture2D(1, 1);
                 _white.SetPixel(0, 0, Color.white);
                 _white.Apply();
+            }
+
+            if (_ring == null)
+            {
+                _ring = BuildRing();
             }
 
             _style ??= new GUIStyle(GUI.skin.label) { font = _font, fontSize = 18, normal = { textColor = Color.white } };

@@ -21,6 +21,19 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string DisposalBurst => "袋が破れた！";
         public static string Depleted => "もう何も出ない。";
 
+        // ── 照準の案内（何を押せば何が起きるか。案内は事実だけを言う） ──
+        public static string ClickPrompt(string prompt) => $"［左クリック］{prompt}";
+        public static string TrashCanPrompt => "ゴミ箱：ふたが開くまで叩く";
+        public static string TrashBagPrompt => "ゴミ袋：破れるまで叩く";
+        public static string TrashCanOpenedPrompt => "ゴミ箱：もう開けた";
+        public static string TrashBagOpenedPrompt => "ゴミ袋：もう破れている";
+        public static string GrabPrompt(string name) => $"掴む：{name}";
+
+        // ── 最初の一手（一日目だけの独り言） ──
+        public static string FirstStepHungry => "……腹減った。ゴミ箱でも漁るか。";
+        public static string FirstStepAimCan => "ふたが固い。……叩けば開くか。";
+        public static string FirstStepNudge => "コンビニの前に、ゴミ箱があったな。";
+
         // ── 店 ───────────────────────────────────────────────
         public static string SellPrompt(int salvageYen, int remainingYen) =>
             $"廃品を売る（カバンの廃品 {salvageYen}円・今日はあと {remainingYen}円まで）";
