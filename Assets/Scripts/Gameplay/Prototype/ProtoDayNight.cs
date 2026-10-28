@@ -83,14 +83,47 @@ namespace KyoumoMushoku.Gameplay.Prototype
             }
         }
 
+        /// <summary>早回しの、まだ進めていない秒数。</summary>
+        float _pendingSkip;
+
+        /// <summary>早回しを何秒で見せるか（たまっている量にかかわらず、だいたいこの長さで追いつく）。</summary>
+        const float SkipSeconds = 1.2f;
+
+        /// <summary>早回しの最低の速さ（時計の秒／実時間の秒）。残りが少なくても、だらだら続けない。</summary>
+        const float SkipMinRate = 20f;
+
+        /// <summary>
+        /// 行動に使った時間（漁る・読む・バイト）を、一瞬で飛ばさずに早回しで進める。空や街灯が目に見えて移り、
+        /// いきなり夜にならない。早回しの間も時計は本物で、夜への切り替わりや廃棄はその途中で起きる。
+        /// 渇きと空腹の消耗は、呼んだ側がすでにまとめて払っている。
+        /// </summary>
+        public void Skip(float seconds)
+        {
+            if (seconds > 0f)
+            {
+                _pendingSkip += seconds;
+            }
+        }
+
         void Update()
         {
-            Clock.Advance(Time.deltaTime);
+            var skip = 0f;
+            if (_pendingSkip > 0f)
+            {
+                skip = Mathf.Min(_pendingSkip, Time.deltaTime * Mathf.Max(SkipMinRate, _pendingSkip / SkipSeconds));
+                _pendingSkip -= skip;
+            }
+
+            Clock.Advance(Time.deltaTime + skip);
             Apply();
         }
 
-        /// <summary>就寝による日付の変わり目。<see cref="ProtoSession"/> だけが呼ぶ。</summary>
-        public void BeginNextDay() => Clock.BeginNextDay();
+        /// <summary>就寝による日付の変わり目。<see cref="ProtoSession"/> だけが呼ぶ。早回しの残りは捨てる（眠った朝から始める）。</summary>
+        public void BeginNextDay()
+        {
+            _pendingSkip = 0f;
+            Clock.BeginNextDay();
+        }
 
         void OnPhaseChanged(DayPhase phase) => NotifyIfNightFlipped();
 

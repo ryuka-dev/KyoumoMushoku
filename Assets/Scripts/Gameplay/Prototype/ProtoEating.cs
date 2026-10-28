@@ -146,7 +146,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var seconds = _slice != null ? _slice.UseClockSecondsOf(used.Id) : 0f;
             if (seconds > 0f)
             {
-                _dayNight?.Clock?.Advance(seconds);
+                _dayNight?.Skip(seconds);
                 _vitals.Vitals.DrainTime(seconds);
             }
 

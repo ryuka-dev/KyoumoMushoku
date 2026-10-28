@@ -4,7 +4,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
 {
     /// <summary>
     /// 大当たりの品の後ろに立つ虹の後光（パチンコの当たりの放射光）。品について動き、いつも視点を向き、回り続ける。
-    /// 細い筋が根元から先へ淡く消え（加算の光）、二層が逆向きに回り、中心に柔らかな光の玉がある。
+    /// 細い筋が根元から先へ淡く消え（加算の光）、二層が逆向きに回る。
+    /// 街の物に隠れないよう、いつも手前に描く（`ProtoAdditiveOverlay`）。そのぶん品の上にも重なるので、中心は空けて品が見えるようにする。
     /// 現れるときは一度大きく弾けてから落ち着く。品が掴まれるか消える前の明滅に入ったら隠す。
     /// 色は街と一緒に退色するが、回る放射の形は残る（灰色の街でも大当たりと分かる）。
     /// </summary>
@@ -14,7 +15,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         static Mesh _fineRays;
         static Mesh _broadRays;
-        static Mesh _core;
 
         Transform _target;
         Transform _fine;
@@ -37,7 +37,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
             halo._target = target;
             halo._broad = Layer(root.transform, "Broad", BroadRays(), material, 0.02f);
             halo._fine = Layer(root.transform, "Fine", FineRays(), material, 0.01f);
-            Layer(root.transform, "Core", Core(), material, 0f);
             halo._renderers = root.GetComponentsInChildren<Renderer>();
             root.transform.localScale = Vector3.zero;
             return halo;
@@ -104,13 +103,13 @@ namespace KyoumoMushoku.Gameplay.Prototype
         /// <summary>細い筋。長短を交互に 32 本。</summary>
         static Mesh FineRays()
         {
-            return _fineRays != null ? _fineRays : _fineRays = Rays("HaloFine", 32, 0.07f, 0.5f, 0.31f, 0.009f, 0.005f, 1f);
+            return _fineRays != null ? _fineRays : _fineRays = Rays("HaloFine", 32, 0.15f, 0.5f, 0.33f, 0.009f, 0.005f, 1f);
         }
 
         /// <summary>太く淡い筋。12 本。</summary>
         static Mesh BroadRays()
         {
-            return _broadRays != null ? _broadRays : _broadRays = Rays("HaloBroad", 12, 0.05f, 0.42f, 0.42f, 0.04f, 0.04f, 0.35f);
+            return _broadRays != null ? _broadRays : _broadRays = Rays("HaloBroad", 12, 0.13f, 0.44f, 0.44f, 0.04f, 0.04f, 0.35f);
         }
 
         static Mesh Rays(string name, int count, float inner, float longLength, float shortLength, float longWidth,
@@ -143,38 +142,6 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var mesh = new Mesh { name = name, vertices = vertices, colors = colors, uv = uvs, triangles = triangles };
             mesh.RecalculateBounds();
             return mesh;
-        }
-
-        /// <summary>中心の柔らかな光の玉（中心が明るく縁で 0）。</summary>
-        static Mesh Core()
-        {
-            if (_core != null)
-            {
-                return _core;
-            }
-
-            const int segments = 24;
-            var vertices = new Vector3[segments + 1];
-            var colors = new Color[vertices.Length];
-            var uvs = new Vector2[vertices.Length];
-            var triangles = new int[segments * 3];
-            vertices[0] = Vector3.zero;
-            colors[0] = new Color(0.25f, 0.25f, 0.25f, 1f);
-            uvs[0] = new Vector2(0f, 0.5f);
-            for (var i = 0; i < segments; i++)
-            {
-                var a = 2f * Mathf.PI * i / segments;
-                vertices[i + 1] = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * 0.2f;
-                colors[i + 1] = new Color(0f, 0f, 0f, 1f);
-                uvs[i + 1] = new Vector2(i / (float)segments, 0.5f);
-                triangles[i * 3] = 0;
-                triangles[i * 3 + 1] = i + 1;
-                triangles[i * 3 + 2] = (i + 1) % segments + 1;
-            }
-
-            _core = new Mesh { name = "HaloCore", vertices = vertices, colors = colors, uv = uvs, triangles = triangles };
-            _core.RecalculateBounds();
-            return _core;
         }
     }
 }

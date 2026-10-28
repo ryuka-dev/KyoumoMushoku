@@ -8,8 +8,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
     ///
     /// 何が落ちているかは、その日の始めに確定している（ゴミ箱と同じく、探るたびに引き直さない）。
     /// 日付が変わると、また誰かが落としている。
+    ///
+    /// 探り終えた日は触れる物ではない（開けたゴミ箱と同じく、縁も照準の輪も案内も消える。`GameDesign.md` 第十七節 規則 1）。
     /// </summary>
-    public sealed class ProtoCoinSearch : MonoBehaviour, IProtoUsable
+    public sealed class ProtoCoinSearch : MonoBehaviour, IProtoUsable, IProtoClosable
     {
         [SerializeField] ProtoDayNight _dayNight;
         [Tooltip("その日に何か落ちている確率。")]
@@ -40,6 +42,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 ? _coins[(int)(_rng.NextDouble() * _coins.Length) % _coins.Length]
                 : 0;
         }
+
+        /// <summary>今日まだ探っていない。</summary>
+        public bool IsOpenNow => !_searched;
 
         public string Prompt(ProtoHands hands) => ProtoText.CoinSearchPrompt;
 

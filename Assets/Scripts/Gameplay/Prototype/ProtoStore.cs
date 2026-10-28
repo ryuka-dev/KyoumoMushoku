@@ -97,7 +97,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             vitals.DrainTime(_tuning.JobShiftSeconds, _tuning.JobDrainMultiplier);
             if (_dayNight != null)
             {
-                _dayNight.Clock?.Advance(_tuning.JobShiftSeconds);
+                _dayNight.Skip(_tuning.JobShiftSeconds);
             }
 
             return ShopText.JobDone(paid);

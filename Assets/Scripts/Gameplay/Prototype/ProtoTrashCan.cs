@@ -199,7 +199,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 return;
             }
 
-            _dayNight?.Clock?.Advance(seconds);
+            _dayNight?.Skip(seconds);
             vitals?.DrainTime(seconds);
         }
 
