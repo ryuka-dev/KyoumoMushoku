@@ -5,8 +5,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
 {
     /// <summary>
     /// 触れる物（ゴミ箱・自販機・水道・ベンチ）の縁取り。初めての人が「これは触れる」と一目で分かるようにする。
-    /// 照準の輪と同じ言葉で話す：手が届いて狙っていれば暖色ではっきり、近くにあれば細く、遠ざかると消える。
+    /// 照準の輪と同じ言葉で話す：手が届いて狙っていればはっきり、近くにあれば細く、遠ざかると消える。
+    /// 色は探る物が暖色・使う物が寒色（<see cref="ProtoInteractColors"/>。焼くときに物ごとに決める）。
     /// 開けたゴミ箱はもう触れる物ではないので縁を消す。
+    ///
+    /// 描く物の無い場所（自販機の下・コンビニの戸口）は、そこに見えている面のすぐ手前に置いた枠（<see cref="FrameName"/>）を
+    /// 殻の網として縁を出す（壁や本体に平らに付いた場所は、裏返しの殻では縁が出ないため）。
     ///
     /// 縁は裏返しの殻（<c>KyoumoMushoku/ProtoOutline</c>）。殻の網は編集時に焼いてある（<c>SliceOutlineBaker</c>）。
     /// 殻は各描画物の子に置くので、叩かれて揺れる箱にも付いていく。当たり判定は持たない。
@@ -19,6 +23,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
             public Renderer Target;
             public Mesh Mesh;
         }
+
+        /// <summary>描く物の無い触れる場所に置く枠の名前（枠そのものは描かず、殻の網として使う）。</summary>
+        public const string FrameName = "OutlineFrame";
 
         static readonly int ColorId = Shader.PropertyToID("_Color");
         static readonly int WidthId = Shader.PropertyToID("_Width");
@@ -105,8 +112,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
             var available = _can == null || !_can.IsOpened;
             if (available && camera != null)
             {
+                // 狙われているのが自分そのものか（自販機と、その下の小銭探しは別々に光る）。
                 var aimed = _hands != null && _hands.Aim == ProtoHands.AimState.InReach && _hands.AimedObject != null
-                            && _hands.AimedObject.transform.IsChildOf(transform);
+                            && _hands.AimedObject.gameObject == gameObject;
                 if (aimed)
                 {
                     target = 1f;
@@ -152,7 +160,12 @@ namespace KyoumoMushoku.Gameplay.Prototype
                     continue;
                 }
 
-                var p = shell.Target.bounds.ClosestPoint(from);
+                // 枠は描かない（描画が無効）ので、描画の範囲ではなく置いた位置で測る。
+                var t = shell.Target.transform;
+                var bounds = shell.Target.enabled
+                    ? shell.Target.bounds
+                    : new Bounds(t.position, new Vector3(Mathf.Abs(t.lossyScale.x), Mathf.Abs(t.lossyScale.y), Mathf.Abs(t.lossyScale.z)));
+                var p = bounds.ClosestPoint(from);
                 var d = (p - from).sqrMagnitude;
                 if (d < bestDistance)
                 {

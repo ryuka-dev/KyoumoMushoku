@@ -138,7 +138,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
         }
 
         /// <summary>
-        /// 照準。何も無ければ小さな「+」。叩ける物・使える物を見ていれば輪になり、手が届けば暖色ではっきり、
+        /// 照準。何も無ければ小さな「+」。叩ける物・使える物を見ていれば輪になり、手が届けばはっきり（探る物は暖色・使う物は寒色）、
         /// 届かなければ薄く小さく出す（遠くからでも「あれは何かできる」と分かる。何ができるかは近づいてから言う）。
         /// </summary>
         void DrawCrosshair(float w, float h)
@@ -147,7 +147,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
             switch (_hands.Aim)
             {
                 case ProtoHands.AimState.InReach:
-                    DrawRing(center, 40f, new Color(1f, 0.78f, 0.35f, 0.95f));
+                    // 縁取りと同じ色：探る物は暖色、使う物は寒色（宙の物を掴むのは探ることの続き）。
+                    var ring = _hands.AimedObject != null ? ProtoInteractColors.For(_hands.AimedObject) : ProtoInteractColors.Search;
+                    ring.a = 0.95f;
+                    DrawRing(center, 40f, ring);
                     break;
                 case ProtoHands.AimState.Distant:
                     DrawRing(center, 26f, new Color(1f, 1f, 1f, 0.5f));
