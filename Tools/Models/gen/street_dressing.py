@@ -205,7 +205,6 @@ def block_wall(name, x, base_step, worn):
 
 ARC_SEGMENTS = 8
 ARC_HALF = 6.0
-POST_HALF = 4.6   # 柱の位置（店の下屋庇の先 4.8〜5.0m より内側）
 ARC_SPRING = 6.8
 ARC_RISE = 1.6
 
@@ -223,13 +222,10 @@ def arcade_roof(x):
     length = 4.0
 
     def posts(bm):
-        # 柱は店の下屋庇・店先の台より通り側に立てる（店の正面＝ARC_HALF に立てると壁と窓を貫く）。
-        # 柱の頭から店の正面の梁まで横梁を渡し、下に方杖を入れる。屋根はそこから店の上へ張り出す。
-        for side in (-1, 1):
-            y = side * POST_HALF
+        # 柱はアーチの起点の真下へまっすぐ下ろす（2026-10-29 作者の指示で、横梁と方杖を足す前の形に戻した）。
+        # 店の正面に掛かるので、切片では通りの両端の二組だけを残し、間の柱は置き場で消している。
+        for y in (-ARC_HALF, ARC_HALF):
             km.box(bm, 0.0, y, ARC_SPRING / 2, 0.22, 0.22, ARC_SPRING)
-            km.box(bm, 0.0, side * (POST_HALF + ARC_HALF) / 2, ARC_SPRING, 0.2, ARC_HALF - POST_HALF + 0.1, 0.3)
-            beam(bm, (0.0, y + side * 0.1, ARC_SPRING - 0.9), (0.0, side * (ARC_HALF - 0.35), ARC_SPRING - 0.12), 0.1)
 
     part(root, "Posts", posts, shade("steel", 3, 2, 1))
 
