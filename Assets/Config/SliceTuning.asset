@@ -31,14 +31,18 @@ MonoBehaviour:
       weight: 14
     - id: bread
       weight: 14
+    - id: karaage
+      weight: 10
+    - id: sweet_bun
+      weight: 6
     - id: can_aluminum
-      weight: 12
+      weight: 10
     - id: water_bottle
       weight: 10
     - id: half_bottle
-      weight: 8
+      weight: 6
     - id: bottle_empty
-      weight: 8
+      weight: 6
     - id: can_coffee
       weight: 6
     - id: cigarette
@@ -46,6 +50,8 @@ MonoBehaviour:
     - id: umbrella_broken
       weight: 3
     - id: cardboard
+      weight: 3
+    - id: scratch
       weight: 3
     freshWeight: 4
     staleWeight: 6
@@ -94,4 +100,23 @@ MonoBehaviour:
     yen: 1500
   - id: paperback
     yen: 150
+  _useClockSeconds:
+  - id: weekly_mag
+    seconds: 20
+  - id: paperback
+    seconds: 40
+  - id: scratch
+    seconds: 5
+  _scratchItemId: scratch
+  _scratchPrizes:
+  - yen: 0
+    weight: 75
+  - yen: 100
+    weight: 15
+  - yen: 500
+    weight: 8
+  - yen: 3000
+    weight: 2
+  _purseItemId: coin_purse
+  _purseYen: 64000000c80000002c010000f401000020030000
   _finalDay: 3

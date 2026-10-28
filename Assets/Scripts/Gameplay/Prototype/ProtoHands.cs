@@ -39,6 +39,9 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("始めの所持金（円）。本編の PlayerWallet の既定と同じ。")]
         [SerializeField, Min(0)] int _startingYen = 500;
 
+        [Tooltip("掴むと鞄に入れず財布へ入る品（小銭入れ）の出典。")]
+        [SerializeField] SliceTuningAsset _slice;
+
         [Header("手の構え（カメラ基準・原点は肘）")]
         [SerializeField] Vector3 _restPosition = new Vector3(0.20f, -0.26f, -0.10f);
         [SerializeField] Vector3 _restEuler = new Vector3(-8f, -8f, -80f);
@@ -243,7 +246,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         void Grab(ProtoLoot target)
         {
-            if (!Bag.CanAdd(target.Item))
+            if (!IsPurse(target.Item) && !Bag.CanAdd(target.Item))
             {
                 Say(ProtoText.NoRoom(target.DisplayName));
                 _audio.pitch = 0.6f;
@@ -261,7 +264,18 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
         void OnArrived(ProtoLoot loot)
         {
-            if (Bag.TryAdd(loot.Item))
+            if (IsPurse(loot.Item))
+            {
+                // 小銭入れは鞄に入れない。中身は掴んだ瞬間に決まり、そのまま財布へ。
+                var yen = _slice.PurseYen(UnityEngine.Random.value * 0.9999f);
+                Wallet.Add(yen);
+                _caught++;
+                Say(ProtoText.PurseOpened(yen));
+                _audio.pitch = 1.4f;
+                _audio.PlayOneShot(ProtoSounds.Grab, 1f);
+                Grabbed?.Invoke(loot.Item);
+            }
+            else if (Bag.TryAdd(loot.Item))
             {
                 _caught++;
                 Say(ProtoText.Caught(loot.DisplayName));
@@ -330,6 +344,8 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 Aim = AimState.Distant;
             }
         }
+
+        bool IsPurse(ItemInstance item) => _slice != null && _slice.IsPurse(item.ItemId);
 
         /// <summary>照準の先の使う物。閉まっている店は触れる物ではないので、無いのと同じに扱う（第十七節 規則 1）。</summary>
         static IProtoUsable UsableAt(Collider collider)

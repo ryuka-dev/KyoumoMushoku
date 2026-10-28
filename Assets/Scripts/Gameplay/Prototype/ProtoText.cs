@@ -69,6 +69,10 @@ namespace KyoumoMushoku.Gameplay.Prototype
         public static string Consumed(string name, bool wasRotten) =>
             wasRotten ? $"{name}を口にした。……腐っていた。" : $"{name}を口にした。";
         public static string NotEdible(string name) => $"{name}は口にできない。";
+        public static string ReadThrough(string name) => $"{name}を読みふけった。少し気が紛れた。";
+        public static string Scratched(int prizeYen) =>
+            prizeYen <= 0 ? "スクラッチを削った。……はずれ。" : $"スクラッチを削った。……{prizeYen}円、当たった。";
+        public static string PurseOpened(int yen) => $"小銭入れだ。中に{yen}円入っていた。";
 
         // ── 寝床と一日の区切り ───────────────────────────────
         public static string BenchPrompt => "ベンチ：横になって夜を越す";

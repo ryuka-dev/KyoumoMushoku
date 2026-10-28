@@ -251,3 +251,101 @@ MonoBehaviour:
     buyPriceYen: 0
     capacityBonus: 0
     carriedOnBack: 0
+  - id: sweet_bun
+    displayName: "\u83D3\u5B50\u30D1\u30F3"
+    category: 1
+    slots: 1
+    hp: 0
+    thirst: 0
+    hunger: 15
+    sanity: 3
+    rottenHp: -6
+    rottenSanity: -8
+    sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
+    carriedOnBack: 0
+  - id: karaage
+    displayName: "\u63DA\u3052\u7269"
+    category: 1
+    slots: 1
+    hp: 0
+    thirst: 0
+    hunger: 18
+    sanity: 4
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
+    carriedOnBack: 0
+  - id: weekly_mag
+    displayName: "\u8AAD\u307F\u53E4\u3057\u306E\u9031\u520A\u8A8C"
+    category: 4
+    slots: 2
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 5
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
+    carriedOnBack: 0
+  - id: paperback
+    displayName: "\u6587\u5EAB\u672C"
+    category: 4
+    slots: 1
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 8
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
+    carriedOnBack: 0
+  - id: copper_wire
+    displayName: "\u9285\u7DDA\u304F\u305A"
+    category: 2
+    slots: 2
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 150
+    buyPriceYen: 0
+    capacityBonus: 0
+    carriedOnBack: 0
+  - id: coin_purse
+    displayName: "\u843D\u3068\u3057\u305F\u5C0F\u92AD\u5165\u308C"
+    category: 5
+    slots: 1
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
+    carriedOnBack: 0
+  - id: scratch
+    displayName: "\u524A\u3063\u3066\u3044\u306A\u3044\u30B9\u30AF\u30E9\u30C3\u30C1\u304F\u3058"
+    category: 4
+    slots: 1
+    hp: 0
+    thirst: 0
+    hunger: 0
+    sanity: 0
+    rottenHp: 0
+    rottenSanity: 0
+    sellPriceYen: 0
+    buyPriceYen: 0
+    capacityBonus: 0
+    carriedOnBack: 0

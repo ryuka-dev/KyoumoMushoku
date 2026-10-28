@@ -1,4 +1,5 @@
 using KyoumoMushoku.Core.Items;
+using KyoumoMushoku.Core.Randomness;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -8,19 +9,27 @@ namespace KyoumoMushoku.Gameplay.Prototype
     /// 鞄の中の物を数字キー（1〜9）で飲み食いする。効果は本編と同じ Core の <see cref="Consumption"/>（腐った物は代償がある）。
     /// Q を押しながら数字キーなら、その物を捨てる（鞄が一杯のとき、入れ替えるため）。
     /// 鞄の何番目かは HUD の一覧の番号と同じ。
+    ///
+    /// 読む物（週刊誌・文庫本）と削る物（スクラッチくじ）は、使う間だけ時計が進み、その間の渇きと空腹が減る
+    /// （<see cref="SliceTuningAsset.UseClockSecondsOf"/>。SAN と時間の交換）。くじの当否は削った瞬間に決まる。
     /// </summary>
     public sealed class ProtoEating : MonoBehaviour
     {
         [SerializeField] ProtoHands _hands;
         [SerializeField] ProtoVitals _vitals;
+        [SerializeField] SliceTuningAsset _slice;
+        [SerializeField] ProtoDayNight _dayNight;
 
         InputAction[] _slots;
         InputAction _discard;
+        readonly IRng _rng = new SystemRng();
 
-        public void Configure(ProtoHands hands, ProtoVitals vitals)
+        public void Configure(ProtoHands hands, ProtoVitals vitals, SliceTuningAsset slice, ProtoDayNight dayNight)
         {
             _hands = hands;
             _vitals = vitals;
+            _slice = slice;
+            _dayNight = dayNight;
         }
 
         void Awake()
@@ -117,7 +126,7 @@ namespace KyoumoMushoku.Gameplay.Prototype
             switch (result)
             {
                 case ConsumeResult.Consumed:
-                    _hands.Say(ProtoText.Consumed(consumed.DisplayName, consumed.IsFood && FoodKnowledge.IsDangerous(state)));
+                    _hands.Say(AfterUse(consumed, state));
                     break;
                 case ConsumeResult.NotConsumable:
                     if (bag.TryGetDefinition(index, out var definition))
@@ -127,6 +136,32 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
                     break;
             }
+        }
+
+        /// <summary>使い終えた後：時間を払い、くじなら当否を決める。返すのは独り言。</summary>
+        string AfterUse(ItemDefinition used, FoodState state)
+        {
+            var seconds = _slice != null ? _slice.UseClockSecondsOf(used.Id) : 0f;
+            if (seconds > 0f)
+            {
+                _dayNight?.Clock?.Advance(seconds);
+                _vitals.Vitals.DrainTime(seconds);
+            }
+
+            if (_slice != null && _slice.IsScratch(used.Id))
+            {
+                var prize = _slice.ScratchPrize(_rng.NextDouble());
+                if (prize > 0)
+                {
+                    _hands.Wallet?.Add(prize);
+                }
+
+                return ProtoText.Scratched(prize);
+            }
+
+            return seconds > 0f
+                ? ProtoText.ReadThrough(used.DisplayName)
+                : ProtoText.Consumed(used.DisplayName, used.IsFood && FoodKnowledge.IsDangerous(state));
         }
     }
 }

@@ -18,35 +18,51 @@ MonoBehaviour:
     rummageSeconds: 1.8
     forageClockSeconds: 15
     day:
-      emptyWeight: 20
+      emptyWeight: 18
       items:
       - id: can_aluminum
-        weight: 35
+        weight: 28
       - id: bottle_empty
-        weight: 20
+        weight: 14
       - id: half_bottle
         weight: 12
       - id: bread
         weight: 8
+      - id: sweet_bun
+        weight: 8
+      - id: weekly_mag
+        weight: 6
       - id: cigarette
-        weight: 2
+        weight: 5
+      - id: paperback
+        weight: 2.5
+      - id: coin_purse
+        weight: 1.5
       - id: game_soft
         weight: 1
       freshWeight: 25
       staleWeight: 45
       rottenWeight: 30
     night:
-      emptyWeight: 25
+      emptyWeight: 22
       items:
       - id: can_aluminum
-        weight: 33
+        weight: 26
       - id: bottle_empty
-        weight: 20
+        weight: 14
       - id: half_bottle
         weight: 12
       - id: bread
         weight: 5
+      - id: sweet_bun
+        weight: 6
+      - id: weekly_mag
+        weight: 6
       - id: cigarette
+        weight: 6
+      - id: paperback
+        weight: 2.5
+      - id: coin_purse
         weight: 2
       - id: game_soft
         weight: 1
@@ -58,16 +74,24 @@ MonoBehaviour:
     rummageSeconds: 2.2
     forageClockSeconds: 18
     day:
-      emptyWeight: 45
+      emptyWeight: 40
       items:
       - id: bread
-        weight: 20
+        weight: 18
+      - id: sweet_bun
+        weight: 8
       - id: can_aluminum
-        weight: 25
+        weight: 22
       - id: bottle_empty
-        weight: 10
+        weight: 8
+      - id: scratch
+        weight: 6
+      - id: can_coffee
+        weight: 3
       - id: brand_box
         weight: 2
+      - id: coin_purse
+        weight: 1
       freshWeight: 45
       staleWeight: 40
       rottenWeight: 15
@@ -75,15 +99,21 @@ MonoBehaviour:
       emptyWeight: 8
       items:
       - id: bento
-        weight: 35
+        weight: 30
       - id: bread
-        weight: 25
-      - id: can_coffee
-        weight: 12
-      - id: can_aluminum
-        weight: 12
-      - id: bottle_empty
+        weight: 20
+      - id: sweet_bun
         weight: 8
+      - id: can_coffee
+        weight: 10
+      - id: can_aluminum
+        weight: 10
+      - id: bottle_empty
+        weight: 6
+      - id: scratch
+        weight: 6
+      - id: coin_purse
+        weight: 1.5
       freshWeight: 65
       staleWeight: 28
       rottenWeight: 7
@@ -95,17 +125,19 @@ MonoBehaviour:
       emptyWeight: 18
       items:
       - id: umbrella_broken
-        weight: 15
+        weight: 12
       - id: bottle_empty
-        weight: 25
+        weight: 22
       - id: can_aluminum
-        weight: 25
+        weight: 22
       - id: cardboard
-        weight: 12
+        weight: 8
       - id: bread
-        weight: 12
+        weight: 10
+      - id: copper_wire
+        weight: 6
       - id: cigarette
-        weight: 2
+        weight: 5
       - id: brand_box
         weight: 4
       - id: game_soft
@@ -121,17 +153,19 @@ MonoBehaviour:
       emptyWeight: 18
       items:
       - id: umbrella_broken
-        weight: 15
+        weight: 12
       - id: bottle_empty
         weight: 22
       - id: can_aluminum
-        weight: 25
+        weight: 22
       - id: cardboard
-        weight: 12
+        weight: 8
       - id: bread
-        weight: 12
+        weight: 10
+      - id: copper_wire
+        weight: 6
       - id: cigarette
-        weight: 3
+        weight: 6
       - id: brand_box
         weight: 4
       - id: game_soft

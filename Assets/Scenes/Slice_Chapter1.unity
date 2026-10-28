@@ -39905,6 +39905,7 @@ MonoBehaviour:
   _armMaterial: {fileID: 2100000, guid: 242efa828e01c824293c8ac7c19e268f, type: 2}
   _bagCapacity: 6
   _startingYen: 500
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
   _restPosition: {x: 0.294, y: -0.287, z: 0.09}
   _restEuler: {x: -22, y: -14, z: 0}
   _palmDistance: 0.4
@@ -40006,6 +40007,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: KyoumoMushoku.Gameplay::KyoumoMushoku.Gameplay.Prototype.ProtoEating
   _hands: {fileID: 658567152}
   _vitals: {fileID: 658567156}
+  _slice: {fileID: 11400000, guid: b6d4cb30c2722814ab74bd1eb88cf969, type: 2}
+  _dayNight: {fileID: 1497018777}
 --- !u!1001 &659958397
 PrefabInstance:
   m_ObjectHideFlags: 0

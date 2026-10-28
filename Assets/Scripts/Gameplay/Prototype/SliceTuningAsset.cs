@@ -62,6 +62,22 @@ namespace KyoumoMushoku.Gameplay.Prototype
         [Tooltip("アーケードのリサイクルショップが買う品と値段（円）。一日の上限は無い。ここに無い品は買わない。品のデータの売値は 0 にしておく（コンビニの店主は買わない）。")]
         [SerializeField] List<RecyclePriceEntry> _recyclePrices = DefaultRecyclePrices();
 
+        [Header("鞄から使う物（Docs/切片の品目.md 第四節）")]
+        [Tooltip("使うと時計が進む品（読む・削る）と、その秒数。その間の渇きと空腹も減る。ここに無い品は一瞬で使い終わる。")]
+        [SerializeField] List<ItemSecondsEntry> _useClockSeconds = DefaultUseClockSeconds();
+
+        [Tooltip("スクラッチくじの品の id。使うと削り、当否はその瞬間に決まる（それまで誰にも分からないので、合図も無い）。")]
+        [SerializeField] string _scratchItemId = "scratch";
+
+        [Tooltip("スクラッチくじの当たり（円）と重み。0 円ははずれ。")]
+        [SerializeField] List<PrizeEntry> _scratchPrizes = DefaultScratchPrizes();
+
+        [Tooltip("小銭入れの品の id。掴むと鞄に入れず、中身がそのまま財布へ入る。")]
+        [SerializeField] string _purseItemId = "coin_purse";
+
+        [Tooltip("小銭入れの中身（円）。掴んだ瞬間に、この中から一つが同じ確からしさで決まる。")]
+        [SerializeField] int[] _purseYen = { 100, 200, 300, 500, 800 };
+
         [Header("終わり")]
         [Tooltip("この日の夜に寝たら、翌朝に切片の結算を見せて終える。")]
         [SerializeField, Min(1)] int _finalDay = 3;
@@ -99,6 +115,82 @@ namespace KyoumoMushoku.Gameplay.Prototype
 
             return LootTier.Common;
         }
+
+        [Serializable]
+        public struct ItemSecondsEntry
+        {
+            public string id;
+            [Min(0f)] public float seconds;
+        }
+
+        [Serializable]
+        public struct PrizeEntry
+        {
+            [Min(0)] public int yen;
+            [Min(0f)] public float weight;
+        }
+
+        /// <summary>使うと時計が何秒進むか。進まない品は 0。</summary>
+        public float UseClockSecondsOf(ItemId item)
+        {
+            foreach (var entry in _useClockSeconds)
+            {
+                if (entry.id == item.Value)
+                {
+                    return entry.seconds;
+                }
+            }
+
+            return 0f;
+        }
+
+        public bool IsScratch(ItemId item) => item.Value == _scratchItemId;
+
+        public bool IsPurse(ItemId item) => item.Value == _purseItemId;
+
+        /// <summary>くじの当たりを、0 以上 1 未満の <paramref name="roll01"/> で引く。</summary>
+        public int ScratchPrize(double roll01)
+        {
+            var total = 0f;
+            foreach (var prize in _scratchPrizes)
+            {
+                total += prize.weight;
+            }
+
+            var pick = (float)roll01 * total;
+            foreach (var prize in _scratchPrizes)
+            {
+                if (pick < prize.weight)
+                {
+                    return prize.yen;
+                }
+
+                pick -= prize.weight;
+            }
+
+            return 0;
+        }
+
+        /// <summary>小銭入れの中身を、0 以上 1 未満の <paramref name="roll01"/> で引く。</summary>
+        public int PurseYen(double roll01) =>
+            _purseYen == null || _purseYen.Length == 0
+                ? 0
+                : _purseYen[Mathf.Clamp((int)(roll01 * _purseYen.Length), 0, _purseYen.Length - 1)];
+
+        static List<ItemSecondsEntry> DefaultUseClockSeconds() => new List<ItemSecondsEntry>
+        {
+            new ItemSecondsEntry { id = "weekly_mag", seconds = 20f },
+            new ItemSecondsEntry { id = "paperback", seconds = 40f },
+            new ItemSecondsEntry { id = "scratch", seconds = 5f },
+        };
+
+        static List<PrizeEntry> DefaultScratchPrizes() => new List<PrizeEntry>
+        {
+            new PrizeEntry { yen = 0, weight = 75f },
+            new PrizeEntry { yen = 100, weight = 15f },
+            new PrizeEntry { yen = 500, weight = 8f },
+            new PrizeEntry { yen = 3000, weight = 2f },
+        };
 
         [Serializable]
         public struct RecyclePriceEntry
@@ -159,14 +251,17 @@ namespace KyoumoMushoku.Gameplay.Prototype
                 new TrashCanLootAsset.WeightedItem { id = "bento", weight = 14f },
                 new TrashCanLootAsset.WeightedItem { id = "onigiri", weight = 14f },
                 new TrashCanLootAsset.WeightedItem { id = "bread", weight = 14f },
-                new TrashCanLootAsset.WeightedItem { id = "can_aluminum", weight = 12f },
+                new TrashCanLootAsset.WeightedItem { id = "karaage", weight = 10f },
+                new TrashCanLootAsset.WeightedItem { id = "sweet_bun", weight = 6f },
+                new TrashCanLootAsset.WeightedItem { id = "can_aluminum", weight = 10f },
                 new TrashCanLootAsset.WeightedItem { id = "water_bottle", weight = 10f },
-                new TrashCanLootAsset.WeightedItem { id = "half_bottle", weight = 8f },
-                new TrashCanLootAsset.WeightedItem { id = "bottle_empty", weight = 8f },
+                new TrashCanLootAsset.WeightedItem { id = "half_bottle", weight = 6f },
+                new TrashCanLootAsset.WeightedItem { id = "bottle_empty", weight = 6f },
                 new TrashCanLootAsset.WeightedItem { id = "can_coffee", weight = 6f },
                 new TrashCanLootAsset.WeightedItem { id = "cigarette", weight = 4f },
                 new TrashCanLootAsset.WeightedItem { id = "umbrella_broken", weight = 3f },
                 new TrashCanLootAsset.WeightedItem { id = "cardboard", weight = 3f },
+                new TrashCanLootAsset.WeightedItem { id = "scratch", weight = 3f },
             },
             freshWeight = 4f,
             staleWeight = 6f,
